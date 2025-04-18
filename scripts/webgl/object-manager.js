@@ -1,5 +1,5 @@
 import { Object3D } from './object.js';
-import { warnLog } from '../logger/logger.js';
+import { warnLog, debugLog } from '../logger/logger.js';
 
 export class ObjectManager {
     constructor(gl, shaderProgram) {
@@ -14,6 +14,7 @@ export class ObjectManager {
             return null;
         }
         this.loadedObjects[id] = new Object3D(this.gl, vertices, this.shaderProgram);
+        debugLog(`Loaded: ${id}`);
         return this.loadedObjects[id];
     }
 
