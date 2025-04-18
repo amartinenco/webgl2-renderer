@@ -1,6 +1,3 @@
-// TODO: take render logic out of main.js
-// canvas resizing
-// viewport setup
 import { initShaders } from './shader-manager.js';
 import { ObjectManager } from './object-manager.js';
 import { ObjectLoader } from './object-loader.js';
