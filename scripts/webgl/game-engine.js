@@ -3,7 +3,7 @@ import { ObjectManager } from './object-manager.js';
 import { ObjectLoader } from './object-loader.js';
 import { Renderer } from './renderer.js';
 import { debugLog } from '../logger/logger.js';
-
+import { CameraManager } from './camera-manager.js';
 
 export class GameEngine {
 
@@ -14,6 +14,7 @@ export class GameEngine {
         this.objectLoader = null;
         this.engineRun = this.engineRun.bind(this); // pre-bind 'this' for the looping
         this.renderer = null;
+        this.CameraManager = null;
     }
     
     async initialize() {
@@ -26,7 +27,8 @@ export class GameEngine {
         this.objectManager = new ObjectManager(this.gl, shaderProgram);
         this.objectLoader = new ObjectLoader(this.objectManager);
         this.objectLoader.loadGameObjects();
-        this.renderer = new Renderer(this.gl, this.canvas, this.objectManager);
+        this.cameraManager = new CameraManager();
+        this.renderer = new Renderer(this.gl, this.canvas, this.objectManager, this.cameraManager);
         debugLog("GameEngine initialized");
     }
 

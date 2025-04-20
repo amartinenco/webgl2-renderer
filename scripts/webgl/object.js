@@ -1,4 +1,5 @@
 import { createVertexBuffer } from './buffer-manager.js';
+import { mat4 } from '../math/gl-matrix/index.js'
 
 export class ObjectBase {
     constructor(gl, vertices, shaderProgram, attributeSize) {
@@ -7,7 +8,7 @@ export class ObjectBase {
         this.vertexBuffer = createVertexBuffer(gl, vertices);
         this.shaderProgram = shaderProgram;
         this.attributeSize = attributeSize;
-
+        this.modelMatrix = mat4.create();
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
 
@@ -29,6 +30,15 @@ export class ObjectBase {
         gl.bindVertexArray(this.vao);
         this.render();
         gl.bindVertexArray(null);
+    }
+
+    translate(xOrVector, y = 0, z = 0) {
+        const vector = Array.isArray(xOrVector) ? xOrVector : [xOrVector, y, z];
+        mat4.translate(this.modelMatrix, this.modelMatrix, vector);
+    }
+
+    getModelMatrix() {
+        return this.modelMatrix;
     }
 
     render() {
