@@ -1,3 +1,5 @@
+import { errorLog } from "../logger/logger.js";
+
 const isLocal = window.location.hostname === "localhost";
 const SHADER_PATH = isLocal ? "./shaders" : `${window.location.origin}/shaders`;
 
@@ -86,4 +88,13 @@ function createProgram(gl, vertexShader, fragmentShader) {
     }
 
     return program;
+}
+
+export function setUniformMatrix(gl, program, uniformName, matrix) {
+    const location = gl.getUniformLocation(program, uniformName);
+    if (location) {
+        gl.uniformMatrix4fv(location, false, matrix);
+    } else {
+        errorLog(`Uniform ${uniformName} not found in shader program.`);
+    }
 }
