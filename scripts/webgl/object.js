@@ -23,6 +23,8 @@ export class ObjectBase {
         const positionAttributeLocation = gl.getAttribLocation(this.shaderProgram, "a_position");
         gl.enableVertexAttribArray(positionAttributeLocation);
         gl.vertexAttribPointer(positionAttributeLocation, this.attributeSize, gl.FLOAT, false, 0, 0);
+        
+        mat4.translate(this.modelMatrix, this.modelMatrix, [0, 0, 0]);
     }
 
     draw() {

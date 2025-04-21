@@ -2,7 +2,7 @@ import { initShaders } from './shader-manager.js';
 import { ObjectManager } from './object-manager.js';
 import { ObjectLoader } from './object-loader.js';
 import { Renderer } from './renderer.js';
-import { debugLog } from '../logger/logger.js';
+import { debugLog, errorLog } from '../logger/logger.js';
 import { CameraManager } from './camera-manager.js';
 
 export class GameEngine {
@@ -28,7 +28,7 @@ export class GameEngine {
         this.objectLoader = new ObjectLoader(this.objectManager);
         this.objectLoader.loadGameObjects();
         this.cameraManager = new CameraManager();
-        this.renderer = new Renderer(this.gl, this.canvas, this.objectManager, this.cameraManager);
+        this.renderer = new Renderer(this.gl, this.canvas, shaderProgram, this.objectManager, this.cameraManager);
         debugLog("GameEngine initialized");
     }
 

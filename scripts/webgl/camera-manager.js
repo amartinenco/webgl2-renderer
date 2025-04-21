@@ -4,7 +4,7 @@ import { warnLog, errorLog } from '../logger/logger.js';
 export class CameraManager {
     constructor() {
         this.cameras = {};
-        this.cameras["main"] = new Camera([0, 0, 5]);
+        this.cameras["main"] = new Camera();
         this.activeCamera = this.cameras["main"];
     }
 

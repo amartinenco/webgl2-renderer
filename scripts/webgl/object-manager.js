@@ -2,6 +2,7 @@ import { Object3D, Object2D } from './object.js';
 import { warnLog, debugLog } from '../logger/logger.js';
 import { ObjectType } from '../utils/constants.js';
 
+
 export class ObjectManager {
     constructor(gl, shaderProgram) {
         this.gl = gl;

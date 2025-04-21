@@ -1,7 +1,7 @@
 import { mat4, vec3 } from '../math/gl-matrix/index.js';
 
 export class Camera {
-    constructor(position = [0, 0, 5], target = [0, 0, 0], up = [0, 1, 0]) {
+    constructor(position = [0, 0, 10], target = [0, 0, 0], up = [0, 1, 0]) {
         this.position = vec3.fromValues(...position);
         this.target = vec3.fromValues(...target);
         this.up = vec3.fromValues(...up);
@@ -10,6 +10,8 @@ export class Camera {
         this.projectionMatrix = mat4.create();
 
         this.setPerspective(Math.PI / 4, 800 / 600, 0.5, 100);
+
+        this.updateViewMatrix();
     }
 
     setPerspective(fov, aspect, near, far) {
