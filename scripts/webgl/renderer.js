@@ -28,7 +28,9 @@ export class Renderer {
 
     render() {
         this.gl.clearColor(0, 0, 0, 1);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.enable(this.gl.CULL_FACE);
 
         const camera = this.cameraManager.getActiveCamera();
         const viewMatrix = camera.getViewMatrix();
