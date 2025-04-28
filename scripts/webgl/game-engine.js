@@ -18,6 +18,8 @@ export class GameEngine {
         this.cameraManager = null;
         this.inputManager = null;
         this.globalContext = null;
+
+        this.lastTime = performance.now();;
     }
     
     async initialize() {
@@ -37,20 +39,26 @@ export class GameEngine {
         debugLog("GameEngine initialized");
     }
 
-    handleInput() {
+    handleInput(deltaTime) {
         if (!this.inputManager) return;
 
         const actions = {
             "w": () => { 
-                this.cameraManager.activeCamera.move(0, 0, -1)
+                this.cameraManager.activeCamera.move(0, 0, -1);
                 debugLog("Moving forward!") 
             },
             "s": () => { 
-                this.cameraManager.activeCamera.move(0, 0, 1)
+                this.cameraManager.activeCamera.move(0, 0, 1);
                 debugLog("Moving backwards!") 
             },
-            "a": () => debugLog("Moving left!"),
-            "d": () => debugLog("Moving right!")
+            "a": () => {
+                this.cameraManager.activeCamera.move(-1, 0, 0);
+                debugLog("Moving left!"); 
+            }, 
+            "d": () => { 
+                this.cameraManager.activeCamera.move(1, 0, 0);
+                debugLog("Moving right!") 
+            }
         };
     
         Object.keys(actions).forEach((key) => {
@@ -58,10 +66,26 @@ export class GameEngine {
                 actions[key]();
             }
         });
+
+        this.inputManager.update(deltaTime);
+        this.cameraManager.activeCamera.rotate(this.inputManager.yaw, this.inputManager.pitch);
+        //this.cameraManager.activeCamera.rotate(this.inputManager.yaw, 0.1);
+        //debugLog(`Yaw: ${this.inputManager.yaw} Pitch:${this.inputManager.pitch}`); 
+        // console.log("Camera Position:", this.cameraManager.activeCamera.position);
+        // console.log("Front Vector:", this.cameraManager.activeCamera.front);
+        // console.log("Target:", this.cameraManager.activeCamera.target);
+    }
+
+    calculateDeltatime() {
+        let now = performance.now();
+        let deltaTime = (now - this.lastTime) / 1000;
+        this.lastTime = now;
+        return deltaTime;
     }
 
     engineRun() {
-        this.handleInput();
+        let deltaTime = this.calculateDeltatime();
+        this.handleInput(deltaTime);
         this.renderer.render();
         requestAnimationFrame(this.engineRun);
     }

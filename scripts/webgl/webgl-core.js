@@ -7,7 +7,7 @@ export function initWebGL(canvasId) {
         return null;
     }
 
-    const gl = canvas.getContext("webgl2");
+    const gl = canvas.getContext("webgl2",  { antialias: true });
     if (!gl) {
         errorLog("WebGL2 not supported! Ensure your browser supports WebGL2 and that hardware acceleration is enabled.");
         return null;
