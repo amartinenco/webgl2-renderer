@@ -17,7 +17,7 @@ export class Camera {
         this.viewMatrix = mat4.create();
         this.projectionMatrix = mat4.create();
 
-        this.setPerspective(Math.PI / 4, 800 / 600, 0.5, 100);
+        this.setPerspective(Math.PI / 4, 800 / 600, 0.1, 100);
 
         this.updateViewMatrix();
     }

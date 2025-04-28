@@ -2,7 +2,7 @@ import { debugLog } from "../logger/logger.js";
 
 export class InputManager {
     
-    constructor(sensitivity = 0.1) {
+    constructor(sensitivity = 0.1, cameraSpeed = 1) {
         if (InputManager.instance) {
             return InputManager.instance;
         }
@@ -14,6 +14,7 @@ export class InputManager {
         this.yaw = -Math.PI / 2;
         this.pitch = 0;
         this.sensitivity = sensitivity;
+        this.cameraSpeed = cameraSpeed;
         this.initEventListeners();
     }
 
