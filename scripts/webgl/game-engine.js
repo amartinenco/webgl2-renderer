@@ -4,6 +4,7 @@ import { ObjectLoader } from './object-loader.js';
 import { Renderer } from './renderer.js';
 import { debugLog, errorLog } from '../logger/logger.js';
 import { CameraManager } from './camera-manager.js';
+import { GlobalContext } from './global-context.js';
 
 export class GameEngine {
 
@@ -14,7 +15,11 @@ export class GameEngine {
         this.objectLoader = null;
         this.engineRun = this.engineRun.bind(this); // pre-bind 'this' for the looping
         this.renderer = null;
-        this.CameraManager = null;
+        this.cameraManager = null;
+        this.inputManager = null;
+        this.globalContext = null;
+
+        this.lastTime = performance.now();;
     }
     
     async initialize() {
@@ -29,10 +34,53 @@ export class GameEngine {
         this.objectLoader.loadGameObjects();
         this.cameraManager = new CameraManager();
         this.renderer = new Renderer(this.gl, this.canvas, shaderProgram, this.objectManager, this.cameraManager);
+        this.globalContext = GlobalContext.getInstance();
+        this.inputManager = this.globalContext ? this.globalContext.inputManager : null;
         debugLog("GameEngine initialized");
     }
 
+    handleInput(deltaTime) {
+        if (!this.inputManager) return;
+        debugLog(this.cameraSpeed * deltaTime)
+        const actions = {
+            "w": () => { 
+                this.cameraManager.activeCamera.move(0, 0, this.inputManager.cameraSpeed * deltaTime);
+                debugLog("Moving forward!") 
+            },
+            "s": () => { 
+                this.cameraManager.activeCamera.move(0, 0, -this.inputManager.cameraSpeed * deltaTime);
+                debugLog("Moving backwards!") 
+            },
+            "a": () => {
+                this.cameraManager.activeCamera.move(-this.inputManager.cameraSpeed * deltaTime, 0, 0);
+                debugLog("Moving left!"); 
+            }, 
+            "d": () => { 
+                this.cameraManager.activeCamera.move(this.inputManager.cameraSpeed * deltaTime, 0, 0);
+                debugLog("Moving right!") 
+            }
+        };
+    
+        Object.keys(actions).forEach((key) => {
+            if (this.inputManager.isKeyPressed(key)) {
+                actions[key]();
+            }
+        });
+
+        this.inputManager.update(deltaTime);
+        this.cameraManager.activeCamera.rotate(this.inputManager.yaw, this.inputManager.pitch);
+    }
+
+    calculateDeltatime() {
+        let now = performance.now();
+        let deltaTime = (now - this.lastTime) / 1000;
+        this.lastTime = now;
+        return deltaTime;
+    }
+
     engineRun() {
+        let deltaTime = this.calculateDeltatime();
+        this.handleInput(deltaTime);
         this.renderer.render();
         requestAnimationFrame(this.engineRun);
     }
