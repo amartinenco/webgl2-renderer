@@ -1,4 +1,5 @@
-import { initShaders } from './shader-manager.js';
+//import { initShaders } from './shader-manager.js.bk';
+import { ShaderManager } from './shader-manager.js';
 import { ObjectManager } from './object-manager.js';
 import { ObjectLoader } from './object-loader.js';
 import { Renderer } from './renderer.js';
@@ -11,6 +12,7 @@ export class GameEngine {
     constructor(gl, canvas) {
         this.gl = gl;
         this.canvas = canvas;
+        this.shaderManager = new ShaderManager(gl);
         this.objectManager = null;
         this.objectLoader = null;
         this.engineRun = this.engineRun.bind(this); // pre-bind 'this' for the looping
@@ -18,22 +20,22 @@ export class GameEngine {
         this.cameraManager = null;
         this.inputManager = null;
         this.globalContext = null;
-
         this.lastTime = performance.now();;
     }
     
     async initialize() {
-        const shaderProgram = await initShaders(this.gl);
-        if (!shaderProgram) {
-            errorLog("Shader initialization failed.");
-            return;
-        }
+        // const shaderProgram = await initShaders(this.gl);
+        // if (!shaderProgram) {
+        //     errorLog("Shader initialization failed.");
+        //     return;
+        // }
+        await this.shaderManager.initialize();
         debugLog("Shaders initialized successfully.");
-        this.objectManager = new ObjectManager(this.gl, shaderProgram);
+        this.objectManager = new ObjectManager(this.gl, this.shaderManager);
         this.objectLoader = new ObjectLoader(this.objectManager);
         this.objectLoader.loadGameObjects();
         this.cameraManager = new CameraManager();
-        this.renderer = new Renderer(this.gl, this.canvas, shaderProgram, this.objectManager, this.cameraManager);
+        this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager);
         this.globalContext = GlobalContext.getInstance();
         this.inputManager = this.globalContext ? this.globalContext.inputManager : null;
         debugLog("GameEngine initialized");
@@ -41,7 +43,7 @@ export class GameEngine {
 
     handleInput(deltaTime) {
         if (!this.inputManager) return;
-        debugLog(this.cameraSpeed * deltaTime)
+        //debugLog(this.cameraSpeed * deltaTime)
         const actions = {
             "w": () => { 
                 this.cameraManager.activeCamera.move(0, 0, this.inputManager.cameraSpeed * deltaTime);

@@ -2,7 +2,7 @@ import { debugLog } from "../logger/logger.js";
 
 export class InputManager {
     
-    constructor(sensitivity = 0.1, cameraSpeed = 1) {
+    constructor(sensitivity = 0.1, cameraSpeed = 50) {
         if (InputManager.instance) {
             return InputManager.instance;
         }

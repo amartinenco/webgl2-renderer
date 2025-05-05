@@ -1,100 +1,113 @@
-import { errorLog } from "../logger/logger.js";
+import { errorLog, warnLog } from "../logger/logger.js";
+import { ShaderType } from "./utils/constants.js";
 
 const isLocal = window.location.hostname === "localhost";
 const SHADER_PATH = isLocal ? "./shaders" : `${window.location.origin}/shaders`;
 
-async function loadShaderSource(url) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            errorLog(`Failed to load a shader from ${url}`);
+export class ShaderManager {
+    constructor(gl) {
+        this.gl = gl;
+        this.shaderPath = SHADER_PATH;
+        this.shaders = new Map();
+    }
+
+    async initialize() {
+        await this.loadShader(ShaderType.THREE_D, "worldVertexShader.glsl", "worldFragmentShader.glsl");
+        //await this.loadShader(ShaderType.TWO_D, "worldVertexShader.glsl", "worldFragmentShader.glsl");
+        //await this.loadShader(ShaderType.UI, "uiVertexShader.glsl", "uiFragmentShader.glsl");
+    }
+
+    async loadShader(name, vertexFile, fragmentFile) {
+        const vertexShaderSource = await this.fetchShader(`${this.shaderPath}/${vertexFile}`);
+        const fragmentShaderSource = await this.fetchShader(`${this.shaderPath}/${fragmentFile}`);
+
+        if (!vertexShaderSource || !fragmentShaderSource) {
+            errorLog(`Failed to load shader sources for ${name}.`);
+            return;
+        }
+
+        const vertexShader = this.createShader(this.gl.VERTEX_SHADER, vertexShaderSource);
+        const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+        if (!vertexShader || !fragmentShader) {
+            errorLog(`Shader creation failed for ${name}.`);
+            return;
+        }
+
+        const program = this.createProgram(vertexShader, fragmentShader);
+        this.shaders.set(name, program);
+    }
+
+    async fetchShader(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                errorLog(`Failed to fetch shader from ${url}`);
+                return null;
+            }
+            return await response.text();
+        } catch (error) {
+            errorLog(`Error fetching shader: ${error.message}`);
             return null;
         }
-        return await response.text();
-    } catch (error) {
-        errorLog(error.message);
-        return null;
-    }
-}
-
-export async function initShaders(gl) {
-    if (!gl) {
-        errorLog("WebGL context is null. Cannot initialize shaders.");
-        return null;
     }
 
-    const vertexShaderSource = await loadShaderSource(`${SHADER_PATH}/vertexShader.glsl`);
-    const fragmentShaderSource = await loadShaderSource(`${SHADER_PATH}/fragmentShader.glsl`);
+    createShader(type, source) {
+        const shader = this.gl.createShader(type);
+        this.gl.shaderSource(shader, source);
+        this.gl.compileShader(shader);
 
-    if (!vertexShaderSource || !fragmentShaderSource) {
-        errorLog("Failed to load shader source files. Aborting shader initialization.");
-        return null;
+        if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+            console.error(`Shader compilation error: ${this.gl.getShaderInfoLog(shader)}`);
+            this.gl.deleteShader(shader);
+            return null;
+        }
+        return shader;
     }
 
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    createProgram(vertexShader, fragmentShader) {
+        const program = this.gl.createProgram();
+        this.gl.attachShader(program, vertexShader);
+        this.gl.attachShader(program, fragmentShader);
+        this.gl.linkProgram(program);
 
-    if (!vertexShader || !fragmentShader) {
-        errorLog("Shader creation failed. Aborting shader program initialization.");
-        return null;
+        if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+            errorLog(`Program linking error: ${this.gl.getProgramInfoLog(program)}`);
+            this.gl.deleteProgram(program);
+            return null;
+        }
+        return program;
     }
 
-    const program = createProgram(gl, vertexShader, fragmentShader);
-    gl.useProgram(program);
-    return program;
-}
-
-function createShader(gl, shader_type, shader_source) {
-    const shaderTypeName = shader_type === gl.VERTEX_SHADER ? "Vertex" : "Fragment";
-    const trimmedShaderSource = shader_source?.trim();
-
-    if (!trimmedShaderSource) {
-        errorLog(`${shaderTypeName} shader source is empty or invalid.`);
-        return null;
+    useShader(name) {
+        const program = this.shaders.get(name);
+        if (program) {
+            this.gl.useProgram(program);
+        } else {
+            errorLog(`Shader ${name} not found!`);
+        }
     }
 
-    let shader = gl.createShader(shader_type);
-    if (!shader) {
-        errorLog(`Failed to create ${shaderTypeName} shader.`);
-        return null;
+    getShader(name) {
+        if (!this.shaders.has(name)) {
+            warnLog(`Shader "${name}" not found.`);
+            return null;
+        }
+        return this.shaders.get(name);
     }
-    gl.shaderSource(shader, trimmedShaderSource);
-    gl.compileShader(shader);
 
-    let success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    setUniformMatrix(shaderProgram, uniformName, matrix) {
+        if (!shaderProgram) {
+            warnLog(`Cannot set uniform "${uniformName}": Shader program is null.`);
+            return;
+        }
     
-    if (!success) {
-        const errorMessage = gl.getShaderInfoLog(shader) || "Unknown shader compilation error.";
-        errorLog(`Failed to compile ${shaderTypeName} shader:\n${errorMessage}`);
-        gl.deleteShader(shader);
-        return null;
-    }
-
-    return shader;
-}
-
-function createProgram(gl, vertexShader, fragmentShader) {
-    let program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-
-    let success = gl.getProgramParameter(program, gl.LINK_STATUS);
+        const location = this.gl.getUniformLocation(shaderProgram, uniformName);
+        if (!location) {
+            warnLog(`Uniform "${uniformName}" not found in shader.`);
+            return;
+        }
     
-    if (!success) {
-        errorLog(`Failed to create GL program: ${gl.getProgramInfoLog(program)}`);
-        gl.deleteProgram(program);
-        return null;
-    }
-
-    return program;
-}
-
-export function setUniformMatrix(gl, program, uniformName, matrix) {
-    const location = gl.getUniformLocation(program, uniformName);
-    if (location) {
-        gl.uniformMatrix4fv(location, false, matrix);
-    } else {
-        errorLog(`Uniform ${uniformName} not found in shader program.`);
+        this.gl.uniformMatrix4fv(location, false, matrix);
     }
 }

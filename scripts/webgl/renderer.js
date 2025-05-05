@@ -1,12 +1,11 @@
 import { debugLog } from "../logger/logger.js";
 import { mat4 } from "../math/gl-matrix/index.js";
-import { setUniformMatrix } from "./shader-manager.js";
 
 export class Renderer {
-    constructor(gl, canvas, shaderProgram, objectManager, cameraManager) {
+    constructor(gl, canvas, shaderManager, objectManager, cameraManager) {
         this.gl = gl;
         this.canvas = canvas;
-        this.shaderProgram = shaderProgram;
+        this.shaderManager = shaderManager;
         this.objectManager = objectManager;
         this.cameraManager = cameraManager;
         window.addEventListener("resize", () => this.resizeCanvasToDisplaySize());
@@ -41,7 +40,10 @@ export class Renderer {
             const mvpMatrix = mat4.create();
             mat4.multiply(mvpMatrix, projectionMatrix, viewMatrix); // camera transforms
             mat4.multiply(mvpMatrix, mvpMatrix, obj.getModelMatrix()); // object transforms
-            setUniformMatrix(this.gl, this.shaderProgram, 'u_mvpMatrix', mvpMatrix);
+
+            const shaderProgram = obj.shaderProgram;
+            this.gl.useProgram(shaderProgram);
+            this.shaderManager.setUniformMatrix(shaderProgram, 'u_mvpMatrix', mvpMatrix);
             obj.draw() 
         });
     }
