@@ -2,9 +2,7 @@ import { mat4, vec3 } from '../math/gl-matrix/index.js';
 import { CameraType } from './utils/constants.js';
 
 export class Camera {
-    constructor(position = [0, 0, 300], target = [0, 0, 0], up = [0, 1, 0], mode = CameraType.PERSPECTIVE) {
-        this.mode = mode;
-        
+    constructor(position = [0, 0, 300], target = [0, 0, 0], up = [0, 1, 0]) {        
         this.position = vec3.fromValues(...position);
         this.front = vec3.fromValues(0, 0, -1);
         this.target = vec3.fromValues(...target);
@@ -22,11 +20,11 @@ export class Camera {
         this.worldProjectionMatrix = mat4.create();
         this.uiProjectionMatrix = mat4.create();
 
-        if (this.mode === CameraType.PERSPECTIVE) {
+        //if (this.mode === CameraType.PERSPECTIVE) {
             this.setProjection(CameraType.PERSPECTIVE, Math.PI / 4, 800 / 600, 0.1, 1000);
-        } else {
+        //} else {
             this.setProjection(CameraType.ORTHOGRAPHIC, null, null, null, null, 800, 600);
-        }
+        //}
 
         this.updateViewMatrix();
     }
@@ -35,7 +33,12 @@ export class Camera {
         if (mode === CameraType.PERSPECTIVE) {
             mat4.perspective(this.worldProjectionMatrix, fov, aspect, near, far);
         } else if (mode === CameraType.ORTHOGRAPHIC) {
-            mat4.ortho(this.uiProjectionMatrix, 0, width, height, 0, -1, 1);
+            mat4.ortho(this.uiProjectionMatrix, 0, 800, 0, 600, -1, 1);
+            //mat4.ortho(this.uiProjectionMatrix, -width / 2, width / 2, -height / 2, height / 2, -1, 1);
+            //console.log(this.uiProjectionMatrix)
+            //mat4.ortho(this.uiProjectionMatrix, 0, width, height, 0, -1, 1);
+            //mat4.ortho(this.uiProjectionMatrix, -width / 2, width / 2, -height / 2, height / 2, -1, 1);
+            //mat4.ortho(this.uiProjectionMatrix, 0, width, height, 0, -1, 1);
         }
     }
 
@@ -48,8 +51,8 @@ export class Camera {
         return this.viewMatrix;
     }
 
-    getProjectionMatrix() {
-        if (this.mode === CameraType.PERSPECTIVE) {
+    getProjectionMatrix(cameraType) {
+        if (cameraType === CameraType.PERSPECTIVE) {
             return this.worldProjectionMatrix;
         } else {
             return this.uiProjectionMatrix;

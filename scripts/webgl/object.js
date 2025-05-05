@@ -1,5 +1,6 @@
 import { createVertexBuffer } from './buffer-manager.js';
 import { mat4, vec3 } from '../math/gl-matrix/index.js'
+import { warnLog } from '../logger/logger.js';
 
 export class ObjectBase {
     constructor(gl, vertices, shaderProgram, attributeSize) {
@@ -22,9 +23,13 @@ export class ObjectBase {
         const gl = this.gl;
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         const positionAttributeLocation = gl.getAttribLocation(this.shaderProgram, "a_position");
-        gl.enableVertexAttribArray(positionAttributeLocation);
-        gl.vertexAttribPointer(positionAttributeLocation, this.attributeSize, gl.FLOAT, false, 0, 0);
-        
+        if (positionAttributeLocation !== -1) {
+            gl.enableVertexAttribArray(positionAttributeLocation);
+            gl.vertexAttribPointer(positionAttributeLocation, this.attributeSize, gl.FLOAT, false, 0, 0);
+        } else {
+            warnLog("Attribute 'a_position' not found in shader.");
+        }
+
         mat4.translate(this.modelMatrix, this.modelMatrix, [0, 0, 0]);
     }
 
@@ -57,6 +62,10 @@ export class ObjectBase {
 
     render() {
         throw new Error("Render method must be implemented by subclasses")
+    }
+
+    getShader() {
+        return this.shaderProgram;
     }
 }
 

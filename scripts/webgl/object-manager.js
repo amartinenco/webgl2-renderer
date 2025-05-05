@@ -41,7 +41,9 @@ export class ObjectManager {
         }
 
         this.loadedObjects[id] = new objectMapping[type](this.gl, vertices, shaderProgram);
+        this.loadedObjects["triangle"].translate([150, 150, 0]);
 
+        //console.log(`Translated ${id}:`, this.loadedObjects[id].getModelMatrix());
         debugLog(`Loaded [${type}]: ${id}`);
         return this.loadedObjects[id];
     }
@@ -64,6 +66,6 @@ export class ObjectManager {
     }
 
     getAllObjects() {
-        return this.loadedObjects;
+        return Object.values(this.loadedObjects);
     }
 }

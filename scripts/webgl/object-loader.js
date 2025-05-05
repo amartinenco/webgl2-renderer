@@ -9,7 +9,7 @@ export class ObjectLoader {
     }
 
     loadGameObjects() {
-        this.objectManager.loadObject("triangle", triangleVertices, ObjectType.TWO_D);
+        this.objectManager.loadObject("triangle", triangleVertices, ObjectType.UI);
         this.objectManager.loadObject("3df", fVertices, ObjectType.THREE_D);
     }
 };
