@@ -1,5 +1,6 @@
 import { triangleVertices } from '../shapes/triangle.js';
-import { ObjectType } from '../utils/constants.js';
+import { fVertices } from '../shapes/3df.js';
+import { ObjectType } from './utils/constants.js';
 
 export class ObjectLoader {
 
@@ -8,6 +9,7 @@ export class ObjectLoader {
     }
 
     loadGameObjects() {
-        this.objectManager.loadObject("triangle", triangleVertices, ObjectType.TWO_D);
+        this.objectManager.loadObject("triangle", triangleVertices, ObjectType.UI);
+        this.objectManager.loadObject("3df", fVertices, ObjectType.THREE_D);
     }
 };
