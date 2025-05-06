@@ -20,11 +20,8 @@ export class Camera {
         this.worldProjectionMatrix = mat4.create();
         this.uiProjectionMatrix = mat4.create();
 
-        //if (this.mode === CameraType.PERSPECTIVE) {
-            this.setProjection(CameraType.PERSPECTIVE, Math.PI / 4, 800 / 600, 0.1, 1000);
-        //} else {
-            this.setProjection(CameraType.ORTHOGRAPHIC, null, null, null, null, 800, 600);
-        //}
+        this.setProjection(CameraType.PERSPECTIVE, Math.PI / 4, 800 / 600, 0.1, 1000);
+        this.setProjection(CameraType.ORTHOGRAPHIC, null, null, null, null, 800, 600);
 
         this.updateViewMatrix();
     }
