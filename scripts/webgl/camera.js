@@ -33,12 +33,7 @@ export class Camera {
         if (mode === CameraType.PERSPECTIVE) {
             mat4.perspective(this.worldProjectionMatrix, fov, aspect, near, far);
         } else if (mode === CameraType.ORTHOGRAPHIC) {
-            mat4.ortho(this.uiProjectionMatrix, 0, 800, 0, 600, -1, 1);
-            //mat4.ortho(this.uiProjectionMatrix, -width / 2, width / 2, -height / 2, height / 2, -1, 1);
-            //console.log(this.uiProjectionMatrix)
-            //mat4.ortho(this.uiProjectionMatrix, 0, width, height, 0, -1, 1);
-            //mat4.ortho(this.uiProjectionMatrix, -width / 2, width / 2, -height / 2, height / 2, -1, 1);
-            //mat4.ortho(this.uiProjectionMatrix, 0, width, height, 0, -1, 1);
+            mat4.ortho(this.uiProjectionMatrix, 0, width, 0, height, -1, 1);
         }
     }
 

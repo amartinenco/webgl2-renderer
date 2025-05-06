@@ -24,11 +24,6 @@ export class GameEngine {
     }
     
     async initialize() {
-        // const shaderProgram = await initShaders(this.gl);
-        // if (!shaderProgram) {
-        //     errorLog("Shader initialization failed.");
-        //     return;
-        // }
         await this.shaderManager.initialize();
         debugLog("Shaders initialized successfully.");
         this.objectManager = new ObjectManager(this.gl, this.shaderManager);
@@ -43,7 +38,6 @@ export class GameEngine {
 
     handleInput(deltaTime) {
         if (!this.inputManager) return;
-        //debugLog(this.cameraSpeed * deltaTime)
         const actions = {
             "w": () => { 
                 this.cameraManager.activeCamera.move(0, 0, this.inputManager.cameraSpeed * deltaTime);
