@@ -2,7 +2,6 @@ import { Object3D, Object2D, ObjectUI } from './object.js';
 import { warnLog, debugLog } from '../logger/logger.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
 
-
 export class ObjectManager {
     constructor(gl, shaderManager) {
         this.gl = gl;
@@ -10,17 +9,24 @@ export class ObjectManager {
         this.loadedObjects = {};
     }
 
-    loadObject(id, vertices, type = ObjectType.THREE_D) {
+    loadObject(objectDefinition) {
+        if (!objectDefinition) {
+            return null;
+        }
+
+        const id = objectDefinition.name;
+        const shaderProgram = objectDefinition.shaderProgram;
+
         if (this.loadedObjects[id]) {
             warnLog(`Object with id '${id}' already exists.`);
             return null;
         }
       
-        const shaderMapping = {
-            [ObjectType.UI]: ShaderType.UI,
-            [ObjectType.TWO_D]: ShaderType.THREE_D, // switch to TWO_D later
-            [ObjectType.THREE_D]: ShaderType.THREE_D
-        };
+        // const shaderMapping = {
+        //     [ObjectType.UI]: ShaderType.UI,
+        //     [ObjectType.TWO_D]: ShaderType.THREE_D, // switch to TWO_D later
+        //     [ObjectType.THREE_D]: ShaderType.THREE_D
+        // };
 
         const objectMapping = {
             [ObjectType.UI]: ObjectUI,
@@ -33,14 +39,14 @@ export class ObjectManager {
             return null;
         }
 
-        let shaderName = shaderMapping[type];
-        let shaderProgram = this.shaderManager.getShader(shaderName);
-        if (!shaderProgram) {
-            warnLog(`Shader program not found for object type ${type}: ${shaderName}`);
-            return null;
-        }
+        // let shaderName = shaderMapping[type];
+        // let shaderProgram = this.shaderManager.getShader(shaderName);
+        // if (!shaderProgram) {
+        //     warnLog(`Shader program not found for object type ${type}: ${shaderName}`);
+        //     return null;
+        // }
 
-        this.loadedObjects[id] = new objectMapping[type](this.gl, vertices, shaderProgram);
+        this.loadedObjects[id] = new objectMapping[type](this.gl, shaderProgram, vertices, normals);
         debugLog(`Loaded [${type}]: ${id}`);
         return this.loadedObjects[id];
     }

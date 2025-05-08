@@ -27,7 +27,7 @@ export class GameEngine {
         await this.shaderManager.initialize();
         debugLog("Shaders initialized successfully.");
         this.objectManager = new ObjectManager(this.gl, this.shaderManager);
-        this.objectLoader = new ObjectLoader(this.objectManager);
+        this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager);
         this.objectLoader.loadGameObjects();
         this.cameraManager = new CameraManager();
         this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager);
