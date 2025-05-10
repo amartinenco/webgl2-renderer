@@ -2,9 +2,10 @@ import { Camera } from './camera.js';
 import { warnLog, errorLog } from '../logger/logger.js';
 
 export class CameraManager {
-    constructor() {
+    constructor(canvas) {
+        this.canvas = canvas;
         this.cameras = {};
-        this.cameras["main"] = new Camera();
+        this.cameras["main"] = new Camera(this.canvas);
         this.activeCamera = this.cameras["main"];
     }
 

@@ -2,7 +2,8 @@ import { mat4, vec3 } from '../math/gl-matrix/index.js';
 import { CameraType } from './utils/constants.js';
 
 export class Camera {
-    constructor(position = [0, 0, 300], target = [0, 0, 0], up = [0, 1, 0]) {        
+    constructor(canvas, position = [0, 0, 300], target = [0, 0, 0], up = [0, 1, 0]) {        
+        this.canvas = canvas;
         this.position = vec3.fromValues(...position);
         this.front = vec3.fromValues(0, 0, -1);
         this.target = vec3.fromValues(...target);
@@ -20,18 +21,18 @@ export class Camera {
         this.worldProjectionMatrix = mat4.create();
         this.uiProjectionMatrix = mat4.create();
 
-        this.setProjection(CameraType.PERSPECTIVE, Math.PI / 4, 800 / 600, 0.1, 1000);
-        this.setProjection(CameraType.ORTHOGRAPHIC, null, null, null, null, 800, 600);
-
+        this.updateProjection();
         this.updateViewMatrix();
     }
 
-    setProjection(mode, fov = Math.PI / 4, aspect = 800 / 600, near = 0.1, far = 1000, width = 800, height = 600) {
-        if (mode === CameraType.PERSPECTIVE) {
-            mat4.perspective(this.worldProjectionMatrix, fov, aspect, near, far);
-        } else if (mode === CameraType.ORTHOGRAPHIC) {
-            mat4.ortho(this.uiProjectionMatrix, 0, width, 0, height, -1, 1);
-        }
+    updateProjection() {
+        const aspectRatio = this.canvas.width / this.canvas.height;
+        
+        mat4.perspective(this.worldProjectionMatrix, Math.PI / 4, aspectRatio, 0.1, 1000);
+        
+        const adjustedHeight = 600;
+        const adjustedWidth = adjustedHeight * aspectRatio;
+        mat4.ortho(this.uiProjectionMatrix, 0, adjustedWidth, 0, adjustedHeight, -1, 1);
     }
 
     updateViewMatrix() {

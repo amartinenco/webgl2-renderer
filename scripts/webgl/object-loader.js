@@ -4,7 +4,7 @@ import { ObjectType, ShaderType } from './utils/constants.js';
 
 
 export class GameObjectDefinition {
-    constructor(name, type, shaderProgram, vertices, normals = [], colors = [], indices = [], uvCoords = [], material = null, meshes = [], animations = []) {
+    constructor(name, type, shaderProgram, vertices, normals = [], colors = [], indices = [], uvCoords = [], material = null, meshes = [], animations = [], textue = null) {
         this.name = name;
         this.type = type;
         this.shaderProgram = shaderProgram;
@@ -15,7 +15,8 @@ export class GameObjectDefinition {
         this.uvCoords = uvCoords; // texture coordinates
         this.material = material; // linked material file or properties
         this.meshes = meshes; // sub-meshes for complex .obj files
-        this.animations = animations; 
+        this.animations = animations;
+        this.textue = textue;
     }
 };
 

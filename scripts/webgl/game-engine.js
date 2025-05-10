@@ -29,7 +29,7 @@ export class GameEngine {
         this.objectManager = new ObjectManager(this.gl, this.shaderManager);
         this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager);
         this.objectLoader.loadGameObjects();
-        this.cameraManager = new CameraManager();
+        this.cameraManager = new CameraManager(canvas);
         this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager);
         this.globalContext = GlobalContext.getInstance();
         this.inputManager = this.globalContext ? this.globalContext.inputManager : null;

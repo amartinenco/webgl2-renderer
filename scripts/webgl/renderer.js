@@ -10,7 +10,12 @@ export class Renderer {
         this.shaderManager = shaderManager;
         this.objectManager = objectManager;
         this.cameraManager = cameraManager;
-        window.addEventListener("resize", () => this.resizeCanvasToDisplaySize());
+        this.resizeCanvasToDisplaySize();
+        this.cameraManager.getActiveCamera().updateProjection();
+        window.addEventListener("resize", () => { 
+            this.resizeCanvasToDisplaySize();
+            this.cameraManager.getActiveCamera().updateProjection();
+        });
     }
 
     resizeCanvasToDisplaySize() {
@@ -21,12 +26,12 @@ export class Renderer {
         if (needResize) {
             this.canvas.width = displayWidth;
             this.canvas.height = displayHeight;
-            this.gl.viewport(0, 0, displayWidth, displayHeight);
+            this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
             debugLog(`Window resized to w:${displayWidth} h:${displayHeight}`);
         }
         return needResize;
     }
-
+    
     render() {
         this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);

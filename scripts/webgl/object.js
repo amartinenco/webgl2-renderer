@@ -3,11 +3,13 @@ import { mat4, vec3 } from '../math/gl-matrix/index.js'
 import { warnLog } from '../logger/logger.js';
 
 export class ObjectBase {
-    constructor(gl, vertices, shaderProgram, attributeSize) {
+    constructor(gl, objectDefinition, attributeSize) {
         this.gl = gl;
-        this.vertices = vertices;
-        this.vertexBuffer = createVertexBuffer(gl, vertices);
-        this.shaderProgram = shaderProgram;
+        this.vertices = objectDefinition.vertices;
+        this.vertexBuffer = createVertexBuffer(gl, this.vertices);
+        this.indexBuffer = null;
+        this.texture = null;
+        this.shaderProgram = objectDefinition.shaderProgram;
         this.attributeSize = attributeSize;
         this.modelMatrix = mat4.create();
         mat4.identity(this.modelMatrix);
@@ -67,11 +69,33 @@ export class ObjectBase {
     getShader() {
         return this.shaderProgram;
     }
+
+    destroy() {
+        if (this.vertexBuffer) {
+            this.gl.deleteBuffer(this.vertexBuffer);
+            this.vertexBuffer = null;
+        }
+    
+        if (this.vao) {
+            this.gl.deleteVertexArray(this.vao);
+            this.vao = null;
+        }
+    
+        if (this.texture) {
+            this.gl.deleteTexture(this.texture);
+            this.texture = null;
+        }
+    
+        if (this.indexBuffer) {
+            this.gl.deleteBuffer(this.indexBuffer);
+            this.indexBuffer = null;
+        }
+    }
 }
 
 export class Object3D extends ObjectBase {
-    constructor(gl, vertices, shaderProgram) {
-        super(gl, vertices, shaderProgram, 3);
+    constructor(gl, objectDefinition) {
+        super(gl, objectDefinition, 3);
     }
 
     render() {
@@ -80,8 +104,8 @@ export class Object3D extends ObjectBase {
 }
 
 export class Object2D extends ObjectBase {
-    constructor(gl, vertices, shaderProgram) {
-        super(gl, vertices, shaderProgram, 2);
+    constructor(gl, objectDefinition) {
+        super(gl, objectDefinition, 2);
     }
 
     render() {
@@ -91,8 +115,8 @@ export class Object2D extends ObjectBase {
 
 
 export class ObjectUI extends ObjectBase {
-    constructor(gl, vertices, shaderProgram) {
-        super(gl, vertices, shaderProgram, 2);
+    constructor(gl, objectDefinition) {
+        super(gl, objectDefinition, 2);
     }
 
     render() {
