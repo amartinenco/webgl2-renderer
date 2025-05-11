@@ -16,6 +16,8 @@ export class Renderer {
             this.resizeCanvasToDisplaySize();
             this.cameraManager.getActiveCamera().updateProjection();
         });
+
+        this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
     }
 
     resizeCanvasToDisplaySize() {

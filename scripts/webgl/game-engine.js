@@ -1,4 +1,3 @@
-//import { initShaders } from './shader-manager.js.bk';
 import { ShaderManager } from './shader-manager.js';
 import { ObjectManager } from './object-manager.js';
 import { ObjectLoader } from './object-loader.js';
@@ -19,8 +18,8 @@ export class GameEngine {
         this.renderer = null;
         this.cameraManager = null;
         this.inputManager = null;
-        this.globalContext = null;
-        this.lastTime = performance.now();;
+        this.globalContext = GlobalContext.getInstance(this.canvas);
+        this.lastTime = performance.now();
     }
     
     async initialize() {
@@ -29,9 +28,8 @@ export class GameEngine {
         this.objectManager = new ObjectManager(this.gl, this.shaderManager);
         this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager);
         this.objectLoader.loadGameObjects();
-        this.cameraManager = new CameraManager(canvas);
+        this.cameraManager = new CameraManager(this.canvas);
         this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager);
-        this.globalContext = GlobalContext.getInstance();
         this.inputManager = this.globalContext ? this.globalContext.inputManager : null;
         debugLog("GameEngine initialized");
     }

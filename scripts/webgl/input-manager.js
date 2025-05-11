@@ -1,8 +1,9 @@
 import { debugLog } from "../logger/logger.js";
+import { GlobalContext } from './global-context.js';
 
 export class InputManager {
     
-    constructor(sensitivity = 0.1, cameraSpeed = 50) {
+    constructor(sensitivity = 5, cameraSpeed = 50) {
         if (InputManager.instance) {
             return InputManager.instance;
         }
@@ -15,6 +16,8 @@ export class InputManager {
         this.pitch = 0;
         this.sensitivity = sensitivity;
         this.cameraSpeed = cameraSpeed;
+        this.globalContext = GlobalContext.getInstance();
+        this.canvas = this.globalContext ? this.globalContext.canvas : null;
         this.initEventListeners();
     }
 
@@ -22,8 +25,8 @@ export class InputManager {
         window.addEventListener("keydown", (event) => this.keys.add(event.key));
         window.addEventListener("keyup", (event) => this.keys.delete(event.key));
         window.addEventListener("mousemove", (event) => {
-            this.mouse.x = event.movementX;
-            this.mouse.y = event.movementY;
+            this.mouse.x = event.movementX * Math.min(this.sensitivity, 8) * 0.01;
+            this.mouse.y = event.movementY * Math.min(this.sensitivity, 8) * 0.01;
         });
         window.addEventListener("mousedown", () => this.mouse.pressed = true);
         window.addEventListener("mouseup", () => this.mouse.pressed = false);
