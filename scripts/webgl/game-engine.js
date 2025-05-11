@@ -18,7 +18,7 @@ export class GameEngine {
         this.renderer = null;
         this.cameraManager = null;
         this.inputManager = null;
-        this.globalContext = GlobalContext.getInstance(this.canvas);
+        this.globalContext = GlobalContext.getInstance();
         this.lastTime = performance.now();
     }
     

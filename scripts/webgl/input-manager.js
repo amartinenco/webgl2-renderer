@@ -16,8 +16,6 @@ export class InputManager {
         this.pitch = 0;
         this.sensitivity = sensitivity;
         this.cameraSpeed = cameraSpeed;
-        this.globalContext = GlobalContext.getInstance();
-        this.canvas = this.globalContext ? this.globalContext.canvas : null;
         this.initEventListeners();
     }
 
