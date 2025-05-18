@@ -1,12 +1,15 @@
-import { createVertexBuffer } from './buffer-manager.js';
+import { createBuffer } from './buffer-manager.js';
 import { mat4, vec3 } from '../math/gl-matrix/index.js'
 import { warnLog } from '../logger/logger.js';
 
 export class ObjectBase {
     constructor(gl, objectDefinition, attributeSize) {
         this.gl = gl;
+        this.name = objectDefinition.name;
         this.vertices = objectDefinition.vertices;
-        this.vertexBuffer = createVertexBuffer(gl, this.vertices);
+        this.normals = objectDefinition.normals;
+        this.vertexBuffer = createBuffer(gl, this.vertices);
+        this.normalBuffer = createBuffer(gl, this.normals);
         this.indexBuffer = null;
         this.texture = null;
         this.shaderProgram = objectDefinition.shaderProgram;
@@ -30,6 +33,17 @@ export class ObjectBase {
             gl.vertexAttribPointer(positionAttributeLocation, this.attributeSize, gl.FLOAT, false, 0, 0);
         } else {
             warnLog("Attribute 'a_position' not found in shader.");
+        }
+
+        if (this.normals && this.normals.length > 0) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+            const normalsAttributeLocation = gl.getAttribLocation(this.shaderProgram, "a_normal");
+            if (normalsAttributeLocation !== -1) {
+                gl.enableVertexAttribArray(normalsAttributeLocation);
+                gl.vertexAttribPointer(normalsAttributeLocation, this.attributeSize, gl.FLOAT, false, 0, 0);
+            } else {
+                warnLog("Attribute 'a_normal' not found in shader.");
+            }
         }
 
         mat4.translate(this.modelMatrix, this.modelMatrix, [0, 0, 0]);
@@ -74,6 +88,11 @@ export class ObjectBase {
         if (this.vertexBuffer) {
             this.gl.deleteBuffer(this.vertexBuffer);
             this.vertexBuffer = null;
+        }
+
+        if (this.normalBuffer) {
+            this.gl.deleteBuffer(this.normalBuffer);
+            this.normalBuffer = null;
         }
     
         if (this.vao) {

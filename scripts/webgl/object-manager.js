@@ -3,9 +3,8 @@ import { warnLog, debugLog } from '../logger/logger.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
 
 export class ObjectManager {
-    constructor(gl, shaderManager) {
+    constructor(gl) {
         this.gl = gl;
-        this.shaderManager = shaderManager;
         this.loadedObjects = {};
     }
 
@@ -45,9 +44,10 @@ export class ObjectManager {
     removeObject(id) {
         if (this.loadedObjects[id]) {
             const obj = this.loadedObjects[id];
-            if (obj.vertexBuffer) {
-                this.gl.deleteBuffer(obj.vertexBuffer);
-            }
+            obj.destroy();
+            // if (obj.vertexBuffer) {
+            //     this.gl.deleteBuffer(obj.vertexBuffer);
+            // }
 
             delete this.loadedObjects[id];
         } else {

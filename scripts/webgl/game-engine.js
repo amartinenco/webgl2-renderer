@@ -1,6 +1,8 @@
 import { ShaderManager } from './shader-manager.js';
 import { ObjectManager } from './object-manager.js';
 import { ObjectLoader } from './object-loader.js';
+import { LightingManager } from './lighting-manager.js';
+import { LightingLoader } from './lighting-loader.js';
 import { Renderer } from './renderer.js';
 import { debugLog, errorLog } from '../logger/logger.js';
 import { CameraManager } from './camera-manager.js';
@@ -14,6 +16,8 @@ export class GameEngine {
         this.shaderManager = new ShaderManager(gl);
         this.objectManager = null;
         this.objectLoader = null;
+        this.lightManager = null;
+        this.lightLoader = null;
         this.engineRun = this.engineRun.bind(this); // pre-bind 'this' for the looping
         this.renderer = null;
         this.cameraManager = null;
@@ -25,11 +29,17 @@ export class GameEngine {
     async initialize() {
         await this.shaderManager.initialize();
         debugLog("Shaders initialized successfully.");
-        this.objectManager = new ObjectManager(this.gl, this.shaderManager);
+        
+        this.objectManager = new ObjectManager(this.gl);
         this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager);
-        this.objectLoader.loadGameObjects();
+        await this.objectLoader.loadGameObjects();
+
+        this.lightManager = new LightingManager(this.gl);
+        this.lightLoader = new LightingLoader(this.lightManager, this.shaderManager);
+        await this.lightLoader.loadLights();
+
         this.cameraManager = new CameraManager(this.canvas);
-        this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager);
+        this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager, this.lightManager);
         this.inputManager = this.globalContext ? this.globalContext.inputManager : null;
         debugLog("GameEngine initialized");
     }
