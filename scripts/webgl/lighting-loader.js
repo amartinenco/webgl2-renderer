@@ -7,7 +7,7 @@ export class LightObjectDefinition {
         this.shaderProgram = shaderProgram;
         this.position = position;
         this.direction = direction;
-        this.color = color;
+        this.color = color; // rgb01
         this.intensity = intensity
     }
 };
@@ -20,7 +20,7 @@ export class LightingLoader {
 
     async loadLights() {
         let shaderProgram = this.shaderManager.getShader(ShaderType.THREE_D);
-        const directionalLightDefinition = new LightObjectDefinition("directional", LightType.DIRECTIONAL, shaderProgram, null, [1, -1, 0]);
+        const directionalLightDefinition = new LightObjectDefinition("directional", LightType.DIRECTIONAL, shaderProgram, null, [0.5, -1, 0]);
         this.lightingManager.addLight(directionalLightDefinition);
     }
 }

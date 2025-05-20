@@ -46,9 +46,11 @@ export class Renderer {
         const projectionMatrix = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
 
         // Apply lights before rendering objects
+        let currentShaderProgram = null;
         const lights = this.lightManager.getAllLights();
         lights.forEach(light => {
             light.applyLighting();
+            currentShaderProgram = light.getShader();
         });
 
         const objects = this.objectManager.getAllObjects();
@@ -60,7 +62,12 @@ export class Renderer {
             mat4.multiply(mvpMatrix, mvpMatrix, obj.getModelMatrix()); // object transforms
 
             const shaderProgram = obj.getShader();
-            this.gl.useProgram(shaderProgram);
+
+            if (shaderProgram !== currentShaderProgram) {
+                this.gl.useProgram(shaderProgram);
+                currentShaderProgram = shaderProgram;
+            }
+
             const colorLocation = this.gl.getUniformLocation(shaderProgram, "u_color");
             this.gl.uniform4fv(colorLocation, [0.5, 0.0, 0.0, 1.0]);
 
@@ -77,7 +84,10 @@ export class Renderer {
         objects.filter(obj => obj instanceof ObjectUI).forEach(obj => {
             const modelMatrix = obj.getModelMatrix();
             const shaderProgram = obj.getShader();
-            this.gl.useProgram(shaderProgram);
+            if (shaderProgram !== currentShaderProgram) {
+                this.gl.useProgram(shaderProgram);
+                currentShaderProgram = shaderProgram;
+            }
             this.shaderManager.setUniformMatrix(shaderProgram, 'u_projection', uiProjectionMatrix);
             this.shaderManager.setUniformMatrix(shaderProgram, 'u_model', modelMatrix);
             obj.draw()

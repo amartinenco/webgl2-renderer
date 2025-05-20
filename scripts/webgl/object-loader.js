@@ -1,5 +1,5 @@
 import { triangleVertices } from '../shapes/triangle.js';
-import { fVertices, fNormals } from '../shapes/3df.js';
+import { fVertices, fNormals, fColors } from '../shapes/3df.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
 
 
@@ -31,9 +31,11 @@ export class ObjectLoader {
         let shaderUI = this.shaderManager.getShader(ShaderType.UI);
 
         const triangle = new GameObjectDefinition("triangle", ObjectType.UI, shaderUI, triangleVertices);
-        const f3d = new GameObjectDefinition("3df", ObjectType.THREE_D, shaderThreeD, fVertices, fNormals);
+        //const triangle2d = new GameObjectDefinition("triangle2d", ObjectType.TWO_D, shaderThreeD, triangleVertices);
+        const f3d = new GameObjectDefinition("3df", ObjectType.THREE_D, shaderThreeD, fVertices, fNormals, fColors);
         
         this.objectManager.loadObject(triangle);
         this.objectManager.loadObject(f3d);
+        //this.objectManager.loadObject(triangle2d);
     }
 };

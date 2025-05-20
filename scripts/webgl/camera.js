@@ -28,7 +28,7 @@ export class Camera {
     updateProjection() {
         const aspectRatio = this.canvas.width / this.canvas.height;
         
-        mat4.perspective(this.worldProjectionMatrix, Math.PI / 4, aspectRatio, 0.1, 1000);
+        mat4.perspective(this.worldProjectionMatrix, Math.PI / 4, aspectRatio, 0.1, 5000);
         
         const adjustedHeight = 600;
         const adjustedWidth = adjustedHeight * aspectRatio;

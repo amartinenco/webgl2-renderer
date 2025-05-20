@@ -8,6 +8,7 @@ in vec3 v_normal;
 
 uniform vec3 u_reverseLightDirection;
 uniform vec4 u_color;
+//uniform vec3 u_lightColor;
 
 void main() {
 
@@ -15,7 +16,6 @@ void main() {
 
     float light = dot(normal, u_reverseLightDirection);
 
-    //outColor = vec4(0.5, 0.0, 0.0, 1.0);
     outColor = u_color;
 
     outColor.rgb *= light;
