@@ -27,8 +27,10 @@ export class DirectionalLight extends LightBase {
     constructor(gl, lightObjectDefinition) {
         super(gl, lightObjectDefinition);
         this.direction = vec3.create();
-        const directionArray = lightObjectDefinition.direction || [0.5, -1, 0];
-        vec3.normalize(this.direction, directionArray);
+        const directionArray = lightObjectDefinition.direction || [1, 1, 0];
+        const actualLightDirection = vec3.fromValues(...directionArray);
+        vec3.normalize(actualLightDirection, actualLightDirection);
+        this.direction = actualLightDirection;
     }
 
     setupUniforms() {

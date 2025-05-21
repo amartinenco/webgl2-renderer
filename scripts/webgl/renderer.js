@@ -72,6 +72,8 @@ export class Renderer {
             this.gl.uniform4fv(colorLocation, [0.5, 0.0, 0.0, 1.0]);
 
             this.shaderManager.setUniformMatrix(shaderProgram, 'u_mvpMatrix', mvpMatrix);
+            this.shaderManager.setUniformMatrix(shaderProgram, 'u_modelWorldMatrix', obj.getModelMatrix());
+
             obj.draw() 
         });
 

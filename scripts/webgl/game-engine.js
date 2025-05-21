@@ -7,6 +7,7 @@ import { Renderer } from './renderer.js';
 import { debugLog, errorLog } from '../logger/logger.js';
 import { CameraManager } from './camera-manager.js';
 import { GlobalContext } from './global-context.js';
+import { Object3D } from './object.js';
 
 export class GameEngine {
 
@@ -47,29 +48,41 @@ export class GameEngine {
     handleInput(deltaTime) {
         if (!this.inputManager) return;
         const actions = {
-            "w": () => { 
+            "KeyW": () => { 
                 this.cameraManager.activeCamera.move(0, 0, this.inputManager.cameraSpeed * deltaTime);
                 debugLog("Moving forward!") 
             },
-            "s": () => { 
+            "KeyS": () => { 
                 this.cameraManager.activeCamera.move(0, 0, -this.inputManager.cameraSpeed * deltaTime);
                 debugLog("Moving backwards!") 
             },
-            "a": () => {
+            "KeyA": () => {
                 this.cameraManager.activeCamera.move(-this.inputManager.cameraSpeed * deltaTime, 0, 0);
                 debugLog("Moving left!"); 
             }, 
-            "d": () => { 
+            "KeyD": () => { 
                 this.cameraManager.activeCamera.move(this.inputManager.cameraSpeed * deltaTime, 0, 0);
                 debugLog("Moving right!") 
+            },
+            "Space": () => {
+                this.cameraManager.activeCamera.move(0, this.inputManager.cameraSpeed * deltaTime, 0);
+                debugLog("Moving up!") 
+            },
+            "KeyC": () => {
+                this.cameraManager.activeCamera.move(0, -this.inputManager.cameraSpeed * deltaTime, 0);
+                debugLog("Moving down!") 
             }
         };
     
-        Object.keys(actions).forEach((key) => {
-            if (this.inputManager.isKeyPressed(key)) {
-                actions[key]();
+        Object.keys(actions).forEach((code) => {
+            if (this.inputManager.isKeyPressed(code)) {
+                actions[code]();
             }
         });
+
+        if (!Object.keys(actions).some(code => this.inputManager.isKeyPressed(code))) {
+            this.cameraManager.activeCamera.move(0, 0, 0);
+        }
 
         this.inputManager.update(deltaTime);
         this.cameraManager.activeCamera.rotate(this.inputManager.yaw, this.inputManager.pitch);
@@ -85,7 +98,13 @@ export class GameEngine {
     engineRun() {
         let deltaTime = this.calculateDeltatime();
         this.handleInput(deltaTime);
+        
         this.renderer.render();
+        
+        const objects = this.objectManager.getAllObjects();
+        objects.filter(obj => obj instanceof Object3D).forEach(obj => obj.update(deltaTime));
+
+        
         requestAnimationFrame(this.engineRun);
     }
 };

@@ -77,7 +77,11 @@ export class ObjectBase {
     }
 
     render() {
-        throw new Error("Render method must be implemented by subclasses")
+        throw new Error("Render method must be implemented by subclasses");
+    }
+
+    update(deltaTime) {
+        throw new Error("Update method must be implemented by subclasses");
     }
 
     getShader() {
@@ -115,10 +119,15 @@ export class ObjectBase {
 export class Object3D extends ObjectBase {
     constructor(gl, objectDefinition) {
         super(gl, objectDefinition, 3);
+        this.rotationSpeed = 0.5;
     }
 
     render() {
         this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length / 3);
+    }
+
+    update(deltaTime) {
+        this.rotate(this.rotationSpeed * deltaTime, [0, 1, 0]);
     }
 }
 

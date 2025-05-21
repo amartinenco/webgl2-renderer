@@ -16,7 +16,8 @@ void main() {
 
     float light = dot(normal, u_reverseLightDirection);
 
+    float ambient = 0.1;
     outColor = u_color;
 
-    outColor.rgb *= light;
+    outColor.rgb *= light + ambient;
 }
