@@ -4,13 +4,21 @@ import { Object3D, Object2D, ObjectUI } from "./object.js";
 import { CameraType } from "./utils/constants.js";
 
 export class Renderer {
-    constructor(gl, canvas, shaderManager, objectManager, cameraManager) {
+    constructor(gl, canvas, shaderManager, objectManager, cameraManager, lightManager) {
         this.gl = gl;
         this.canvas = canvas;
         this.shaderManager = shaderManager;
         this.objectManager = objectManager;
         this.cameraManager = cameraManager;
-        window.addEventListener("resize", () => this.resizeCanvasToDisplaySize());
+        this.lightManager = lightManager;
+        this.resizeCanvasToDisplaySize();
+        this.cameraManager.getActiveCamera().updateProjection();
+        window.addEventListener("resize", () => { 
+            this.resizeCanvasToDisplaySize();
+            this.cameraManager.getActiveCamera().updateProjection();
+        });
+
+        this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
     }
 
     resizeCanvasToDisplaySize() {
@@ -21,14 +29,14 @@ export class Renderer {
         if (needResize) {
             this.canvas.width = displayWidth;
             this.canvas.height = displayHeight;
-            this.gl.viewport(0, 0, displayWidth, displayHeight);
+            this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
             debugLog(`Window resized to w:${displayWidth} h:${displayHeight}`);
         }
         return needResize;
     }
-
+    
     render() {
-        this.gl.clearColor(0, 0, 0, 1);
+        this.gl.clearColor(0, 0, 0, 0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.CULL_FACE);
@@ -36,6 +44,14 @@ export class Renderer {
         const camera = this.cameraManager.getActiveCamera();
         const viewMatrix = camera.getViewMatrix();
         const projectionMatrix = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
+
+        // Apply lights before rendering objects
+        let currentShaderProgram = null;
+        const lights = this.lightManager.getAllLights();
+        lights.forEach(light => {
+            light.applyLighting();
+            currentShaderProgram = light.getShader();
+        });
 
         const objects = this.objectManager.getAllObjects();
         
@@ -46,8 +62,18 @@ export class Renderer {
             mat4.multiply(mvpMatrix, mvpMatrix, obj.getModelMatrix()); // object transforms
 
             const shaderProgram = obj.getShader();
-            this.gl.useProgram(shaderProgram);
+
+            if (shaderProgram !== currentShaderProgram) {
+                this.gl.useProgram(shaderProgram);
+                currentShaderProgram = shaderProgram;
+            }
+
+            const colorLocation = this.gl.getUniformLocation(shaderProgram, "u_color");
+            this.gl.uniform4fv(colorLocation, [0.5, 0.0, 0.0, 1.0]);
+
             this.shaderManager.setUniformMatrix(shaderProgram, 'u_mvpMatrix', mvpMatrix);
+            this.shaderManager.setUniformMatrix(shaderProgram, 'u_modelWorldMatrix', obj.getModelMatrix());
+
             obj.draw() 
         });
 
@@ -60,7 +86,10 @@ export class Renderer {
         objects.filter(obj => obj instanceof ObjectUI).forEach(obj => {
             const modelMatrix = obj.getModelMatrix();
             const shaderProgram = obj.getShader();
-            this.gl.useProgram(shaderProgram);
+            if (shaderProgram !== currentShaderProgram) {
+                this.gl.useProgram(shaderProgram);
+                currentShaderProgram = shaderProgram;
+            }
             this.shaderManager.setUniformMatrix(shaderProgram, 'u_projection', uiProjectionMatrix);
             this.shaderManager.setUniformMatrix(shaderProgram, 'u_model', modelMatrix);
             obj.draw()

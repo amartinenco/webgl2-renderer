@@ -18,3 +18,8 @@ export const CameraType = Object.freeze({
     PERSPECTIVE: "perspective",
     ORTHOGRAPHIC: "orthographic"
 });
+
+export const LightType = Object.freeze({
+    DIRECTIONAL: "directional",
+    POINT: "point"
+});

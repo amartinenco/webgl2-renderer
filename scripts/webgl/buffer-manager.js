@@ -1,6 +1,10 @@
 import { errorLog } from '../logger/logger.js';
 
-export function createVertexBuffer(gl, data) {
+export function createBuffer(gl, data) {
+    if (!data) {
+        return null;
+    }
+
     const buffer = gl.createBuffer();
     if (!buffer) {
         errorLog("Failed to create vertex buffer.");
