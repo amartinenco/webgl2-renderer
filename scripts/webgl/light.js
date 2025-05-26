@@ -67,7 +67,43 @@ export class DirectionalLight extends LightBase {
 export class PointLight extends LightBase {
     constructor(gl, lightObjectDefinition) {
         super(gl, lightObjectDefinition);
+        if (lightObjectDefinition.position) {
+            this.position = lightObjectDefinition.position;
+        } else {
+            this.position = vec3.create();
+        }
     }
 
-    // TODO: add the point light logic
+    applyLighting() {
+        this.setupUniforms();
+    }
+
+    setupUniforms() {
+        if (!this.shaderProgram) {
+            warnLog("Shader program is missing. Cannot set uniforms.");
+            return;
+        }
+
+        this.gl.useProgram(this.shaderProgram);
+        const colorLocation = this.gl.getUniformLocation(this.shaderProgram, "u_color");
+        if (colorLocation !== null) {
+            this.gl.uniform4fv(colorLocation, [1, 1, 1, 1]);
+        } else {
+            warnLog("Uniform 'u_color' not found in shader.");
+        }
+
+        const usePointLightLocation = this.gl.getUniformLocation(this.shaderProgram, "u_usePointLight");
+        if (usePointLightLocation !== null) {
+            this.gl.uniform1i(usePointLightLocation, 1);
+        } else {
+            warnLog("Uniform 'u_usePointLight' not found in shader.");
+        }
+
+        const usePointLightPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_pointLightPosition");
+        if (usePointLightPositionLocation !== null) {
+            this.gl.uniform3fv(usePointLightPositionLocation, this.position);
+        } else {
+            warnLog("Uniform 'u_pointLightPosition' not found in shader.");
+        }
+    }
 }
