@@ -105,5 +105,23 @@ export class PointLight extends LightBase {
         } else {
             warnLog("Uniform 'u_pointLightPosition' not found in shader.");
         }
+
+        const useShininessPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_shininess");
+        console.log();
+        if (useShininessPositionLocation !== null) {
+            this.gl.uniform1f(useShininessPositionLocation, this.intensity);
+        } else {
+            warnLog("Uniform 'u_shininess' not found in shader.");
+        }
     }
+
+    // setIntensity(intensity) {
+    //     this.intensity = intensity;
+    //     const useShininessPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_shininess");
+    //     if (useShininessPositionLocation !== null) {
+    //         this.gl.uniform3fv(useShininessPositionLocation, this.intensity);
+    //     } else {
+    //         warnLog("Uniform 'u_shininess' not found in shader.");
+    //     }
+    // }
 }
