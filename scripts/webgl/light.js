@@ -11,6 +11,11 @@ export class LightBase {
         vec3.normalize(normalizedColor, vec3.fromValues(...colorArray));
         this.color = normalizedColor;
         this.intensity = lightObjectDefinition.intensity || 1.0;
+
+        const normalizedSpecularColor = vec3.create();
+        const specularColorArray = lightObjectDefinition.specularColor || [1, 1, 1];
+        vec3.normalize(normalizedSpecularColor, vec3.fromValues(...specularColorArray));
+        this.specularColor = normalizedSpecularColor;
     }
 
     getShader() {
@@ -76,7 +81,12 @@ export class DirectionalLight extends LightBase {
     }
 
     getLightData() {
-        return { direction: this.direction, color: this.color };
+        return { 
+            name: this.name,
+            type: "directional",
+            direction: this.direction, 
+            color: this.color 
+        };
     }
 }
 
@@ -121,13 +131,20 @@ export class PointLight extends LightBase {
 
         const useSpecularColorLocation = this.gl.getUniformLocation(this.shaderProgram, "u_specularColor");
         if (useSpecularColorLocation !== null) {
-            this.gl.uniform3fv(useSpecularColorLocation, vec3.fromValues(1, 1, 1));
+            this.gl.uniform3fv(useSpecularColorLocation, this.specularColor);
         } else {
             warnLog("Uniform 'u_specularColor' not found in shader.");
         }
     }
 
     getLightData() {
-        return { direction: this.direction, color: this.color, intensity: this.intensity };
+        return {
+            name: this.name,
+            type: "point",
+            position: this.position, 
+            color: this.color, 
+            specularColor: this.specularColor,
+            intensity: this.intensity 
+        };
     }
 }
