@@ -30,13 +30,15 @@ void main() {
     v_lightDirection = normalize(u_pointLightPosition - fragPosition);
 
     // compute surface to light (light to surface)
-    v_surface2light = u_pointLightPosition - fragPosition;
+    v_surface2light = v_lightDirection;
     
     // compute surface to view (camera to surface)
     v_surface2view = u_viewWorldPosition - fragPosition;
 
   } else {
     v_lightDirection = vec3(0.0);
+    v_surface2light = vec3(0.0);
+    v_surface2view = vec3(0.0);
   }
 
   gl_Position = u_mvpMatrix * a_position;
