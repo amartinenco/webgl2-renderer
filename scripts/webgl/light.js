@@ -6,12 +6,44 @@ export class LightBase {
         this.gl = gl;
         this.name = lightObjectDefinition.name;
         this.shaderProgram = lightObjectDefinition.shaderProgram;
-        this.color = lightObjectDefinition.color || [1, 1, 1];
+        const colorArray = lightObjectDefinition.color || [1, 1, 1];
+        const normalizedColor = vec3.create();
+        vec3.normalize(normalizedColor, vec3.fromValues(...colorArray));
+        this.color = normalizedColor;
         this.intensity = lightObjectDefinition.intensity || 1.0;
+
+        const normalizedSpecularColor = vec3.create();
+        const specularColorArray = lightObjectDefinition.specularColor || [1, 1, 1];
+        vec3.normalize(normalizedSpecularColor, vec3.fromValues(...specularColorArray));
+        this.specularColor = normalizedSpecularColor;
     }
 
     getShader() {
         return this.shaderProgram;
+    }
+    
+    setupUniforms() {
+         if (!this.shaderProgram) {
+            warnLog("Shader program is missing. Cannot set uniforms.");
+            return;
+        }
+
+        this.gl.useProgram(this.shaderProgram);
+
+        const colorLocation = this.gl.getUniformLocation(this.shaderProgram, "u_color");
+        if (colorLocation !== null) {
+            this.gl.uniform4fv(colorLocation, [1, 1, 1, 1]);
+        } else {
+            warnLog("Uniform 'u_color' not found in shader.");
+        }
+
+        const uselightColorLocation = this.gl.getUniformLocation(this.shaderProgram, "u_lightColor");
+        
+        if (uselightColorLocation !== null) {
+            this.gl.uniform3fv(uselightColorLocation, this.color);
+        } else {
+            warnLog("Uniform 'u_lightColor' not found in shader.");
+        }
     }
 
     applyLighting() {
@@ -34,18 +66,7 @@ export class DirectionalLight extends LightBase {
     }
 
     setupUniforms() {
-        if (!this.shaderProgram) {
-            warnLog("Shader program is missing. Cannot set uniforms.");
-            return;
-        }
-
-        this.gl.useProgram(this.shaderProgram);
-        const colorLocation = this.gl.getUniformLocation(this.shaderProgram, "u_color");
-        if (colorLocation !== null) {
-            this.gl.uniform4fv(colorLocation, [1, 1, 1, 1]);
-        } else {
-            warnLog("Uniform 'u_color' not found in shader.");
-        }
+        super.setupUniforms();
 
         const reverseLightDirectionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_reverseLightDirection");
         if (reverseLightDirectionLocation !== null) {
@@ -60,14 +81,70 @@ export class DirectionalLight extends LightBase {
     }
 
     getLightData() {
-        return { direction: this.direction, color: this.color, intensity: this.intensity };
+        return { 
+            name: this.name,
+            type: "directional",
+            direction: this.direction, 
+            color: this.color 
+        };
     }
 }
 
 export class PointLight extends LightBase {
     constructor(gl, lightObjectDefinition) {
         super(gl, lightObjectDefinition);
+        if (lightObjectDefinition.position) {
+            this.position = lightObjectDefinition.position;
+        } else {
+            this.position = vec3.create();
+        }
     }
 
-    // TODO: add the point light logic
+    applyLighting() {
+        this.setupUniforms();
+    }
+
+    setupUniforms() {
+        super.setupUniforms();
+
+        const usePointLightLocation = this.gl.getUniformLocation(this.shaderProgram, "u_usePointLight");
+        if (usePointLightLocation !== null) {
+            this.gl.uniform1i(usePointLightLocation, 1);
+        } else {
+            warnLog("Uniform 'u_usePointLight' not found in shader.");
+        }
+
+        const usePointLightPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_pointLightPosition");
+        if (usePointLightPositionLocation !== null) {
+            this.gl.uniform3fv(usePointLightPositionLocation, this.position);
+        } else {
+            warnLog("Uniform 'u_pointLightPosition' not found in shader.");
+        }
+
+        const useShininessPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_shininess");
+        
+        if (useShininessPositionLocation !== null) {
+            this.gl.uniform1f(useShininessPositionLocation, this.intensity);
+        } else {
+            warnLog("Uniform 'u_shininess' not found in shader.");
+        }
+
+        const useSpecularColorLocation = this.gl.getUniformLocation(this.shaderProgram, "u_specularColor");
+        if (useSpecularColorLocation !== null) {
+            this.gl.uniform3fv(useSpecularColorLocation, this.specularColor);
+        } else {
+            warnLog("Uniform 'u_specularColor' not found in shader.");
+        }
+    }
+
+    getLightData() {
+        return {
+            name: this.name,
+            type: "point",
+            position: this.position, 
+            color: this.color, 
+            specularColor: this.specularColor,
+            intensity: this.intensity 
+        };
+    }
 }

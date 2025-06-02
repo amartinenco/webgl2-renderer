@@ -53,6 +53,10 @@ export class Renderer {
             currentShaderProgram = light.getShader();
         });
 
+        if (currentShaderProgram) {
+            camera.setUniforms(this.gl, currentShaderProgram);
+        }
+
         const objects = this.objectManager.getAllObjects();
         
         // Render objects 2D and 3D in the world
@@ -66,6 +70,7 @@ export class Renderer {
             if (shaderProgram !== currentShaderProgram) {
                 this.gl.useProgram(shaderProgram);
                 currentShaderProgram = shaderProgram;
+                camera.setUniforms(this.gl, currentShaderProgram);
             }
 
             const colorLocation = this.gl.getUniformLocation(shaderProgram, "u_color");
@@ -79,9 +84,9 @@ export class Renderer {
 
         // Render UI elements
         const uiProjectionMatrix = camera.getProjectionMatrix(CameraType.ORTHOGRAPHIC);
-        const testVertex = vec4.fromValues(400, 300, 0, 1);
-        const transformedVertex = vec4.create();
-        vec4.transformMat4(transformedVertex, testVertex, uiProjectionMatrix);
+        // const testVertex = vec4.fromValues(400, 300, 0, 1);
+        // const transformedVertex = vec4.create();
+        // vec4.transformMat4(transformedVertex, testVertex, uiProjectionMatrix);
         this.gl.disable(this.gl.DEPTH_TEST);
         objects.filter(obj => obj instanceof ObjectUI).forEach(obj => {
             const modelMatrix = obj.getModelMatrix();

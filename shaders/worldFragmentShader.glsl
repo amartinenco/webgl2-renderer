@@ -5,19 +5,44 @@ precision highp float;
 out vec4 outColor;
 
 in vec3 v_normal;
-
-uniform vec3 u_reverseLightDirection;
 uniform vec4 u_color;
-//uniform vec3 u_lightColor;
+
+// directional light
+uniform vec3 u_reverseLightDirection;
+
+// point light 
+uniform float u_shininess;
+uniform vec3 u_lightColor;
+uniform vec3 u_specularColor;
+in vec3 v_surface2light;
+in vec3 v_surface2view;
+
 
 void main() {
-
     vec3 normal = normalize(v_normal);
 
-    float light = dot(normal, u_reverseLightDirection);
+    // directional light
+    vec3 revLightDirection = normalize(u_reverseLightDirection);
+    float directionalLight = max(dot(normal, revLightDirection), 0.0);
 
+    // point light
+    vec3 surfaceToLightDirection = normalize(v_surface2light);
+    vec3 surfaceToViewDirection = normalize(v_surface2view);
+    float pointLight = max(dot(normal, surfaceToLightDirection), 0.0);
+    vec3 halfVector = normalize(surfaceToLightDirection + surfaceToViewDirection);
+    float specular = 0.0;
+
+    if (pointLight > 0.0) {
+        specular = pow(max(dot(normal, halfVector), 0.0), u_shininess);
+    }
+
+    // ambient light
     float ambient = 0.1;
-    outColor = u_color;
 
-    outColor.rgb *= light + ambient;
+    // combine lights
+    outColor = u_color;
+    
+    vec3 diffuse = u_color.rgb * ((pointLight + directionalLight) * u_lightColor);
+    vec3 specularColor = u_specularColor * specular;
+    outColor.rgb = diffuse + specularColor + ambient;
 }

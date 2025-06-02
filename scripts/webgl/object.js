@@ -1,5 +1,5 @@
 import { createBuffer } from './buffer-manager.js';
-import { mat4, vec3 } from '../math/gl-matrix/index.js'
+import { mat4, vec3, vec4 } from '../math/gl-matrix/index.js'
 import { warnLog } from '../logger/logger.js';
 
 export class ObjectBase {
@@ -15,7 +15,14 @@ export class ObjectBase {
         this.shaderProgram = objectDefinition.shaderProgram;
         this.attributeSize = attributeSize;
         this.modelMatrix = mat4.create();
+        this.position = null;
         mat4.identity(this.modelMatrix);
+
+        if (objectDefinition.position) {
+            this.position = objectDefinition.position
+            mat4.translate( this.modelMatrix,  this.modelMatrix, this.position);
+        }
+
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
 
@@ -120,6 +127,8 @@ export class Object3D extends ObjectBase {
     constructor(gl, objectDefinition) {
         super(gl, objectDefinition, 3);
         this.rotationSpeed = 0.5;
+        mat4.identity(this.modelMatrix);
+        //mat4.rotateX(matrix, matrix, Math.PI); // apply rotation around X-axis
     }
 
     render() {
@@ -127,7 +136,13 @@ export class Object3D extends ObjectBase {
     }
 
     update(deltaTime) {
-        this.rotate(this.rotationSpeed * deltaTime, [0, 1, 0]);
+        this.angle = (this.angle || 0) + this.rotationSpeed * deltaTime;
+        mat4.identity(this.modelMatrix);
+        const center = [50, -75, -15];  
+        mat4.translate(this.modelMatrix, this.modelMatrix, center);
+        this.rotate(this.angle, [0, 1, 0]);
+        const inverseCenter = [-center[0], -center[1], -center[2]];
+        mat4.translate(this.modelMatrix, this.modelMatrix, inverseCenter);
     }
 }
 

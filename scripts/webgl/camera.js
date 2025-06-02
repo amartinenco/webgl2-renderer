@@ -25,6 +25,16 @@ export class Camera {
         this.updateViewMatrix();
     }
 
+    setUniforms(gl, shaderProgram) {
+        gl.useProgram(shaderProgram);
+        const viewWorldPositionLocation = gl.getUniformLocation(shaderProgram, "u_viewWorldPosition");
+        if (viewWorldPositionLocation !== null) {
+            gl.uniform3fv(viewWorldPositionLocation, this.position);
+        } else {
+            warnLog("Uniform 'u_viewWorldPosition' not found in shader.");
+        }
+    }
+
     updateProjection() {
         const aspectRatio = this.canvas.width / this.canvas.height;
         
