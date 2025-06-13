@@ -11,7 +11,8 @@ export class LightBase {
         vec3.normalize(normalizedColor, vec3.fromValues(...colorArray));
         this.color = normalizedColor;
         this.intensity = lightObjectDefinition.intensity || 1.0;
-
+        this.direction = lightObjectDefinition.direction;
+        this.limit = lightObjectDefinition.limit;
         const normalizedSpecularColor = vec3.create();
         const specularColorArray = lightObjectDefinition.specularColor || [1, 1, 1];
         vec3.normalize(normalizedSpecularColor, vec3.fromValues(...specularColorArray));
@@ -114,11 +115,92 @@ export class PointLight extends LightBase {
             warnLog("Uniform 'u_usePointLight' not found in shader.");
         }
 
-        const usePointLightPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_pointLightPosition");
+        const usePointLightPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_lightPosition");
         if (usePointLightPositionLocation !== null) {
             this.gl.uniform3fv(usePointLightPositionLocation, this.position);
         } else {
-            warnLog("Uniform 'u_pointLightPosition' not found in shader.");
+            warnLog("Uniform 'u_lightPosition' not found in shader.");
+        }
+
+        const useShininessPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_shininess");
+        
+        if (useShininessPositionLocation !== null) {
+            this.gl.uniform1f(useShininessPositionLocation, this.intensity);
+        } else {
+            warnLog("Uniform 'u_shininess' not found in shader.");
+        }
+
+        const useSpecularColorLocation = this.gl.getUniformLocation(this.shaderProgram, "u_specularColor");
+        if (useSpecularColorLocation !== null) {
+            this.gl.uniform3fv(useSpecularColorLocation, this.specularColor);
+        } else {
+            warnLog("Uniform 'u_specularColor' not found in shader.");
+        }
+
+        const useLimitLocation = this.gl.getUniformLocation(this.shaderProgram, "u_limit");
+        
+        if (useLimitLocation !== null) {
+            this.gl.uniform1f(useLimitLocation, Math.cos(360 * (Math.PI / 180.0)));
+        } else {
+            warnLog("Uniform 'u_limit' not found in shader.");
+        }
+    }
+
+    getLightData() {
+        return {
+            name: this.name,
+            type: "point",
+            position: this.position, 
+            color: this.color, 
+            specularColor: this.specularColor,
+            intensity: this.intensity 
+        };
+    }
+}
+
+export class SpotLight extends LightBase {
+    constructor(gl, lightObjectDefinition) {
+        super(gl, lightObjectDefinition);
+        if (lightObjectDefinition.position) {
+            this.position = lightObjectDefinition.position;
+        } else {
+            this.position = vec3.create();
+        }
+    }
+
+    applyLighting() {
+        this.setupUniforms();
+    }
+
+    setupUniforms() {
+        super.setupUniforms();
+
+        const useSpotLightLocation = this.gl.getUniformLocation(this.shaderProgram, "u_useSpotLight");
+        if (useSpotLightLocation !== null) {
+            this.gl.uniform1i(useSpotLightLocation, 1);
+        } else {
+            warnLog("Uniform 'u_useSpotLight' not found in shader.");
+        }
+
+        const useSpotLightPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_lightPosition");
+        if (useSpotLightPositionLocation !== null) {
+            this.gl.uniform3fv(useSpotLightPositionLocation, this.position);
+        } else {
+            warnLog("Uniform 'u_lightPosition' not found in shader.");
+        }
+
+        const useLightDirectionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_lightDirection");
+        if (useLightDirectionLocation !== null) {
+            this.gl.uniform3fv(useLightDirectionLocation, this.direction);
+        } else {
+            warnLog("Uniform 'u_lightDirection' not found in shader.");
+        }
+        
+        const useLightLimitLocation = this.gl.getUniformLocation(this.shaderProgram, "u_limit");
+        if (useLightLimitLocation !== null) {
+            this.gl.uniform1f(useLightLimitLocation, Math.cos(this.limit * (Math.PI / 180.0)));
+        } else {
+            warnLog("Uniform 'u_limit' not found in shader.");
         }
 
         const useShininessPositionLocation = this.gl.getUniformLocation(this.shaderProgram, "u_shininess");
@@ -140,11 +222,10 @@ export class PointLight extends LightBase {
     getLightData() {
         return {
             name: this.name,
-            type: "point",
+            type: "spot",
             position: this.position, 
             color: this.color, 
-            specularColor: this.specularColor,
-            intensity: this.intensity 
+            direction: this.direction
         };
     }
 }

@@ -1,7 +1,7 @@
 import { ShaderType, LightType } from "./utils/constants.js";
 
 export class LightObjectDefinition {
-    constructor(name, type, shaderProgram, position, direction = [], color = [], specularColor, intensity) {
+    constructor(name, type, shaderProgram, position, direction = [0, -1, 0], color = [], specularColor, intensity, limit = 0) {
         this.name = name;
         this.type = type;
         this.shaderProgram = shaderProgram;
@@ -10,6 +10,7 @@ export class LightObjectDefinition {
         this.color = color; // rgb01
         this.specularColor = specularColor; // rgb01
         this.intensity = intensity;
+        this.limit = limit;
     }
 };
 
@@ -23,10 +24,13 @@ export class LightingLoader {
         let shaderProgram = this.shaderManager.getShader(ShaderType.THREE_D);
 
         //const directionalLightDefinition = new LightObjectDefinition("directional", LightType.DIRECTIONAL, shaderProgram, null, [0.5, 0.7, 1]);
-        const pointLightDefinition = new LightObjectDefinition("point", LightType.POINT, shaderProgram, [110, -75, -15], null, null, [1, 1, 1], 50.0);
+        // const pointLightDefinition = new LightObjectDefinition("point", LightType.POINT, shaderProgram, [110, -75, -15], null, null, [1, 1, 1], 50.0);
         //const pointLightDefinition = new LightObjectDefinition("point", LightType.POINT, shaderProgram, [20, 30, 60]);
+
+        const spotLightDefinition = new LightObjectDefinition("spot", LightType.SPOT, shaderProgram, [110, -75, -15], [-1, 0, 0], null, [1, 1, 1], 50.0, 30);
     
         //this.lightingManager.addLight(directionalLightDefinition);
-        this.lightingManager.addLight(pointLightDefinition);
+        //this.lightingManager.addLight(pointLightDefinition);
+        this.lightingManager.addLight(spotLightDefinition);
     }
 }

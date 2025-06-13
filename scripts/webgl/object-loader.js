@@ -4,7 +4,7 @@ import { ObjectType, ShaderType } from './utils/constants.js';
 
 
 export class GameObjectDefinition {
-    constructor(name, type, shaderProgram, position, vertices, normals = [], colors = [], indices = [], uvCoords = [], material = null, meshes = [], animations = [], textue = null) {
+    constructor(name, type, shaderProgram, position = [0, 0, 0], vertices, normals = [], colors = [], indices = [], uvCoords = [], material = null, meshes = [], animations = [], textue = null) {
         this.name = name;
         this.type = type;
         this.shaderProgram = shaderProgram;
@@ -35,7 +35,7 @@ export class ObjectLoader {
         
         const triangle2d = new GameObjectDefinition("triangle2d", ObjectType.TWO_D, shaderThreeD, [110, -75, -15], triangleVertices);
         
-        const f3d = new GameObjectDefinition("3df", ObjectType.THREE_D, shaderThreeD, null, fVertices, fNormals, fColors);
+        const f3d = new GameObjectDefinition("3df", ObjectType.THREE_D, shaderThreeD, [0, 0, 0], fVertices, fNormals, fColors);
         
         this.objectManager.loadObject(triangle);
         this.objectManager.loadObject(f3d);
