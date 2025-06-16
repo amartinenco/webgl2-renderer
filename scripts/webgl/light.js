@@ -1,5 +1,5 @@
 import { warnLog } from "../logger/logger.js";
-import { vec3 } from "../math/gl-matrix/index.js";
+import { vec3, mat4 } from "../math/gl-matrix/index.js";
 
 export class LightBase {
     constructor(gl, lightObjectDefinition) {
@@ -17,6 +17,18 @@ export class LightBase {
         const specularColorArray = lightObjectDefinition.specularColor || [1, 1, 1];
         vec3.normalize(normalizedSpecularColor, vec3.fromValues(...specularColorArray));
         this.specularColor = normalizedSpecularColor;
+        this.rotationX = 0;
+        this.rotationY = 0;
+        if (lightObjectDefinition.rotation && (lightObjectDefinition.rotation.x != 0 || lightObjectDefinition.rotation.y != 0)) {
+            this.rotationX = lightObjectDefinition.rotation.x * Math.PI / 180;
+            this.rotationY = lightObjectDefinition.rotation.y * Math.PI / 180;
+            const rotationMatrix = mat4.create();
+            mat4.identity(rotationMatrix);
+            mat4.rotateY(rotationMatrix, rotationMatrix, this.rotationY);
+            mat4.rotateX(rotationMatrix, rotationMatrix, this.rotationX);
+            vec3.normalize(this.direction, this.direction);
+            vec3.transformMat4(this.direction, this.direction, rotationMatrix);
+        }
     }
 
     getShader() {
