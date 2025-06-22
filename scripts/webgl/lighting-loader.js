@@ -1,22 +1,5 @@
 import { ShaderType, LightType } from "./utils/constants.js";
 
-// export class LightObjectDefinition {
-//     constructor(name, type, shaderProgram, position, direction = [0, -1, 0], color = [1, 1, 1], specularColor = [1, 1, 1], specularIntensity = 1.0, limit = 0, rotation = { x: 0, y: 0}, brightness = 1.0, innerLimit = 5, outerLimit = 30) {
-//         this.name = name;
-//         this.type = type;
-//         this.shaderProgram = shaderProgram;
-//         this.position = position;
-//         this.direction = direction;
-//         this.color = color; // rgb01
-//         this.specularColor = specularColor; // rgb01
-//         this.lightIntensity = brightness;
-//         this.specularIntensity = specularIntensity;
-//         this.limit = limit;
-//         this.rotation = rotation;
-//         this.innerLimit = innerLimit;
-//         this.outerLimit = outerLimit;
-//     }
-// };
 export class LightObjectDefinition {
     constructor(builder) {
         this.name = builder.name;
@@ -71,14 +54,6 @@ export class LightingLoader {
     async loadLights() {
         let shaderProgram = this.shaderManager.getShader(ShaderType.THREE_D);
 
-        //const directionalLightDefinition = new LightObjectDefinition("directional", LightType.DIRECTIONAL, shaderProgram, null, [0.5, 0.7, 1]);
-        
-        //const pointLightDefinition = new LightObjectDefinition("point", LightType.POINT, shaderProgram, [110, -75, -15], null, null, [1, 1, 1], 50.0, null, null, 1000);
-        
-        //const pointLightDefinition = new LightObjectDefinition("point", LightType.POINT, shaderProgram, [20, 30, 60]);
-
-        //const spotLightDefinition = new LightObjectDefinition("spot", LightType.SPOT, shaderProgram, [110, -75, -15], [-1, 0, 0], null, [1, 1, 1], 50.0, 10, { x: 0, y: 0}, 2);
-        
         const directionalLightDefinition = new LightObjectDefinition.Builder()
             .setName("directional")
             .setType(LightType.DIRECTIONAL)
@@ -116,16 +91,6 @@ export class LightingLoader {
             .setInnerLimit(5)
             .setOuterLimit(30)
             .build();
-       
-        // const directionalLightDefinition = new LightObjectDefinition.Builder()
-        //     .setName("directional")
-        //     .setType(LightType.DIRECTIONAL)
-        //     .setShaderProgram(shaderProgram)
-        //     .setDirection([0.5, 0.7, 1])
-        //     .setColor([1, 1, 1])
-        //     .setSpecularColor([1, 1, 1])
-        //     .setSpecularIntensity(1.0)
-        //     .build();
             
         //this.lightingManager.addLight(directionalLightDefinition);
         this.lightingManager.addLight(pointLightDefinition);
