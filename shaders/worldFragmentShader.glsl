@@ -2,6 +2,10 @@
  
 precision highp float;
 
+
+uniform bool u_usePointLight;
+uniform bool u_useSpotLight;
+
 out vec4 outColor;
 
 in vec3 v_normal;
@@ -18,8 +22,12 @@ in vec3 v_surface2light;
 in vec3 v_surface2view;
 
 // spot light
-uniform float u_limit; 
+//uniform float u_limit; 
 uniform vec3 u_lightDirection;
+// spot light - inner/outer limits
+uniform float u_innerLimit;
+uniform float u_outerLimit;
+
 
 void main() {
     vec3 normal = normalize(v_normal);
@@ -27,44 +35,42 @@ void main() {
     // directional light
     vec3 revLightDirection = normalize(u_reverseLightDirection);
     float directionalLight = max(dot(normal, revLightDirection), 0.0);
+    float pointLight = 0.0;
+    float spotLight = 0.0;
+    float specular = 0.0;
 
+    if (u_useSpotLight || u_usePointLight) {
     // point light
-    vec3 surfaceToLightDirection = normalize(v_surface2light);
-    vec3 surfaceToViewDirection = normalize(v_surface2view);
-    
-    //float pointLight = max(dot(normal, surfaceToLightDirection), 0.0);
-    
-    
-    //float pointLight = 0.0;
-    
-    vec3 halfVector = normalize(surfaceToLightDirection + surfaceToViewDirection);
-    //float specular = 0.0;
+        vec3 surfaceToLightDirection = normalize(v_surface2light);
+        vec3 surfaceToViewDirection = normalize(v_surface2view);
+        vec3 halfVector = normalize(surfaceToLightDirection + surfaceToViewDirection);
+        
+        //float pointLight = 0.0;
+        float pointFactor = float(u_usePointLight); 
+
+        pointLight = pointFactor * max(dot(normal, surfaceToLightDirection), 0.0);
+
+        float spotFactor = float(u_useSpotLight);
+        float dotFromDirection = dot(surfaceToLightDirection,-u_lightDirection);
+        // step: if dotFromDirection >= u_limit then 1 else 0
+        //float inLight = step(u_limit, dotFromDirection);
+        
+        // float limitRange = u_innerLimit - u_outerLimit;
+        // float inLight = clamp((dotFromDirection - u_outerLimit) / limitRange, 0.0, 1.0);
+        float inLight = smoothstep(u_outerLimit, u_innerLimit, dotFromDirection);
 
 
+        spotLight = spotFactor * inLight * max(dot(normal, -u_lightDirection), 0.0);
 
-    float dotFromDirection = dot(surfaceToLightDirection,-u_lightDirection);
-    // if dotFromDirection >= u_limit then 1 else 0
-    float inLight = step(u_limit, dotFromDirection);
-    float light = inLight * max(dot(normal, surfaceToLightDirection), 0.0);
-    float specular = inLight * pow(max(dot(normal, halfVector), 0.0), u_shininess);
+        specular = mix(
+            pow(max(dot(normal, halfVector), 0.0), u_shininess),
+            inLight * pow(max(dot(normal, halfVector), 0.0), u_shininess),
+            spotFactor
+        );
+    }
 
-
-    // if (dotFromDirection >= u_limit) {
-    //     pointLight = max(dot(normal, surfaceToLightDirection), 0.0);
-    //     if (pointLight > 0.0) {
-    //         specular = pow(max(dot(normal, halfVector), 0.0), u_shininess);
-    //     }
-    // }
-
-    // ambient light
-    float ambient = 0.1 * length(u_lightColor);
-
-    // combine lights
-    outColor = u_color;
-    
-    vec3 diffuse = u_color.rgb * ((light + directionalLight) * u_lightColor);
+    float ambient = 0.1;
+    vec3 diffuse = u_color.rgb * ((directionalLight + pointLight + spotLight) * u_lightColor);
     vec3 specularColor = u_specularColor * specular;
-    outColor.rgb = diffuse + specularColor + ambient;
-    //outColor.rgb *= pointLight;
-    outColor.rgb += specular;
+    outColor = vec4(diffuse + specularColor + ambient, u_color.a);
 }
