@@ -21,5 +21,6 @@ export const CameraType = Object.freeze({
 
 export const LightType = Object.freeze({
     DIRECTIONAL: "directional",
-    POINT: "point"
+    POINT: "point",
+    SPOT: "spot"
 });

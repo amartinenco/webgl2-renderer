@@ -18,15 +18,18 @@ export class ObjectBase {
         this.position = null;
         mat4.identity(this.modelMatrix);
 
-        if (objectDefinition.position) {
-            this.position = objectDefinition.position
-            mat4.translate( this.modelMatrix,  this.modelMatrix, this.position);
-        }
-
+      
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
 
         this.setupAttributes();
+
+        if (objectDefinition.position) {
+            this.position = objectDefinition.position
+            mat4.translate( this.modelMatrix,  this.modelMatrix, this.position);
+            console.log();
+        }
+
 
         gl.bindVertexArray(null);
     }
@@ -127,7 +130,7 @@ export class Object3D extends ObjectBase {
     constructor(gl, objectDefinition) {
         super(gl, objectDefinition, 3);
         this.rotationSpeed = 0.5;
-        mat4.identity(this.modelMatrix);
+        //mat4.identity(this.modelMatrix);
         //mat4.rotateX(matrix, matrix, Math.PI); // apply rotation around X-axis
     }
 
@@ -136,10 +139,14 @@ export class Object3D extends ObjectBase {
     }
 
     update(deltaTime) {
+        
         this.angle = (this.angle || 0) + this.rotationSpeed * deltaTime;
         mat4.identity(this.modelMatrix);
+        mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+
         const center = [50, -75, -15];  
         mat4.translate(this.modelMatrix, this.modelMatrix, center);
+        
         this.rotate(this.angle, [0, 1, 0]);
         const inverseCenter = [-center[0], -center[1], -center[2]];
         mat4.translate(this.modelMatrix, this.modelMatrix, inverseCenter);
