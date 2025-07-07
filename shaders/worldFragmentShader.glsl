@@ -28,6 +28,11 @@ uniform vec3 u_lightDirection;
 uniform float u_innerLimit;
 uniform float u_outerLimit;
 
+uniform bool u_useTexture;
+// Passed in from the vertex shader.
+in vec2 v_texcoord;
+// The texture.
+uniform sampler2D u_texture;
 
 void main() {
     vec3 normal = normalize(v_normal);
@@ -70,7 +75,26 @@ void main() {
     }
 
     float ambient = 0.1;
-    vec3 diffuse = u_color.rgb * ((directionalLight + pointLight + spotLight) * u_lightColor);
+    vec4 texColor = texture(u_texture, v_texcoord);
+    
+    
+    vec3 baseColor = mix(u_color.rgb, texColor.rgb, float(u_useTexture));
+
+    float alpha = mix(u_color.a, texColor.a, float(u_useTexture));
+
+    //vec3 diffuse = u_color.rgb * ((directionalLight + pointLight + spotLight) * u_lightColor);
+    vec3 diffuse = baseColor * ((directionalLight + pointLight + spotLight) * u_lightColor);
+
     vec3 specularColor = u_specularColor * specular;
-    outColor = vec4(diffuse + specularColor + ambient, u_color.a);
+    //outColor = vec4(diffuse + specularColor + ambient, u_color.a);
+    vec3 finalColor = diffuse + u_specularColor * specular + ambient;
+    outColor = vec4(finalColor, alpha);
+
+    // vec4 texColor = texture(u_texture, v_texcoord);
+
+    // Multiply the lighting result with the texture color
+    // vec3 baseColor = texColor.rgb * ((directionalLight + pointLight + spotLight) * u_lightColor);
+    // vec3 finalColor = baseColor + u_specularColor * specular + ambient;
+
+    // outColor = vec4(finalColor, texColor.a);
 }
