@@ -37,12 +37,13 @@ export class ObjectBase {
     setupAttributes() {
         const gl = this.gl;
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        
+        gl.useProgram(this.shaderProgram);
         const useTextureLocation = this.gl.getUniformLocation(this.shaderProgram, "u_useTexture");
         if (useTextureLocation !== null) {
-            this.gl.uniform1i(useTextureLocation, false);
-        } else {
-            warnLog("Uniform 'u_useTexture' not found in shader.");
-        }
+            this.gl.uniform1i(useTextureLocation, 0);
+        } 
+        // else {    warnLog("Uniform 'u_useTexture' not found in shader."); }
 
         const positionAttributeLocation = gl.getAttribLocation(this.shaderProgram, "a_position");
         if (positionAttributeLocation !== -1) {
