@@ -11,7 +11,7 @@ export class ObjectBase {
         this.vertexBuffer = createBuffer(gl, this.vertices);
         this.normalBuffer = createBuffer(gl, this.normals);
         this.indexBuffer = null;
-        this.texture = null;
+        this.texture = objectDefinition.texture;
         this.shaderProgram = objectDefinition.shaderProgram;
         this.attributeSize = attributeSize;
         this.modelMatrix = mat4.create();
@@ -41,7 +41,11 @@ export class ObjectBase {
         gl.useProgram(this.shaderProgram);
         const useTextureLocation = this.gl.getUniformLocation(this.shaderProgram, "u_useTexture");
         if (useTextureLocation !== null) {
-            this.gl.uniform1i(useTextureLocation, 0);
+            if (this.texture == null || this.texture == undefined) {
+                this.gl.uniform1i(useTextureLocation, 0);
+            } else {
+                this.gl.uniform1i(useTextureLocation, 1);
+            }
         } 
         // else {    warnLog("Uniform 'u_useTexture' not found in shader."); }
 
