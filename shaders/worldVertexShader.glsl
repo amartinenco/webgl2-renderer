@@ -54,4 +54,5 @@ void main() {
   
   mat3 normalMatrix = mat3(transpose(inverse(u_modelWorldMatrix)));
   v_normal = normalize(normalMatrix * a_normal);
+  v_texcoord = a_texcoord;
 }

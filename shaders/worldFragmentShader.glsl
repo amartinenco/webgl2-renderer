@@ -82,12 +82,15 @@ void main() {
 
     float alpha = mix(u_color.a, texColor.a, float(u_useTexture));
 
+    //vec3 baseColor = u_useTexture ? texColor.rgb : u_color.rgb;
+    //float alpha     = u_useTexture ? texColor.a   : u_color.a;
+
     //vec3 diffuse = u_color.rgb * ((directionalLight + pointLight + spotLight) * u_lightColor);
     vec3 diffuse = baseColor * ((directionalLight + pointLight + spotLight) * u_lightColor);
 
     vec3 specularColor = u_specularColor * specular;
     //outColor = vec4(diffuse + specularColor + ambient, u_color.a);
-    vec3 finalColor = diffuse + u_specularColor * specular + ambient;
+    vec3 finalColor = diffuse + specularColor * specular + ambient;
     outColor = vec4(finalColor, alpha);
 
     // vec4 texColor = texture(u_texture, v_texcoord);

@@ -1,5 +1,5 @@
 import { triangleVertices } from '../shapes/triangle.js';
-import { fVertices, fNormals, fColors } from '../shapes/3df.js';
+import { fVertices, fNormals, fColors, fTextureCoords } from '../shapes/3df.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
 
 
@@ -77,6 +77,8 @@ export class ObjectLoader {
             .setVertices(fVertices)
             .setNormals(fNormals)
             .setColors(fColors)
+            .setTexture("resources/textures/f-texture.png")
+            .setUVCoords(fTextureCoords)
             .build();
 
         this.objectManager.loadObject(triangle);
