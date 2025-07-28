@@ -77,6 +77,16 @@ export class LightingLoader {
             .setLightIntensity(1000.0)
             .build();
 
+        const plSquareDefinition = new LightObjectDefinition.Builder()
+            .setName("pl_square")
+            .setType(LightType.POINT)
+            .setShaderProgram(shaderProgram)
+            .setPosition([10, 10, 10])
+            .setSpecularColor([1, 1, 1])
+            .setSpecularIntensity(50.0)
+            .setLightIntensity(1000.0)
+            .build();
+
         const spotLightDefinition = new LightObjectDefinition.Builder()
             .setName("spot")
             .setType(LightType.SPOT)
@@ -93,7 +103,10 @@ export class LightingLoader {
             .build();
             
         //this.lightingManager.addLight(directionalLightDefinition);
+        //this.lightingManager.addLight(plSquareDefinition);
         this.lightingManager.addLight(pointLightDefinition);
         //this.lightingManager.addLight(spotLightDefinition);
+
+        
     }
 }

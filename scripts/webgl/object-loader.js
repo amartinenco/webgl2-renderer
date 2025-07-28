@@ -1,7 +1,7 @@
-import { triangleVertices } from '../shapes/triangle.js';
+import { triangleVertices, triangleVerticesUITest } from '../shapes/triangle.js';
+import { squareVertices, squareNormals } from '../shapes/square.js';
 import { fVertices, fNormals, fColors, fTextureCoords } from '../shapes/3df.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
-
 
 export class GameObjectDefinition {
     constructor(builder) {
@@ -18,6 +18,7 @@ export class GameObjectDefinition {
         this.meshes = builder.meshes ?? [];
         this.animations = builder.animations ?? [];
         this.texture = builder.texture ?? null;
+        this.rotation = builder.rotation || { x: 0, y: 0 };
     }
 
     static get Builder() {
@@ -35,6 +36,7 @@ export class GameObjectDefinition {
             setMeshes(meshes) { this.meshes = meshes; return this; }
             setAnimations(animations) { this.animations = animations; return this; }
             setTexture(texture) { this.texture = texture; return this; }
+            setRotation(rotation) { this.rotation = rotation; return this; }
 
             build() {
                 return new GameObjectDefinition(this);
@@ -54,11 +56,21 @@ export class ObjectLoader {
         const shaderThreeD = this.shaderManager.getShader(ShaderType.THREE_D);
         const shaderUI = this.shaderManager.getShader(ShaderType.UI);
 
+        const square = new GameObjectDefinition.Builder()
+            .setName("square")
+            .setType(ObjectType.TWO_D)
+            .setShaderProgram(shaderThreeD)
+            .setPosition([-110, -150, 0])
+            .setVertices(squareVertices)
+            .setNormals(squareNormals)
+            .setRotation({ x: 0, y: 45 })
+            .build();
+
         const triangle = new GameObjectDefinition.Builder()
             .setName("triangle")
             .setType(ObjectType.UI)
             .setShaderProgram(shaderUI)
-            .setVertices(triangleVertices)
+            .setVertices(triangleVerticesUITest)
             .build();
 
         const triangle2d = new GameObjectDefinition.Builder()
@@ -84,5 +96,7 @@ export class ObjectLoader {
         this.objectManager.loadObject(triangle);
         this.objectManager.loadObject(f3d);
         this.objectManager.loadObject(triangle2d);
+        
+        this.objectManager.loadObject(square);
     }
 }

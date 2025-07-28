@@ -44,6 +44,14 @@ export class ObjectBase {
             console.log();
         }
 
+        this.rotationX = 0;
+        this.rotationY = 0;
+        if (objectDefinition.rotation && (objectDefinition.rotation.x != 0 || objectDefinition.rotation.y != 0)) {
+            this.rotationX = objectDefinition.rotation.x * Math.PI / 180;
+            this.rotationY = objectDefinition.rotation.y * Math.PI / 180;
+            mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotationY);
+            mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotationX);
+        }
 
         gl.bindVertexArray(null);
     }
@@ -89,8 +97,12 @@ export class ObjectBase {
             //     this.gl.uniform1i(useTextureLocation, 0);
             // } else {
          } 
+
+
          console.log()
           console.log("name:" + hasTexture  + " " + this.name)
+
+          
         if (hasTexture) {
             
             //this.gl.uniform1i(useTextureLocation, 1);
@@ -221,11 +233,12 @@ export class Object3D extends ObjectBase {
 
 export class Object2D extends ObjectBase {
     constructor(gl, objectDefinition) {
-        super(gl, objectDefinition, 2);
+        super(gl, objectDefinition, 3);
     }
 
     render() {
-        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, this.vertices.length / 2);
+        //this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, this.vertices.length / 3);
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length / 3);
     }
 }
 
