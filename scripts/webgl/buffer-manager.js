@@ -7,7 +7,7 @@ export function createBuffer(gl, data) {
 
     const buffer = gl.createBuffer();
     if (!buffer) {
-        errorLog("Failed to create vertex buffer.");
+        errorLog("Failed to create buffer.");
         return null;
     }
 

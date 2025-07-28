@@ -1,5 +1,5 @@
 import { LightType } from "./utils/constants.js";
-import { warnLog } from "../logger/logger.js";
+import { warnLog, debugLog } from "../logger/logger.js";
 import { DirectionalLight, PointLight, SpotLight } from "./light.js";
 
 export class LightingManager {
@@ -28,6 +28,7 @@ export class LightingManager {
         }
 
         this.loadedLights[id] = new objectMapping[type](this.gl, lightObjectDefinition);
+        debugLog(`Loaded Light [${type}]: ${id}`);
     }
 
     getLight(id) {

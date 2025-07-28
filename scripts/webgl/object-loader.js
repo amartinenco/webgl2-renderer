@@ -1,25 +1,50 @@
-import { triangleVertices } from '../shapes/triangle.js';
-import { fVertices, fNormals, fColors } from '../shapes/3df.js';
+import { triangleVertices, triangleVerticesUITest } from '../shapes/triangle.js';
+import { squareVertices, squareNormals } from '../shapes/square.js';
+import { fVertices, fNormals, fColors, fTextureCoords } from '../shapes/3df.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
 
-
 export class GameObjectDefinition {
-    constructor(name, type, shaderProgram, position = [0, 0, 0], vertices, normals = [], colors = [], indices = [], uvCoords = [], material = null, meshes = [], animations = [], textue = null) {
-        this.name = name;
-        this.type = type;
-        this.shaderProgram = shaderProgram;
-        this.position = position;
-        this.vertices = vertices;
-        this.normals = normals;
-        this.colors = colors;
-        this.indices = indices;
-        this.uvCoords = uvCoords; // texture coordinates
-        this.material = material; // linked material file or properties
-        this.meshes = meshes; // sub-meshes for complex .obj files
-        this.animations = animations;
-        this.textue = textue;
+    constructor(builder) {
+        this.name = builder.name;
+        this.type = builder.type;
+        this.shaderProgram = builder.shaderProgram;
+        this.position = builder.position ?? [0, 0, 0];
+        this.vertices = builder.vertices ?? [];
+        this.normals = builder.normals ?? [];
+        this.colors = builder.colors ?? [];
+        this.indices = builder.indices ?? [];
+        this.uvCoords = builder.uvCoords ?? [];
+        this.material = builder.material ?? null;
+        this.meshes = builder.meshes ?? [];
+        this.animations = builder.animations ?? [];
+        this.texture = builder.texture ?? null;
+        this.rotation = builder.rotation || { x: 0, y: 0 };
     }
-};
+
+    static get Builder() {
+        class Builder {
+            setName(name) { this.name = name; return this; }
+            setType(type) { this.type = type; return this; }
+            setShaderProgram(shaderProgram) { this.shaderProgram = shaderProgram; return this; }
+            setPosition(position) { this.position = position; return this; }
+            setVertices(vertices) { this.vertices = vertices; return this; }
+            setNormals(normals) { this.normals = normals; return this; }
+            setColors(colors) { this.colors = colors; return this; }
+            setIndices(indices) { this.indices = indices; return this; }
+            setUVCoords(uvCoords) { this.uvCoords = uvCoords; return this; }
+            setMaterial(material) { this.material = material; return this; }
+            setMeshes(meshes) { this.meshes = meshes; return this; }
+            setAnimations(animations) { this.animations = animations; return this; }
+            setTexture(texture) { this.texture = texture; return this; }
+            setRotation(rotation) { this.rotation = rotation; return this; }
+
+            build() {
+                return new GameObjectDefinition(this);
+            }
+        }
+        return Builder;
+    }
+}
 
 export class ObjectLoader {
     constructor(objectManager, shaderManager) {
@@ -28,18 +53,50 @@ export class ObjectLoader {
     }
 
     async loadGameObjects() {
-        let shaderThreeD = this.shaderManager.getShader(ShaderType.THREE_D);
-        let shaderUI = this.shaderManager.getShader(ShaderType.UI);
+        const shaderThreeD = this.shaderManager.getShader(ShaderType.THREE_D);
+        const shaderUI = this.shaderManager.getShader(ShaderType.UI);
 
-        const triangle = new GameObjectDefinition("triangle", ObjectType.UI, shaderUI, null, triangleVertices);
-        
-        const triangle2d = new GameObjectDefinition("triangle2d", ObjectType.TWO_D, shaderThreeD, [110, -75, -15], triangleVertices);
-        
-        const f3d = new GameObjectDefinition("3df", ObjectType.THREE_D, shaderThreeD, [0, 0, 0], fVertices, fNormals, fColors);
-        
+        const square = new GameObjectDefinition.Builder()
+            .setName("square")
+            .setType(ObjectType.TWO_D)
+            .setShaderProgram(shaderThreeD)
+            .setPosition([-110, -150, 0])
+            .setVertices(squareVertices)
+            .setNormals(squareNormals)
+            .setRotation({ x: 0, y: 45 })
+            .build();
+
+        const triangle = new GameObjectDefinition.Builder()
+            .setName("triangle")
+            .setType(ObjectType.UI)
+            .setShaderProgram(shaderUI)
+            .setVertices(triangleVerticesUITest)
+            .build();
+
+        const triangle2d = new GameObjectDefinition.Builder()
+            .setName("triangle2d")
+            .setType(ObjectType.TWO_D)
+            .setShaderProgram(shaderThreeD)
+            .setPosition([110, -75, -15])
+            .setVertices(triangleVertices)
+            .build();
+
+        const f3d = new GameObjectDefinition.Builder()
+            .setName("3df")
+            .setType(ObjectType.THREE_D)
+            .setShaderProgram(shaderThreeD)
+            .setPosition([0, 0, 0])
+            .setVertices(fVertices)
+            .setNormals(fNormals)
+            .setColors(fColors)
+            .setTexture("resources/textures/f-texture.png")
+            .setUVCoords(fTextureCoords)
+            .build();
+
         this.objectManager.loadObject(triangle);
         this.objectManager.loadObject(f3d);
-        
         this.objectManager.loadObject(triangle2d);
+        
+        this.objectManager.loadObject(square);
     }
-};
+}

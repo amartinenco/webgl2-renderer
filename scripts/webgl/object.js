@@ -1,6 +1,7 @@
 import { createBuffer } from './buffer-manager.js';
 import { mat4, vec3, vec4 } from '../math/gl-matrix/index.js'
 import { warnLog } from '../logger/logger.js';
+import { TextureLoader } from './texture-loader.js';
 
 export class ObjectBase {
     constructor(gl, objectDefinition, attributeSize) {
@@ -8,10 +9,23 @@ export class ObjectBase {
         this.name = objectDefinition.name;
         this.vertices = objectDefinition.vertices;
         this.normals = objectDefinition.normals;
+        this.uvCoords = objectDefinition.uvCoords;
         this.vertexBuffer = createBuffer(gl, this.vertices);
         this.normalBuffer = createBuffer(gl, this.normals);
         this.indexBuffer = null;
+        //this.texture = objectDefinition.texture;
         this.texture = null;
+        this.texcoordBuffer = null;
+        //this.texcoordBuffer = this.uvCoords.length ? createBuffer(gl, this.uvCoords) : null;
+        if (objectDefinition.uvCoords && objectDefinition.uvCoords.length > 0) {
+            this.texcoordBuffer = createBuffer(gl, objectDefinition.uvCoords);
+        }
+
+        if (typeof objectDefinition.texture === 'string') {
+            const textureLoader = new TextureLoader(gl);
+            this.texture = textureLoader.load(objectDefinition.texture);
+        }
+
         this.shaderProgram = objectDefinition.shaderProgram;
         this.attributeSize = attributeSize;
         this.modelMatrix = mat4.create();
@@ -30,6 +44,14 @@ export class ObjectBase {
             console.log();
         }
 
+        this.rotationX = 0;
+        this.rotationY = 0;
+        if (objectDefinition.rotation && (objectDefinition.rotation.x != 0 || objectDefinition.rotation.y != 0)) {
+            this.rotationX = objectDefinition.rotation.x * Math.PI / 180;
+            this.rotationY = objectDefinition.rotation.y * Math.PI / 180;
+            mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotationY);
+            mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotationX);
+        }
 
         gl.bindVertexArray(null);
     }
@@ -37,6 +59,12 @@ export class ObjectBase {
     setupAttributes() {
         const gl = this.gl;
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        
+        gl.useProgram(this.shaderProgram);
+       
+        
+        // else {    warnLog("Uniform 'u_useTexture' not found in shader."); }
+
         const positionAttributeLocation = gl.getAttribLocation(this.shaderProgram, "a_position");
         if (positionAttributeLocation !== -1) {
             gl.enableVertexAttribArray(positionAttributeLocation);
@@ -55,12 +83,57 @@ export class ObjectBase {
                 warnLog("Attribute 'a_normal' not found in shader.");
             }
         }
+        
+        const useTextureLocation = this.gl.getUniformLocation(this.shaderProgram, "u_useTexture");
+        //gl.uniform1i(useTextureLocation, 0);
+        console.log(this.name + " texture " + this.texture);
+        console.log(this.name + " texcoordBuffer " + this.texcoordBuffer)
+        console.log(this.name + " " + Boolean(this.texture && this.texcoordBuffer) )
+        const hasTexture = Boolean(this.texture && this.texcoordBuffer);
+        if (useTextureLocation !== null) {
+            gl.uniform1i(useTextureLocation, hasTexture ? 1 : 0);
+            //console.log("---" + this.name + " " + hasTexture);
+            // if (this.texture == null || this.texture == undefined) {
+            //     this.gl.uniform1i(useTextureLocation, 0);
+            // } else {
+         } 
 
+
+         console.log()
+          console.log("name:" + hasTexture  + " " + this.name)
+
+          
+        if (hasTexture) {
+            
+            //this.gl.uniform1i(useTextureLocation, 1);
+            const textureCoordAttributeLocation = gl.getAttribLocation(this.shaderProgram, "a_texcoord");
+            if (textureCoordAttributeLocation !== -1) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer);
+                gl.enableVertexAttribArray(textureCoordAttributeLocation);
+                gl.vertexAttribPointer(textureCoordAttributeLocation, 2, gl.FLOAT, true, 0, 0);
+            } else {
+                warnLog("Attribute 'a_texcoord' not found in shader.");
+            }
+        }
+       
         mat4.translate(this.modelMatrix, this.modelMatrix, [0, 0, 0]);
     }
 
     draw() {
         const gl = this.gl;
+        gl.useProgram(this.shaderProgram);
+        
+        const useTexLoc = gl.getUniformLocation(this.shaderProgram, "u_useTexture");
+        const hasTexture = Boolean(this.texture && this.texcoordBuffer);
+        gl.uniform1i(useTexLoc, hasTexture ? 1 : 0);
+
+        if (hasTexture) {
+            const texLoc = gl.getUniformLocation(this.shaderProgram, 'u_texture');
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.uniform1i(texLoc, 0);
+        }
+
         gl.bindVertexArray(this.vao);
         this.render();
         gl.bindVertexArray(null);
@@ -108,15 +181,20 @@ export class ObjectBase {
             this.gl.deleteBuffer(this.normalBuffer);
             this.normalBuffer = null;
         }
+
+        if (this.texcoordBuffer) {
+            this.gl.deleteBuffer(this.texcoordBuffer);
+            this.texcoordBuffer = null;
+        }
+
+        if (this.texture instanceof WebGLTexture) {
+            this.gl.deleteTexture(this.texture);
+            this.texture = null;
+        }
     
         if (this.vao) {
             this.gl.deleteVertexArray(this.vao);
             this.vao = null;
-        }
-    
-        if (this.texture) {
-            this.gl.deleteTexture(this.texture);
-            this.texture = null;
         }
     
         if (this.indexBuffer) {
@@ -155,11 +233,12 @@ export class Object3D extends ObjectBase {
 
 export class Object2D extends ObjectBase {
     constructor(gl, objectDefinition) {
-        super(gl, objectDefinition, 2);
+        super(gl, objectDefinition, 3);
     }
 
     render() {
-        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, this.vertices.length / 2);
+        //this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, this.vertices.length / 3);
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length / 3);
     }
 }
 

@@ -13,6 +13,9 @@ uniform bool u_useSpotLight;
 // eye position
 uniform vec3 u_viewWorldPosition;
 
+// texture
+in vec2 a_texcoord;
+
 in vec4 a_position;
 in vec3 a_normal;
 
@@ -23,6 +26,8 @@ out vec3 v_lightDirection;
 out vec3 v_surface2light;
 out vec3 v_surface2view;
 
+// pass texture to fragment shader
+out vec2 v_texcoord;
 
 void main() {
 
@@ -49,4 +54,5 @@ void main() {
   
   mat3 normalMatrix = mat3(transpose(inverse(u_modelWorldMatrix)));
   v_normal = normalize(normalMatrix * a_normal);
+  v_texcoord = a_texcoord;
 }
