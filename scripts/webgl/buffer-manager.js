@@ -16,3 +16,11 @@ export function createBuffer(gl, data) {
 
     return buffer;
 }
+
+export function createFramebuffer(gl, targetTexture) {
+    const fb = gl.createFramebuffer();
+    gl.bindBuffer(gl.FRAMEBUFFER, fb);
+    const attachmentPoint = gl.COLOR_ATTACHMENT0;
+    const level = 0;
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
+}

@@ -23,7 +23,7 @@ export class ObjectBase {
 
         if (typeof objectDefinition.texture === 'string') {
             const textureLoader = new TextureLoader(gl);
-            this.texture = textureLoader.load(objectDefinition.texture);
+            this.texture = textureLoader.loadImage(objectDefinition.texture);
         }
 
         this.shaderProgram = objectDefinition.shaderProgram;
