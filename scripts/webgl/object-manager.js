@@ -41,6 +41,10 @@ export class ObjectManager {
        return this.loadedObjects[id] || null; 
     }
 
+    getRenderTargetObject() {
+        return this.getAllObjects().find(obj => obj.isRenderToTarget);    
+    }
+
     removeObject(id) {
         if (this.loadedObjects[id]) {
             const obj = this.loadedObjects[id];

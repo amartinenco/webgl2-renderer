@@ -19,6 +19,7 @@ export class GameObjectDefinition {
         this.animations = builder.animations ?? [];
         this.texture = builder.texture ?? null;
         this.rotation = builder.rotation || { x: 0, y: 0 };
+        this.isRenderToTarget = builder.isRenderToTarget || false;
     }
 
     static get Builder() {
@@ -37,7 +38,7 @@ export class GameObjectDefinition {
             setAnimations(animations) { this.animations = animations; return this; }
             setTexture(texture) { this.texture = texture; return this; }
             setRotation(rotation) { this.rotation = rotation; return this; }
-
+            setRenderToTarget(renderToTarget) { this.isRenderToTarget = renderToTarget; return this;}
             build() {
                 return new GameObjectDefinition(this);
             }
