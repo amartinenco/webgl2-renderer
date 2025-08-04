@@ -2,6 +2,8 @@ import { triangleVertices, triangleVerticesUITest } from '../shapes/triangle.js'
 import { squareVertices, squareNormals } from '../shapes/square.js';
 import { fVertices, fNormals, fColors, fTextureCoords } from '../shapes/3df.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
+import { errorLog } from '../logger/logger.js';
+import { TextureFactory } from './texture-factory.js';
 
 export class GameObjectDefinition {
     constructor(builder) {
@@ -48,15 +50,16 @@ export class GameObjectDefinition {
 }
 
 export class ObjectLoader {
-    constructor(objectManager, shaderManager) {
+    constructor(objectManager, shaderManager, textureManager) {
         this.objectManager = objectManager; 
-        this.shaderManager = shaderManager;       
+        this.shaderManager = shaderManager;
+        this.textureManager = textureManager;
     }
 
     async loadGameObjects() {
         const shaderThreeD = this.shaderManager.getShader(ShaderType.THREE_D);
         const shaderUI = this.shaderManager.getShader(ShaderType.UI);
-
+                
         const square = new GameObjectDefinition.Builder()
             .setName("square")
             .setType(ObjectType.TWO_D)
@@ -82,6 +85,8 @@ export class ObjectLoader {
             .setVertices(triangleVertices)
             .build();
 
+        const f3dTexture = this.textureManager.get("3df");
+        console.log(f3dTexture);
         const f3d = new GameObjectDefinition.Builder()
             .setName("3df")
             .setType(ObjectType.THREE_D)
@@ -90,14 +95,13 @@ export class ObjectLoader {
             .setVertices(fVertices)
             .setNormals(fNormals)
             .setColors(fColors)
-            .setTexture("resources/textures/f-texture.png")
+            .setTexture(f3dTexture)
             .setUVCoords(fTextureCoords)
             .build();
 
         this.objectManager.loadObject(triangle);
         this.objectManager.loadObject(f3d);
         this.objectManager.loadObject(triangle2d);
-        
         this.objectManager.loadObject(square);
     }
 }

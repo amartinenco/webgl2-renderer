@@ -8,6 +8,8 @@ import { debugLog, errorLog } from '../logger/logger.js';
 import { CameraManager } from './camera-manager.js';
 import { GlobalContext } from './global-context.js';
 import { Object3D } from './object.js';
+import { TextureManager } from './texture-manager.js';
+import { TextureLoader } from './texture-loader.js';
 
 export class GameEngine {
 
@@ -19,6 +21,8 @@ export class GameEngine {
         this.objectLoader = null;
         this.lightManager = null;
         this.lightLoader = null;
+        this.textureManager = null;
+        this.textureLoader = null;
         this.engineRun = this.engineRun.bind(this); // pre-bind 'this' for the looping
         this.renderer = null;
         this.cameraManager = null;
@@ -31,8 +35,12 @@ export class GameEngine {
         await this.shaderManager.initialize();
         debugLog("Shaders initialized successfully.");
         
+        this.textureManager = new TextureManager(this.gl);
+        this.textureLoader = new TextureLoader(this.gl, this.textureManager, this.canvas);
+        await this.textureLoader.loadTextures();
+
         this.objectManager = new ObjectManager(this.gl);
-        this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager);
+        this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager, this.textureManager);
         await this.objectLoader.loadGameObjects();
 
         this.lightManager = new LightingManager(this.gl);
@@ -40,7 +48,7 @@ export class GameEngine {
         await this.lightLoader.loadLights();
 
         this.cameraManager = new CameraManager(this.canvas);
-        this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager, this.lightManager);
+        this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager, this.lightManager, this.textureManager);
         this.inputManager = this.globalContext ? this.globalContext.inputManager : null;
         debugLog("GameEngine initialized");
     }

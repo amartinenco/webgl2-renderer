@@ -1,8 +1,7 @@
-import { TextureLoader } from "./texture-loader.js";
 import { errorLog } from "../logger/logger.js";
 
 export class RenderTarget {
-    constructor(gl, width, height) {
+    constructor(gl, textureFactory, name, width, height) {
         this.gl = gl;
         this.width = width;
         this.height = height;
@@ -10,8 +9,11 @@ export class RenderTarget {
         this.framebuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 
+        this.renderTargetName = name + '_rt';
+        this.depthTextureName = name + '_dt';
+
         // color texture
-        this.texture = TextureLoader.createRenderTargetTexture(gl, width, height);
+        this.texture = textureFactory.createRenderTargetTexture(renderTargetName, width, height);
         gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
             gl.COLOR_ATTACHMENT0,
@@ -21,7 +23,7 @@ export class RenderTarget {
         );
 
         // depth texture
-        const depthTexture = TextureLoader.createDepthTexture(gl, width, height);
+        const depthTexture = textureFactory.createDepthTexture(depthTextureName, width, height);
         gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
             gl.DEPTH_ATTACHMENT,

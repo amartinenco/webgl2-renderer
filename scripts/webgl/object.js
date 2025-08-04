@@ -1,7 +1,7 @@
 import { createBuffer } from './buffer-manager.js';
 import { mat4, vec3, vec4 } from '../math/gl-matrix/index.js'
 import { warnLog } from '../logger/logger.js';
-import { TextureLoader } from './texture-loader.js';
+//import { TextureFactory } from './texture-factory.js';
 
 export class ObjectBase {
     constructor(gl, objectDefinition, attributeSize) {
@@ -21,10 +21,11 @@ export class ObjectBase {
             this.texcoordBuffer = createBuffer(gl, objectDefinition.uvCoords);
         }
 
-        if (typeof objectDefinition.texture === 'string') {
-            const textureLoader = new TextureLoader(gl);
-            this.texture = textureLoader.loadImage(objectDefinition.texture);
-        }
+        // if (typeof objectDefinition.texture === 'string') {
+        //     const textureFactory = new TextureFactory(gl);
+        //     this.texture = textureFactory.loadImage("test", objectDefinition.texture);
+        // }
+        this.texture = objectDefinition.texture;
 
         this.shaderProgram = objectDefinition.shaderProgram;
         this.attributeSize = attributeSize;

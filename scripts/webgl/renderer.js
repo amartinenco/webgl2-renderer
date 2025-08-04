@@ -2,10 +2,9 @@ import { debugLog } from "../logger/logger.js";
 import { mat4, vec4 } from "../math/gl-matrix/index.js";
 import { Object3D, Object2D, ObjectUI } from "./object.js";
 import { CameraType } from "./utils/constants.js";
-import { RenderTarget } from "./render-target.js";
 
 export class Renderer {
-    constructor(gl, canvas, shaderManager, objectManager, cameraManager, lightManager) {
+    constructor(gl, canvas, shaderManager, objectManager, cameraManager, lightManager, textureManager) {
         this.gl = gl;
         this.canvas = canvas;
         this.shaderManager = shaderManager;
@@ -19,7 +18,8 @@ export class Renderer {
             this.cameraManager.getActiveCamera().updateProjection();
         });
 
-        this.renderTarget = new RenderTarget(gl, canvas.width, canvas.height);
+        this.textureManager = textureManager;
+        this.renderTarget = this.textureManager.getRenderTarget();
         this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
     }
 
