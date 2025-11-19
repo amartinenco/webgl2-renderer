@@ -4,7 +4,7 @@ import { RenderTarget } from "./render-target.js";
 
 export class TextureLoader {
 
-    constructor(gl, textureManager) {
+    constructor(gl, textureManager, canvas) {
         this.canvas = canvas;
         this.textureFactory = new TextureFactory(gl, textureManager);
     }

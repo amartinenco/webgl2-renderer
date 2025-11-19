@@ -41,8 +41,10 @@ export class Renderer {
         const camera = this.cameraManager.getActiveCamera();
         const projection = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
         const object = this.objectManager.getRenderTargetObject();
+        //console.log(object);
         if (!object) return;
-
+        
+        console.log("Render target", this.renderTarget)
         this.renderTarget.bind();
         this.gl.clearColor(0.2, 0.2, 0.2, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -125,8 +127,9 @@ export class Renderer {
         const perspective = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
         const uiProjection = camera.getProjectionMatrix(CameraType.ORTHOGRAPHIC);
 
+        // TODO: continue from here
         // Render to texture
-        this.renderToTexture();
+        //this.renderToTexture();
 
         // Render to full screen
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);

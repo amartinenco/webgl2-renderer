@@ -68,6 +68,7 @@ export class ObjectLoader {
             .setVertices(squareVertices)
             .setNormals(squareNormals)
             .setRotation({ x: 0, y: 45 })
+            .setRenderToTarget(true)
             .build();
 
         const triangle = new GameObjectDefinition.Builder()
@@ -86,7 +87,7 @@ export class ObjectLoader {
             .build();
 
         const f3dTexture = this.textureManager.get("3df");
-        console.log(f3dTexture);
+        //console.log(f3dTexture);
         const f3d = new GameObjectDefinition.Builder()
             .setName("3df")
             .setType(ObjectType.THREE_D)

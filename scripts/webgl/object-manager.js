@@ -42,6 +42,9 @@ export class ObjectManager {
     }
 
     getRenderTargetObject() {
+        //console.log("getRenderToTargetObject: ");
+        //console.log(this.getAllObjects().find(obj => obj.isRenderToTarget === true));
+        //console.log(this.getAllObjects()[3]);
         return this.getAllObjects().find(obj => obj.isRenderToTarget);    
     }
 

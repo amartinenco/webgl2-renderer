@@ -13,6 +13,7 @@ export class ObjectBase {
         this.vertexBuffer = createBuffer(gl, this.vertices);
         this.normalBuffer = createBuffer(gl, this.normals);
         this.indexBuffer = null;
+        this.isRenderToTarget = objectDefinition.isRenderToTarget;
         //this.texture = objectDefinition.texture;
         this.texture = null;
         this.texcoordBuffer = null;
