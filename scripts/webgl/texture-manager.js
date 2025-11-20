@@ -5,7 +5,7 @@ export class TextureManager {
     constructor(gl) {
         this.gl = gl;
         this.textures = new Map();
-        this.renderTarget = null;
+        this.renderTargets = new Map();
     }
 
     add(name, texture) {
@@ -25,25 +25,19 @@ export class TextureManager {
         }
     }
 
-    getRenderTarget() {
-        if (this.renderTarget) {
-            return this.renderTarget;
-        }
-        return null;
+    addRenderTarget(name, rt) {
+        this.renderTargets.set(name, rt);
     }
 
-    setRenderTarget(renderTarget) {
-        this.renderTarget = renderTarget;
+    getRenderTarget(name) {
+        return this.renderTargets.get(name);
     }
 
-    deleteRenderTarget() {
-        if (this.renderTarget) {
-            if (this.renderTarget.renderTargetName) {
-                this.delete(this.renderTarget.renderTargetName);
-            }
-            if (this.renderTarget.depthTextureName) {
-                this.delete(this.renderTarget.depthTextureName);
-            }
-        }
+    deleteRenderTarget(name) {
+        const rt = this.renderTargets.get(name);
+        if (!rt) return;
+        if (rt.renderTargetName) this.delete(rt.renderTargetName);
+        if (rt.depthTextureName) this.delete(rt.depthTextureName);
+        this.renderTargets.delete(name);
     }
 }

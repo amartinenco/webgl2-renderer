@@ -5,12 +5,13 @@ import { RenderTarget } from "./render-target.js";
 export class TextureLoader {
 
     constructor(gl, textureManager, canvas) {
+        this.gl = gl;
         this.canvas = canvas;
-        this.textureFactory = new TextureFactory(gl, textureManager);
+        this.textureFactory = new TextureFactory(this.gl, textureManager);
     }
 
-    loadRenderTarget(name, canvas) {
-        this.renderTarget = new RenderTarget(gl, this.textureFactory, name, canvas.width, canvas.height);
+    loadRenderTarget(name) {
+        this.renderTarget = new RenderTarget(this.gl, this.textureFactory, name, this.canvas.width, this.canvas.height);
         this.textureManager.setRenderTarget(this.renderTarget);
         debugLog(`Render target "${name}" set`);
     }

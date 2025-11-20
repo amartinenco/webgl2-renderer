@@ -6,6 +6,7 @@ export class RenderTarget {
         this.width = width;
         this.height = height;
 
+        // create off-screen canvas you can draw into
         this.framebuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 
@@ -13,7 +14,7 @@ export class RenderTarget {
         this.depthTextureName = name + '_dt';
 
         // color texture
-        this.texture = textureFactory.createRenderTargetTexture(renderTargetName, width, height);
+        this.texture = textureFactory.createRenderTargetTexture(this.renderTargetName, width, height);
         gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
             gl.COLOR_ATTACHMENT0,
@@ -23,12 +24,12 @@ export class RenderTarget {
         );
 
         // depth texture
-        const depthTexture = textureFactory.createDepthTexture(depthTextureName, width, height);
+        this.depthTexture = textureFactory.createDepthTexture(this.depthTextureName, width, height);
         gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
             gl.DEPTH_ATTACHMENT,
             gl.TEXTURE_2D,
-            depthTexture,
+            this.depthTexture,
             0
         );
 

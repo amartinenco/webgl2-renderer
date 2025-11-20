@@ -19,7 +19,7 @@ export class Renderer {
         });
 
         this.textureManager = textureManager;
-        this.renderTarget = this.textureManager.getRenderTarget();
+        //this.renderTarget = this.textureManager.getRenderTarget();
         this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
     }
 
@@ -44,28 +44,28 @@ export class Renderer {
         //console.log(object);
         if (!object) return;
         
-        console.log("Render target", this.renderTarget)
-        this.renderTarget.bind();
-        this.gl.clearColor(0.2, 0.2, 0.2, 1);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        // console.log("Render target", this.renderTarget)
+        // this.renderTarget.bind();
+        // this.gl.clearColor(0.2, 0.2, 0.2, 1);
+        // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-        const view = camera.getViewMatrix();
-        const mvpMatrix = mat4.create();
-        mat4.multiply(mvpMatrix, projection, view);
-        mat4.multiply(mvpMatrix, mvpMatrix, object.getModelMatrix());
+        // const view = camera.getViewMatrix();
+        // const mvpMatrix = mat4.create();
+        // mat4.multiply(mvpMatrix, projection, view);
+        // mat4.multiply(mvpMatrix, mvpMatrix, object.getModelMatrix());
 
-        const shader = object.getShader();
-        this.gl.useProgram(shader);
-        camera.setUniforms(this.gl, shader);
+        // const shader = object.getShader();
+        // this.gl.useProgram(shader);
+        // camera.setUniforms(this.gl, shader);
         
-        const colorLocation = this.gl.getUniformLocation(shader, "u_color");
-        this.gl.uniform4fv(colorLocation, [1.0, 1.0, 0.0, 1.0]); // highlight color
+        // const colorLocation = this.gl.getUniformLocation(shader, "u_color");
+        // this.gl.uniform4fv(colorLocation, [1.0, 1.0, 0.0, 1.0]); // highlight color
 
-        this.shaderManager.setUniformMatrix(shader, 'u_mvpMatrix', mvpMatrix);
-        this.shaderManager.setUniformMatrix(shader, 'u_modelWorldMatrix', object.getModelMatrix());
+        // this.shaderManager.setUniformMatrix(shader, 'u_mvpMatrix', mvpMatrix);
+        // this.shaderManager.setUniformMatrix(shader, 'u_modelWorldMatrix', object.getModelMatrix());
 
-        object.draw();
-        this.renderTarget.unbind();
+        // object.draw();
+        // this.renderTarget.unbind();
     }
 
     renderScene(camera, projection) {
@@ -129,7 +129,7 @@ export class Renderer {
 
         // TODO: continue from here
         // Render to texture
-        //this.renderToTexture();
+        this.renderToTexture();
 
         // Render to full screen
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
