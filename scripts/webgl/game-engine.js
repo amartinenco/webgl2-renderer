@@ -38,6 +38,7 @@ export class GameEngine {
         this.textureManager = new TextureManager(this.gl);
         this.textureLoader = new TextureLoader(this.gl, this.textureManager, this.canvas);
         await this.textureLoader.loadTextures();
+        this.textureLoader.loadRenderTargets();
 
         this.objectManager = new ObjectManager(this.gl);
         this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager, this.textureManager);

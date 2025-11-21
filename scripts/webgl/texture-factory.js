@@ -59,7 +59,7 @@ export class TextureFactory {
         const texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        TextureFactory.setParameters(gl, texture);
+        TextureFactory.setParameters(gl, texture, true);
         this.textureManager.add(name, texture);
         return texture;
     }
