@@ -21,7 +21,8 @@ export class GameObjectDefinition {
         this.animations = builder.animations ?? [];
         this.texture = builder.texture ?? null;
         this.rotation = builder.rotation || { x: 0, y: 0 };
-        this.isRenderToTarget = builder.isRenderToTarget || false;
+        this.isRenderTarget = builder.isRenderToTarget || false;
+        this.outputTarget = builder.outputTarget || null;
     }
 
     static get Builder() {
@@ -40,7 +41,9 @@ export class GameObjectDefinition {
             setAnimations(animations) { this.animations = animations; return this; }
             setTexture(texture) { this.texture = texture; return this; }
             setRotation(rotation) { this.rotation = rotation; return this; }
-            setRenderToTarget(renderToTarget) { this.isRenderToTarget = renderToTarget; return this;}
+            setIsRenderToTarget(isRenderTarget) { this.isRenderTarget = isRenderTarget; return this; }
+            setOutputTarget(targetName) { this.outputTarget = targetName; return this; }
+
             build() {
                 return new GameObjectDefinition(this);
             }
@@ -68,7 +71,7 @@ export class ObjectLoader {
             .setVertices(squareVertices)
             .setNormals(squareNormals)
             .setRotation({ x: 0, y: 45 })
-            .setRenderToTarget(true)
+            .setIsRenderToTarget(true)
             .build();
 
         const triangle = new GameObjectDefinition.Builder()

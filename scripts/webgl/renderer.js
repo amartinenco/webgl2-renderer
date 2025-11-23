@@ -1,7 +1,8 @@
-import { debugLog } from "../logger/logger.js";
+import { debugLog, errorLog } from "../logger/logger.js";
 import { mat4, vec4 } from "../math/gl-matrix/index.js";
 import { Object3D, Object2D, ObjectUI } from "./object.js";
 import { CameraType } from "./utils/constants.js";
+import { groupBy } from "./utils/objhelper.js";
 
 export class Renderer {
     constructor(gl, canvas, shaderManager, objectManager, cameraManager, lightManager, textureManager) {
@@ -40,10 +41,43 @@ export class Renderer {
     renderToTexture() {
         const camera = this.cameraManager.getActiveCamera();
         const projection = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
-        const object = this.objectManager.getRenderTargetObject();
+        const renderTargetObjects = this.objectManager.getRenderTargetObjects();
         //console.log(object);
-        if (!object) return;
+        if (!renderTargetObjects.length === 0) return;
         
+        for (const obj of renderTargetObjects) {
+           
+            const rt = this.textureManager.getRenderTarget(obj.name);
+            if (!rt) {
+                errorLog("No render target found for:", obj.name);
+                continue;
+            }
+
+            // rt.bind();
+            // this.gl.clearColor(0.2, 0.2, 0.2, 1);
+            // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
+            // const view = camera.getViewMatrix();
+            // const mvp = mat4.create();
+            // mat4.multiply(mvp, projection, view);
+            // mat4.multiply(mvp, mvp, obj.getModelMatrix());
+
+            // const shader = obj.getShader();
+            // this.gl.useProgram(shader);
+            // camera.setUniforms(this.gl, shader);
+
+            // this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
+            // this.shaderManager.setUniformMatrix(shader, "u_modelWorldMatrix", obj.getModelMatrix());
+
+            // obj.draw();
+
+            // rt.unbind();
+
+            //console.log(rt)
+            //console.log(this.textureManager)
+        }
+
+
         // console.log("Render target", this.renderTarget)
         // this.renderTarget.bind();
         // this.gl.clearColor(0.2, 0.2, 0.2, 1);

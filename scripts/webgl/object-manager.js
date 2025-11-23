@@ -41,11 +41,11 @@ export class ObjectManager {
        return this.loadedObjects[id] || null; 
     }
 
-    getRenderTargetObject() {
+    getRenderTargetObjects() {
         //console.log("getRenderToTargetObject: ");
         //console.log(this.getAllObjects().find(obj => obj.isRenderToTarget === true));
         //console.log(this.getAllObjects()[3]);
-        return this.getAllObjects().find(obj => obj.isRenderToTarget);    
+        return this.getAllObjects().filter(obj => obj.isRenderTarget);    
     }
 
     removeObject(id) {

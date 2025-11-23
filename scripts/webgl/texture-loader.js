@@ -19,7 +19,6 @@ export class TextureLoader {
 
         for (const rt of renderTargets) {
             const renderTarget = new RenderTarget(this.gl, this.textureFactory, rt.name, this.canvas.width, this.canvas.height);
-            console.log(renderTarget)
             this.textureManager.addRenderTarget(rt.name, renderTarget);
             debugLog(`Render target "${rt.name}" loaded`);
         }
