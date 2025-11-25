@@ -21,7 +21,6 @@ export class GameObjectDefinition {
         this.animations = builder.animations ?? [];
         this.texture = builder.texture ?? null;
         this.rotation = builder.rotation || { x: 0, y: 0 };
-        this.isRenderTarget = builder.isRenderToTarget || false;
         this.outputTarget = builder.outputTarget || null;
     }
 
@@ -41,7 +40,6 @@ export class GameObjectDefinition {
             setAnimations(animations) { this.animations = animations; return this; }
             setTexture(texture) { this.texture = texture; return this; }
             setRotation(rotation) { this.rotation = rotation; return this; }
-            setIsRenderToTarget(isRenderTarget) { this.isRenderTarget = isRenderTarget; return this; }
             setOutputTarget(targetName) { this.outputTarget = targetName; return this; }
 
             build() {
@@ -62,17 +60,22 @@ export class ObjectLoader {
     async loadGameObjects() {
         const shaderThreeD = this.shaderManager.getShader(ShaderType.THREE_D);
         const shaderUI = this.shaderManager.getShader(ShaderType.UI);
-                
+        const shaderRTT = this.shaderManager.getShader(ShaderType.RTT);
+        const squareRT = this.textureManager.getRenderTarget("square");
+  
         const square = new GameObjectDefinition.Builder()
             .setName("square")
             .setType(ObjectType.TWO_D)
             .setShaderProgram(shaderThreeD)
-            .setPosition([-110, -150, 0])
+            .setPosition([-150, -150, 0])
             .setVertices(squareVertices)
             .setNormals(squareNormals)
             .setRotation({ x: 0, y: 45 })
-            .setIsRenderToTarget(true)
+            //.setIsRenderToTarget(true)
+            .setOutputTarget("screen")
+            .setTexture(squareRT.texture)
             .build();
+        //square.setTexture(textureManager.getRenderTarget("square").texture);
 
         const triangle = new GameObjectDefinition.Builder()
             .setName("triangle")
@@ -87,6 +90,30 @@ export class ObjectLoader {
             .setShaderProgram(shaderThreeD)
             .setPosition([110, -75, -15])
             .setVertices(triangleVertices)
+            .setOutputTarget("screen")  // test target
+            .build();
+
+        // const test = new GameObjectDefinition.Builder()
+        //     .setName("triangleTest")
+        //     .setType(ObjectType.TWO_D)
+        //     .setShaderProgram(shaderThreeD)
+        //     .setVertices(triangleVertices)
+        //     .setOutputTarget("square")
+        //     .setPosition([0, 0, 0])
+        //     .build();
+        const triangleUVs = [
+        0.0, 0.0,   // vertex 0
+        1.0, 0.0,   // vertex 1
+        0.5, 1.0    // vertex 2
+        ];
+        const triangleInSquare = new GameObjectDefinition.Builder()
+            .setName("triangleInSquare")
+            .setType(ObjectType.TWO_D)
+            .setShaderProgram(shaderRTT)
+            .setVertices(triangleVertices)
+            .setUVCoords(triangleUVs)
+            .setOutputTarget("square")
+            .setPosition([0, 0, 0])
             .build();
 
         const f3dTexture = this.textureManager.get("3df");
@@ -101,11 +128,13 @@ export class ObjectLoader {
             .setColors(fColors)
             .setTexture(f3dTexture)
             .setUVCoords(fTextureCoords)
+            .setOutputTarget("screen")
             .build();
 
         this.objectManager.loadObject(triangle);
         this.objectManager.loadObject(f3d);
         this.objectManager.loadObject(triangle2d);
         this.objectManager.loadObject(square);
+        //this.objectManager.loadObject(triangleInSquare);
     }
 }

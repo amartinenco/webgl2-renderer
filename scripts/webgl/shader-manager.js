@@ -15,6 +15,7 @@ export class ShaderManager {
         await this.loadShader(ShaderType.THREE_D, "worldVertexShader.glsl", "worldFragmentShader.glsl");
         await this.loadShader(ShaderType.TWO_D, "worldVertexShader.glsl", "worldFragmentShader.glsl");
         await this.loadShader(ShaderType.UI, "uiVertexShader.glsl", "uiFragmentShader.glsl");
+        await this.loadShader(ShaderType.RTT, "rttVertexShader.glsl", "rttFragmentShader.glsl");
     }
 
     async loadShader(name, vertexFile, fragmentFile) {

@@ -11,7 +11,8 @@ export const CameraID = Object.freeze({
 export const ShaderType = Object.freeze({
     TWO_D: "twoD",
     THREE_D: "world",
-    UI: "ui"
+    UI: "ui",
+    RTT: "rtt"
 });
 
 export const CameraType = Object.freeze({

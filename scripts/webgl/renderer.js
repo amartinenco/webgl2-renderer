@@ -22,6 +22,10 @@ export class Renderer {
         this.textureManager = textureManager;
         //this.renderTarget = this.textureManager.getRenderTarget();
         this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
+        
+        // render targets groups
+        this.rtGroups = groupBy(this.objectManager.getAllObjects().filter(obj => obj.outputTarget), o => o.outputTarget);
+        console.log(this.rtGroups)
     }
 
     resizeCanvasToDisplaySize() {
@@ -38,69 +42,104 @@ export class Renderer {
         return needResize;
     }
     
+
     renderToTexture() {
-        const camera = this.cameraManager.getActiveCamera();
-        const projection = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
-        const renderTargetObjects = this.objectManager.getRenderTargetObjects();
-        //console.log(object);
-        if (!renderTargetObjects.length === 0) return;
-        
-        for (const obj of renderTargetObjects) {
-           
-            const rt = this.textureManager.getRenderTarget(obj.name);
-            if (!rt) {
-                errorLog("No render target found for:", obj.name);
-                continue;
-            }
+    // Recompute groups in case objects changed targets at runtime (optional but robust)
+    this.rtGroups = groupBy(this.objectManager.getAllObjects().filter(obj => obj.outputTarget), o => o.outputTarget);
 
-            // rt.bind();
-            // this.gl.clearColor(0.2, 0.2, 0.2, 1);
-            // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    for (const [targetName, objects] of Object.entries(this.rtGroups)) {
+        const isScreen = targetName === "screen" || targetName === null;
+        const rt = isScreen ? null : this.textureManager.getRenderTarget(targetName);
 
-            // const view = camera.getViewMatrix();
-            // const mvp = mat4.create();
-            // mat4.multiply(mvp, projection, view);
-            // mat4.multiply(mvp, mvp, obj.getModelMatrix());
-
-            // const shader = obj.getShader();
-            // this.gl.useProgram(shader);
-            // camera.setUniforms(this.gl, shader);
-
-            // this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
-            // this.shaderManager.setUniformMatrix(shader, "u_modelWorldMatrix", obj.getModelMatrix());
-
-            // obj.draw();
-
-            // rt.unbind();
-
-            //console.log(rt)
-            //console.log(this.textureManager)
+        if (rt) {
+            rt.bind(); // binds FBO
+            this.gl.viewport(0, 0, rt.width, rt.height);      // IMPORTANT: viewport to RT size
+            this.gl.disable(this.gl.DEPTH_TEST);              // 2D pass: no depth
+            this.gl.disable(this.gl.CULL_FACE);
+        } else {
+            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+            this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            this.gl.enable(this.gl.DEPTH_TEST);
+            this.gl.enable(this.gl.CULL_FACE);
         }
 
+        this.gl.clearColor(0.0, 0.0, 0.0, 0.0);               // transparent background for compositing
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-        // console.log("Render target", this.renderTarget)
-        // this.renderTarget.bind();
-        // this.gl.clearColor(0.2, 0.2, 0.2, 1);
-        // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        for (const obj of objects) {
+            const shader = obj.getShader();
+            this.gl.useProgram(shader);
 
-        // const view = camera.getViewMatrix();
-        // const mvpMatrix = mat4.create();
-        // mat4.multiply(mvpMatrix, projection, view);
-        // mat4.multiply(mvpMatrix, mvpMatrix, object.getModelMatrix());
+            // Offscreen: pure 2D ortho, no camera uniforms
+            const mvp = mat4.create();
+            if (rt) {
+                // glMatrix mat4.ortho(out, left, right, bottom, top, near, far)
+                const projection = mat4.ortho(mat4.create(), 0, rt.width, rt.height, 0, -1, 1); // flipped Y
+                mat4.multiply(mvp, projection, obj.getModelMatrix());
+                // Do NOT call camera.setUniforms here; keep the pass decoupled from world-space
+            } else {
+                const camera = this.cameraManager.getActiveCamera();
+                const projection = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
+                mat4.multiply(mvp, projection, camera.getViewMatrix());
+                mat4.multiply(mvp, mvp, obj.getModelMatrix());
+                camera.setUniforms(this.gl, shader); // only for screen/world pass
+            }
 
-        // const shader = object.getShader();
-        // this.gl.useProgram(shader);
-        // camera.setUniforms(this.gl, shader);
-        
-        // const colorLocation = this.gl.getUniformLocation(shader, "u_color");
-        // this.gl.uniform4fv(colorLocation, [1.0, 1.0, 0.0, 1.0]); // highlight color
+            //this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
+            //this.shaderManager.setUniformMatrix(shader, "u_modelWorldMatrix", obj.getModelMatrix());
 
-        // this.shaderManager.setUniformMatrix(shader, 'u_mvpMatrix', mvpMatrix);
-        // this.shaderManager.setUniformMatrix(shader, 'u_modelWorldMatrix', object.getModelMatrix());
+            obj.draw();
+        }
 
-        // object.draw();
-        // this.renderTarget.unbind();
+        if (rt) {
+            rt.unbind(); // returns to default framebuffer
+        }
     }
+}
+    // renderToTexture() {
+    //     const camera = this.cameraManager.getActiveCamera();
+    //     //const projection = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
+
+    //     for (const [targetName, objects] of Object.entries(this.rtGroups)) {
+    //         const isScreen = targetName === "screen" || targetName === null;
+    //         const rt = isScreen ? null : this.textureManager.getRenderTarget(targetName);
+            
+    //         if (rt) rt.bind();
+    //         else this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+
+    //         //this.gl.clearColor(0.2, 0.2, 0.2, 1);
+    //         this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    //         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    //         //this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    //         // const projection = rt 
+    //         //     ? mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1) 
+    //         //     : this.cameraManager.getActiveCamera().getProjectionMatrix(CameraType.PERSPECTIVE);
+
+    //         for (const obj of objects) {
+    //             const mvp = mat4.create();
+    //             // mat4.multiply(mvp, projection, camera.getViewMatrix());
+    //             // mat4.multiply(mvp, mvp, obj.getModelMatrix());
+
+    //             if (rt) {
+    //                 const projection = mat4.ortho(mat4.create(), 0, rt.width, rt.height, 0, -1, 1); // flipped Y
+    //                 mat4.multiply(mvp, projection, obj.getModelMatrix());
+    //             } else {
+    //                 const camera = this.cameraManager.getActiveCamera();
+    //                 const projection = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
+    //                 mat4.multiply(mvp, projection, camera.getViewMatrix());
+    //                 mat4.multiply(mvp, mvp, obj.getModelMatrix());
+    //             }
+
+    //             const shader = obj.getShader();
+    //             this.gl.useProgram(shader);
+    //             camera.setUniforms(this.gl, shader);
+    //             this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
+    //             this.shaderManager.setUniformMatrix(shader, "u_modelWorldMatrix", obj.getModelMatrix());
+    //             obj.draw();
+    //         }
+    //         if (rt) rt.unbind();
+    //     }
+    // }
 
     renderScene(camera, projection) {
         const viewMatrix = camera.getViewMatrix();
@@ -119,7 +158,8 @@ export class Renderer {
             mat4.multiply(mvp, projection, viewMatrix);
             mat4.multiply(mvp, mvp, obj.getModelMatrix());
 
-            const shader = obj.getShader();
+            //const shader = obj.getShader();
+            const shader = obj.shaderProgram;
             if (shader !== currentShader) {
                 this.gl.useProgram(shader);
                 currentShader = shader;
@@ -141,7 +181,8 @@ export class Renderer {
 
         objects.filter(obj => obj instanceof ObjectUI).forEach(obj => {
             const model = obj.getModelMatrix();
-            const shader = obj.getShader();
+            //const shader = obj.getShader();
+            const shader = obj.shaderProgram;
             if (shader !== currentShader) {
                 this.gl.useProgram(shader);
                 currentShader = shader;
@@ -156,23 +197,40 @@ export class Renderer {
         this.gl.enable(this.gl.DEPTH_TEST);
     }
 
+    // render() {
+    //     const camera = this.cameraManager.getActiveCamera();
+    //     const perspective = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
+    //     const uiProjection = camera.getProjectionMatrix(CameraType.ORTHOGRAPHIC);
+
+    //     // TODO: continue from here
+    //     // Render to texture
+    //     this.renderToTexture();
+
+    //     // Render to full screen
+    //     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    //     this.gl.clearColor(0, 0, 0, 0);
+    //     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    //     this.gl.enable(this.gl.DEPTH_TEST);
+    //     this.gl.enable(this.gl.CULL_FACE);
+
+    //     this.renderScene(camera, perspective); // Main scene
+    //     this.renderUI(uiProjection);   // UI
+    // }
     render() {
         const camera = this.cameraManager.getActiveCamera();
         const perspective = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
         const uiProjection = camera.getProjectionMatrix(CameraType.ORTHOGRAPHIC);
 
-        // TODO: continue from here
-        // Render to texture
-        this.renderToTexture();
+        this.renderToTexture(); // offscreen
 
-        // Render to full screen
-        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        // Screen pass
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height); // ensure canvas-sized viewport
         this.gl.clearColor(0, 0, 0, 0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.CULL_FACE);
 
-        this.renderScene(camera, perspective); // Main scene
-        this.renderUI(uiProjection);   // UI
+        this.renderScene(camera, perspective);
+        this.renderUI(uiProjection);
     }
 };
