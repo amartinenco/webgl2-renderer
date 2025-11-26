@@ -22,7 +22,6 @@ export class TextureLoader {
             this.textureManager.addRenderTarget(rt.name, renderTarget);
             debugLog(`Render target "${rt.name}" loaded`);
         }
-
         //this.renderTarget = new RenderTarget(this.gl, this.textureFactory, name, this.canvas.width, this.canvas.height);
         //this.textureManager.addRenderTarget(this.renderTarget);   
     }

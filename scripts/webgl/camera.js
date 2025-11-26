@@ -32,9 +32,10 @@ export class Camera {
         const viewWorldPositionLocation = gl.getUniformLocation(shaderProgram, "u_viewWorldPosition");
         if (viewWorldPositionLocation !== null) {
             gl.uniform3fv(viewWorldPositionLocation, this.position);
-        } else {
-            warnLog("Uniform 'u_viewWorldPosition' not found in shader.");
-        }
+        } 
+        // else {
+        //     warnLog("Uniform 'u_viewWorldPosition' not found in shader.");
+        // }
     }
 
     updateProjection() {

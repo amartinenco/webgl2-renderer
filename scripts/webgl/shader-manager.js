@@ -105,7 +105,7 @@ export class ShaderManager {
     
         const location = this.gl.getUniformLocation(shaderProgram, uniformName);
         if (!location) {
-            warnLog(`Uniform "${uniformName}" not found in shader.`);
+            //warnLog(`Uniform "${uniformName}" not found in shader.`);
             return;
         }
     

@@ -66,14 +66,19 @@ export class ObjectLoader {
         const square = new GameObjectDefinition.Builder()
             .setName("square")
             .setType(ObjectType.TWO_D)
-            .setShaderProgram(shaderThreeD)
+            .setShaderProgram(shaderRTT)
             .setPosition([-150, -150, 0])
             .setVertices(squareVertices)
             .setNormals(squareNormals)
             .setRotation({ x: 0, y: 45 })
             //.setIsRenderToTarget(true)
             .setOutputTarget("screen")
-            .setTexture(squareRT.texture)
+            .setUVCoords(new Float32Array([
+                0.0, 0.0,  // vertex 0
+                1.0, 0.0,  // vertex 1
+                0.5, 1.0   // vertex 2
+            ]))
+            //.setTexture(squareRT.texture)  -- 
             .build();
         //square.setTexture(textureManager.getRenderTarget("square").texture);
 
@@ -102,17 +107,18 @@ export class ObjectLoader {
         //     .setPosition([0, 0, 0])
         //     .build();
         const triangleUVs = [
-        0.0, 0.0,   // vertex 0
-        1.0, 0.0,   // vertex 1
-        0.5, 1.0    // vertex 2
+            0.0, 0.0,   // vertex 0
+            1.0, 0.0,   // vertex 1
+            0.5, 1.0    // vertex 2
         ];
         const triangleInSquare = new GameObjectDefinition.Builder()
             .setName("triangleInSquare")
-            .setType(ObjectType.TWO_D)
+            .setType(ObjectType.RTT)
             .setShaderProgram(shaderRTT)
             .setVertices(triangleVertices)
             .setUVCoords(triangleUVs)
             .setOutputTarget("square")
+            //.setTexture(squareRT.texture) 
             .setPosition([0, 0, 0])
             .build();
 
@@ -135,6 +141,6 @@ export class ObjectLoader {
         this.objectManager.loadObject(f3d);
         this.objectManager.loadObject(triangle2d);
         this.objectManager.loadObject(square);
-        //this.objectManager.loadObject(triangleInSquare);
+        this.objectManager.loadObject(triangleInSquare);
     }
 }

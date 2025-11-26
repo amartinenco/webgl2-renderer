@@ -52,6 +52,7 @@ export class MeshObject extends Renderable {
         this.texture = options.texture || null;
         this.position = options.position || [0, 0, 0];
         this.rotation = options.rotation || { x: 0, y: 0 };
+        this.outputTarget = options.outputTarget || null;
         this.vao = null;
 
         this._setupBuffers();
@@ -86,7 +87,7 @@ export class MeshObject extends Renderable {
             } else warnLog("Attribute a_normal not found in shader.");
         }
 
-        if (this.texcoordBuffer && this.texture) {
+        if (this.texcoordBuffer) {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer);
             const texLoc = gl.getAttribLocation(this.shaderProgram, "a_texcoord");
             if (texLoc !== -1) {
@@ -194,48 +195,41 @@ export class ObjectUI extends MeshObject {
 }
 
 // --- Render-to-texture object ---
-export class RenderTargetQuad extends Renderable {
+export class ObjectRTT extends MeshObject {
     constructor(gl, options) {
-        super(gl);
-        this.shaderProgram = options.shaderProgram;
-        this.texture = options.texture;
-        this.position = options.position || [0, 0, 0];
-        this.vertices = options.vertices || [
-            -1, -1, 0,
-             1, -1, 0,
-            -1,  1, 0,
-             1,  1, 0
-        ];
+        super(gl, {
+            ...options,
+            texture: options.texture,      // RTT texture as input
+            uvCoords: options.uvCoords || [
+                0, 0,
+                1, 0,
+                0, 1,
+                1, 1
+            ],
+            vertices: options.vertices || [
+                -1, -1, 0,
+                 1, -1, 0,
+                -1,  1, 0,
+                 1,  1, 0
+            ]
+        });
 
-        this.vertexBuffer = createBuffer(gl, this.vertices);
-        this.vao = gl.createVertexArray();
-        gl.bindVertexArray(this.vao);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        const posLoc = gl.getAttribLocation(this.shaderProgram, "a_position");
-        if (posLoc !== -1) {
-            gl.enableVertexAttribArray(posLoc);
-            gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
+        if (options.position) {
+            this.position = options.position;
+            mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
         }
-        gl.bindVertexArray(null);
+        
     }
 
-    update(deltaTime) {
-        // Optional: animation for RTT quad
+    update(dt) {
+        // Usually empty for RTT quads
     }
 
     render() {
-        const gl = this.gl;
-        gl.useProgram(this.shaderProgram);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        const texLoc = gl.getUniformLocation(this.shaderProgram, 'u_texture');
-        if (texLoc) gl.uniform1i(texLoc, 0);
-
-        gl.bindVertexArray(this.vao);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length / 3);
-        gl.bindVertexArray(null);
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
     }
 }
+
 
 // import { createBuffer } from './buffer-manager.js';
 // import { mat4, vec3, vec4 } from '../math/gl-matrix/index.js'
