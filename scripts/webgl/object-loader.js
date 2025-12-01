@@ -72,13 +72,14 @@ export class ObjectLoader {
             .setNormals(squareNormals)
             .setRotation({ x: 0, y: 45 })
             //.setIsRenderToTarget(true)
-            .setOutputTarget("screen")
+            //.setOutputTarget("screen")
             .setUVCoords(new Float32Array([
                 0.0, 0.0,  // vertex 0
                 1.0, 0.0,  // vertex 1
                 0.5, 1.0   // vertex 2
             ]))
-            //.setTexture(squareRT.texture)  -- 
+            .setTexture(squareRT.texture)
+            .setOutputTarget("screen")
             .build();
         //square.setTexture(textureManager.getRenderTarget("square").texture);
 

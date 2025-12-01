@@ -84,7 +84,7 @@ export class MeshObject extends Renderable {
             if (normalLoc !== -1) {
                 gl.enableVertexAttribArray(normalLoc);
                 gl.vertexAttribPointer(normalLoc, 3, gl.FLOAT, false, 0, 0);
-            } else warnLog("Attribute a_normal not found in shader.");
+            } //else warnLog("Attribute a_normal not found in shader.");
         }
 
         if (this.texcoordBuffer) {
