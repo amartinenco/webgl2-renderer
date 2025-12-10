@@ -49,6 +49,7 @@ export class GameEngine {
         await this.lightLoader.loadLights();
 
         this.cameraManager = new CameraManager(this.canvas);
+        console.log("Texture manager", this.textureManager);
         this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager, this.lightManager, this.textureManager);
         this.inputManager = this.globalContext ? this.globalContext.inputManager : null;
         debugLog("GameEngine initialized");

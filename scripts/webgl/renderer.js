@@ -12,20 +12,22 @@ export class Renderer {
         this.objectManager = objectManager;
         this.cameraManager = cameraManager;
         this.lightManager = lightManager;
-        this.resizeCanvasToDisplaySize();
+        this.textureManager = textureManager;
+        
         this.cameraManager.getActiveCamera().updateProjection();
+        
+        //this.renderTarget = this.textureManager.getRenderTarget();
+        this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
+    
+        // load render targets groups
+        this.rtGroups = groupBy(this.objectManager.getAllObjects().filter(obj => obj.outputTarget), o => o.outputTarget);
+        console.log(this.rtGroups);
+
+        this.resizeCanvasToDisplaySize();
         window.addEventListener("resize", () => { 
             this.resizeCanvasToDisplaySize();
             this.cameraManager.getActiveCamera().updateProjection();
         });
-
-        this.textureManager = textureManager;
-        //this.renderTarget = this.textureManager.getRenderTarget();
-        this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
-        
-        // render targets groups
-        this.rtGroups = groupBy(this.objectManager.getAllObjects().filter(obj => obj.outputTarget), o => o.outputTarget);
-        console.log(this.rtGroups)
     }
 
     resizeCanvasToDisplaySize() {
@@ -37,7 +39,13 @@ export class Renderer {
             this.canvas.width = displayWidth;
             this.canvas.height = displayHeight;
             this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+
+            for (const rt of this.textureManager.getRenderTargets()) {
+                rt.resize(displayWidth, displayHeight);
+            }
+
             debugLog(`Window resized to w:${displayWidth} h:${displayHeight}`);
+            this.render();
         }
         return needResize;
     }
@@ -45,7 +53,8 @@ export class Renderer {
 
     renderToTexture() {
         const rt = this.textureManager.getRenderTarget("square");
-        const objects = this.objectManager.getAllObjects();
+        //const objects = this.objectManager.getAllObjects();
+        const objects = this.rtGroups["square"];
 
         rt.bind();
         this.gl.viewport(0, 0, rt.width, rt.height);
@@ -54,16 +63,19 @@ export class Renderer {
 
         for (const obj of objects) {
             if (obj.outputTarget === "square") {
-                if (obj.texture === rt.texture) {
+                //if (obj.texture === rt.texture) {
                     //console.warn("Feedback risk: producer is sampling its own target:", obj.name);
-                    continue;
-                }
+                //    continue;
+                //}
                 //console.log(obj.name, "producer", obj.texture === rt.texture)
                 const shader = obj.shaderProgram;
                 this.gl.useProgram(shader);
 
                 const mvp = mat4.create();
+                //const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
+                //const projection = mat4.ortho(mat4.create(), -1, 1, -1, 1, -1, 1);
                 const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
+
                 mat4.multiply(mvp, projection, obj.getModelMatrix());
                 this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
 

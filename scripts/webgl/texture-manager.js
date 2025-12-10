@@ -33,6 +33,10 @@ export class TextureManager {
         return this.renderTargets.get(name);
     }
 
+    getRenderTargets() {
+        return Array.from(this.renderTargets.values());
+    }
+
     deleteRenderTarget(name) {
         const rt = this.renderTargets.get(name);
         if (!rt) return;

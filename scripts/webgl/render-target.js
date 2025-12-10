@@ -41,6 +41,31 @@ export class RenderTarget {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
+    resize(width, height) {
+        this.width = width;
+        this.height = height;
+        const gl = this.gl;
+
+        // Resize color texture
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+        // Resize depth texture
+        gl.bindTexture(gl.TEXTURE_2D, this.depthTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
+
+        gl.bindTexture(gl.TEXTURE_2D, null);
+
+        // Optionally check framebuffer completeness after resize
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+        const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+        if (status !== gl.FRAMEBUFFER_COMPLETE) {
+            errorLog(`Framebuffer incomplete after resize: ${status}`);
+        }
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+
+
     bind() {
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
         this.gl.viewport(0, 0, this.width, this.height);

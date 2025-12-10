@@ -1,4 +1,4 @@
-import { triangleVertices, triangleVerticesUITest } from '../shapes/triangle.js';
+import { triangleVertices, triangleVerticesUITest, testTriangleInTextureVertices } from '../shapes/triangle.js';
 import { squareVertices, squareNormals } from '../shapes/square.js';
 import { fVertices, fNormals, fColors, fTextureCoords } from '../shapes/3df.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
@@ -109,14 +109,14 @@ export class ObjectLoader {
         //     .build();
         const triangleUVs = [
             0.0, 0.0,   // vertex 0
-            1.0, 0.0,   // vertex 1
-            0.5, 1.0    // vertex 2
+            0.0, 0.0,   // vertex 1
+            0.0, 0.0    // vertex 2
         ];
         const triangleInSquare = new GameObjectDefinition.Builder()
             .setName("triangleInSquare")
             .setType(ObjectType.RTT)
             .setShaderProgram(shaderRTT)
-            .setVertices(triangleVertices)
+            .setVertices(testTriangleInTextureVertices)
             .setUVCoords(triangleUVs)
             .setOutputTarget("square")
             //.setTexture(squareRT.texture) 
