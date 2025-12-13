@@ -63,19 +63,18 @@ export class Renderer {
 
         for (const obj of objects) {
             if (obj.outputTarget === "square") {
-                //if (obj.texture === rt.texture) {
-                    //console.warn("Feedback risk: producer is sampling its own target:", obj.name);
-                //    continue;
-                //}
-                //console.log(obj.name, "producer", obj.texture === rt.texture)
                 const shader = obj.shaderProgram;
                 this.gl.useProgram(shader);
 
                 const mvp = mat4.create();
                 //const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
-                //const projection = mat4.ortho(mat4.create(), -1, 1, -1, 1, -1, 1);
-                const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
-
+                const projection = mat4.ortho(
+                    mat4.create(),
+                    -0.6, rt.width - 0.6,   // x
+                    -0.6, rt.height - 0.6,  // y
+                    -1, 1                   // z
+                );
+                
                 mat4.multiply(mvp, projection, obj.getModelMatrix());
                 this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
 
