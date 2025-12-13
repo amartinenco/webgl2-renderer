@@ -1,4 +1,4 @@
-import { Object3D, Object2D, ObjectUI } from './object.js';
+import { Object3D, Object2D, ObjectUI, ObjectRTT } from './object.js';
 import { warnLog, debugLog } from '../logger/logger.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
 
@@ -24,7 +24,8 @@ export class ObjectManager {
         const objectMapping = {
             [ObjectType.UI]: ObjectUI,
             [ObjectType.TWO_D]: Object2D,
-            [ObjectType.THREE_D]: Object3D
+            [ObjectType.THREE_D]: Object3D,
+            [ObjectType.RTT]: ObjectRTT
         };
      
         if (!objectMapping[type]) {
@@ -39,6 +40,13 @@ export class ObjectManager {
 
     getObject(id) {
        return this.loadedObjects[id] || null; 
+    }
+
+    getRenderTargetObjects() {
+        //console.log("getRenderToTargetObject: ");
+        //console.log(this.getAllObjects().find(obj => obj.isRenderToTarget === true));
+        //console.log(this.getAllObjects()[3]);
+        return this.getAllObjects().filter(obj => obj.isRenderTarget);    
     }
 
     removeObject(id) {

@@ -4,6 +4,15 @@ export const triangleVertices = new Float32Array([
     0, 100, 0
 ]);
 
+export const testTriangleInTextureVertices = new Float32Array([
+    // -1, -1, 0, // bottom left
+    // 0.1, -0.1, 0, // bottom right
+    // 0, 0.1, 0 // top center
+    0,  0, 0,   // bottom-left
+    255,  0, 0,   // bottom-right
+    0,  150, 0    // top-middle
+]);
+
 export const triangleVerticesUITest = new Float32Array([
     0, 0,
     100, 0,

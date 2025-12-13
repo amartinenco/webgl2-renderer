@@ -1,5 +1,7 @@
 import { mat4, vec3 } from '../math/gl-matrix/index.js';
 import { CameraType } from './utils/constants.js';
+import { warnLog } from "../logger/logger.js";
+
 
 export class Camera {
     constructor(canvas, position = [0, 0, 300], target = [0, 0, 0], up = [0, 1, 0]) {        
@@ -30,9 +32,10 @@ export class Camera {
         const viewWorldPositionLocation = gl.getUniformLocation(shaderProgram, "u_viewWorldPosition");
         if (viewWorldPositionLocation !== null) {
             gl.uniform3fv(viewWorldPositionLocation, this.position);
-        } else {
-            warnLog("Uniform 'u_viewWorldPosition' not found in shader.");
-        }
+        } 
+        // else {
+        //     warnLog("Uniform 'u_viewWorldPosition' not found in shader.");
+        // }
     }
 
     updateProjection() {

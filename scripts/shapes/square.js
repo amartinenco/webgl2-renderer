@@ -32,7 +32,12 @@ export const squareVertices = new Float32Array([
     200, 200, 0,
 ]);
 
-
+// export const squareVertices = new Float32Array([
+//     -1, -1, 0,
+//     1, -1, 0,
+//     -1,  1, 0,
+//     1,  1, 0
+// ]);
 // export const squareNormals = new Float32Array([
 //     // Front face normals
 //     0, 0, 1,

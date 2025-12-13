@@ -1,23 +1,49 @@
+import { debugLog } from "../logger/logger.js";
+import { TextureFactory } from "./texture-factory.js";
+import { RenderTarget } from "./render-target.js";
+
 export class TextureLoader {
-    
-    constructor(gl) {
+
+    constructor(gl, textureManager, canvas) {
         this.gl = gl;
-        this.texture = this.gl.createTexture();
-        gl.activeTexture(gl.TEXTURE0 + 0);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-              new Uint8Array([0, 0, 255, 255]));
+        this.canvas = canvas;
+        this.textureManager = textureManager;
+        this.textureFactory = new TextureFactory(this.gl, textureManager);
     }
 
-    load(src) {
-        const gl = this.gl;
-        let image = new Image();
-        image.src = src;
-        image.addEventListener('load', () => {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-            gl.generateMipmap(gl.TEXTURE_2D);
-        });
-        return this.texture;
+    loadRenderTargets() {
+
+        const renderTargets = [
+            { name: "square" }
+        ];
+
+        for (const rt of renderTargets) {
+            console.log(this.canvas.width)
+            console.log(this.canvas.height)
+            const renderTarget = new RenderTarget(this.gl, this.textureFactory, rt.name, this.canvas.width, this.canvas.height);
+            this.textureManager.addRenderTarget(rt.name, renderTarget);
+            debugLog(`Render target "${rt.name}" loaded`);
+        }
+        //this.renderTarget = new RenderTarget(this.gl, this.textureFactory, name, this.canvas.width, this.canvas.height);
+        //this.textureManager.addRenderTarget(this.renderTarget);   
+    }
+
+    async loadTextures() {
+
+        const texture = [
+            { name: "3df", src: "resources/textures/f-texture.png" }
+        ];
+
+        // const promises = [
+        //     this.textureFactory.loadImage("3df", "resources/textures/f-texture.png")
+        // ];
+        // await Promise.all(promises);
+
+        await Promise.all(
+            texture.map(t => 
+                this.textureFactory.loadImage(t.name, t.src)
+            )
+        );
+        debugLog("Finished loading textures.");
     }
 }
