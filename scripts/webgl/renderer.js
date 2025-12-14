@@ -13,10 +13,7 @@ export class Renderer {
         this.cameraManager = cameraManager;
         this.lightManager = lightManager;
         this.textureManager = textureManager;
-        
-        this.cameraManager.getActiveCamera().updateProjection();
-        
-        //this.renderTarget = this.textureManager.getRenderTarget();
+    
         this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
     
         // load render targets groups
@@ -24,6 +21,7 @@ export class Renderer {
         console.log(this.rtGroups);
 
         this.resizeCanvasToDisplaySize();
+        this.cameraManager.getActiveCamera().updateProjection();
         window.addEventListener("resize", () => { 
             this.resizeCanvasToDisplaySize();
             this.cameraManager.getActiveCamera().updateProjection();
