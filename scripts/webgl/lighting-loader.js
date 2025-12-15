@@ -102,9 +102,9 @@ export class LightingLoader {
             .setOuterLimit(30)
             .build();
             
-        //this.lightingManager.addLight(directionalLightDefinition);
+        this.lightingManager.addLight(directionalLightDefinition);
         //this.lightingManager.addLight(plSquareDefinition);
-        this.lightingManager.addLight(pointLightDefinition);
+        //this.lightingManager.addLight(pointLightDefinition);
         //this.lightingManager.addLight(spotLightDefinition);
 
         

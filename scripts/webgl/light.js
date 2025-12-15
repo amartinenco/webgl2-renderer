@@ -83,7 +83,43 @@ export class DirectionalLight extends LightBase {
         const actualLightDirection = vec3.fromValues(...directionArray);
         vec3.normalize(actualLightDirection, actualLightDirection);
         this.direction = actualLightDirection;
+
+        this.viewMatrix = mat4.create();
+        this.projectionMatrix = mat4.create();
+        this.viewProjectionMatrix = mat4.create();
     }
+
+    updateMatrices() {
+        // 1. Fake a light position: opposite the direction, some distance away
+        const lightPos = vec3.scale(vec3.create(), this.direction, -50.0);
+
+        // 2. Look at the origin
+        const target = [0, 0, 0];
+
+        mat4.lookAt(
+            this.viewMatrix,
+            lightPos,
+            target,
+            [0, 1, 0]
+        );
+
+        // 3. Orthographic projection that defines what region gets shadows
+        const size = 20.0;
+        mat4.ortho(
+            this.projectionMatrix,
+            -size, size,
+            -size, size,
+            1.0, 100.0
+        );
+
+        // 4. Combine projection and view: P * V
+        mat4.multiply(
+            this.viewProjectionMatrix,
+            this.projectionMatrix,
+            this.viewMatrix
+        );
+    }
+
 
     setupUniforms() {
         super.setupUniforms();

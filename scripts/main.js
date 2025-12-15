@@ -5,7 +5,7 @@ import { GameEngine } from './webgl/game-engine.js';
 async function main() {
     setLogLevel("DEBUG");
     const canvas = document.getElementById("canvas");
-    console.log(canvas.width)
+    
     const gl = initWebGL("canvas");
     if (!gl) {
         errorLog("Failed to initialize WebGL.");

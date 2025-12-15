@@ -14,13 +14,17 @@ export class TextureLoader {
     loadRenderTargets() {
 
         const renderTargets = [
-            { name: "square" }
+            { name: "square" },
+            { name: "shadow", depthOnly: true, width: 1024, height: 1024 }
         ];
 
         for (const rt of renderTargets) {
-            console.log(this.canvas.width)
-            console.log(this.canvas.height)
-            const renderTarget = new RenderTarget(this.gl, this.textureFactory, rt.name, this.canvas.width, this.canvas.height);
+
+            const width = rt.width ?? this.canvas.width;
+            const height = rt.height ?? this.canvas.height;
+            //console.log(this.canvas.width)
+            //console.log(this.canvas.height)
+            const renderTarget = new RenderTarget(this.gl, this.textureFactory, rt.name, width, height, rt.depthOnly === true);
             this.textureManager.addRenderTarget(rt.name, renderTarget);
             debugLog(`Render target "${rt.name}" loaded`);
         }

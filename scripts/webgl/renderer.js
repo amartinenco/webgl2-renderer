@@ -3,6 +3,8 @@ import { mat4, vec4 } from "../math/gl-matrix/index.js";
 import { Object3D, Object2D, ObjectUI, ObjectRTT } from "./object.js";
 import { CameraType } from "./utils/constants.js";
 import { groupBy } from "./utils/objhelper.js";
+import { ShaderType } from "./utils/constants.js";
+import { LightType } from "./utils/constants.js";
 
 export class Renderer {
     constructor(gl, canvas, shaderManager, objectManager, cameraManager, lightManager, textureManager) {
@@ -26,6 +28,9 @@ export class Renderer {
             this.resizeCanvasToDisplaySize();
             this.cameraManager.getActiveCamera().updateProjection();
         });
+
+        this.shadowShader = this.shaderManager.getShader(ShaderType.SHADOW);
+        console.log(this.shadowShader);
     }
 
     resizeCanvasToDisplaySize() {
@@ -48,6 +53,28 @@ export class Renderer {
         return needResize;
     }
     
+
+    renderShadowMap(light) {
+        const gl = this.gl;
+
+        const shadowRT = this.textureManager.getRenderTarget("shadow");
+        shadowRT.bind();
+
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        gl.useProgram(this.shadowShader);
+
+        
+        this.shaderManager.setUniformMatrix(this.shadowShader, "u_lightViewProjection", light.viewProjectionMatrix);
+
+        const objects = this.objectManager.getAllObjects();
+        for (const object of objects) {
+            this.shaderManager.setUniformMatrix(this.shadowShader, "u_model", object.transform);
+            object.draw();
+        }
+
+        shadowRT.unbind();
+    }
 
     renderToTexture() {
         const rt = this.textureManager.getRenderTarget("square");
@@ -143,6 +170,15 @@ export class Renderer {
         const camera = this.cameraManager.getActiveCamera();
         const perspective = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
         const uiProjection = camera.getProjectionMatrix(CameraType.ORTHOGRAPHIC);
+
+        const dirLight = this.lightManager.getLight(LightType.DIRECTIONAL);
+        if (dirLight) {
+            dirLight.updateMatrices();
+            // Shadow pass
+            if (this.shadowShader) {
+                this.renderShadowMap(dirLight);
+            }
+        }
 
         // Screen pass
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height); // ensure canvas-sized viewport
