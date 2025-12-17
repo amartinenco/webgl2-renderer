@@ -14,10 +14,10 @@ uniform bool u_useSpotLight;
 uniform vec3 u_viewWorldPosition;
 
 // texture
-in vec2 a_texcoord;
+layout(location = 2) in vec2 a_texcoord;
 
-in vec4 a_position;
-in vec3 a_normal;
+layout(location = 0) in vec3 a_position;
+layout(location = 1) in vec3 a_normal;
 
 out vec3 v_normal;
 out vec3 v_lightDirection;
@@ -29,10 +29,13 @@ out vec3 v_surface2view;
 // pass texture to fragment shader
 out vec2 v_texcoord;
 
+out vec4 v_worldPos;
+
 void main() {
 
   // world position of each fragment
-  vec3 fragPosition = vec3(u_modelWorldMatrix * a_position);
+  //vec3 fragPosition = vec3(u_modelWorldMatrix * a_position);
+  vec3 fragPosition = vec3(u_modelWorldMatrix * vec4(a_position, 1.0));
 
   // direction for point light
   if (u_usePointLight || u_useSpotLight) {
@@ -50,9 +53,13 @@ void main() {
     v_surface2view = vec3(0.0);
   }
 
-  gl_Position = u_mvpMatrix * a_position;
+  gl_Position = u_mvpMatrix * vec4(a_position, 1.0);
   
   mat3 normalMatrix = mat3(transpose(inverse(u_modelWorldMatrix)));
   v_normal = normalize(normalMatrix * a_normal);
   v_texcoord = a_texcoord;
+
+  //v_worldPos = u_modelWorldMatrix * vec4(a_position, 1.0);
+  v_worldPos = vec4(fragPosition, 1.0);
+
 }

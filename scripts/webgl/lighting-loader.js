@@ -58,14 +58,15 @@ export class LightingLoader {
             .setName("directional")
             .setType(LightType.DIRECTIONAL)
             .setShaderProgram(shaderProgram)
-            .setDirection([0.5, 0.7, 1])
+            //.setDirection([0.5, 0.7, 1])
+            .setDirection([0, -1, -1])
             .setColor([1, 1, 1])
             .setSpecularColor([1, 1, 1])
             .setSpecularIntensity(50.0)
             .setRotation({ x: 0, y: 0 })
             .setLightIntensity(2)
             .setInnerLimit(5)
-            .setOuterLimit(30)
+            .setOuterLimit(30) //30
         
         const pointLightDefinition = new LightObjectDefinition.Builder()
             .setName("point")

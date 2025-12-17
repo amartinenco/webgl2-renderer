@@ -3,9 +3,11 @@ import { warnLog, debugLog } from "../logger/logger.js";
 import { DirectionalLight, PointLight, SpotLight } from "./light.js";
 
 export class LightingManager {
-    constructor(gl) {
+    constructor(gl, cameraManager) {
         this.gl = gl;
         this.loadedLights = {};
+
+        this.camera = cameraManager.getActiveCamera();
     }
 
     addLight(lightObjectDefinition) {
@@ -27,7 +29,7 @@ export class LightingManager {
             return null;
         }
 
-        this.loadedLights[id] = new objectMapping[type](this.gl, lightObjectDefinition);
+        this.loadedLights[id] = new objectMapping[type](this.gl, lightObjectDefinition, this.camera);
         debugLog(`Loaded Light [${type}]: ${id}`);
     }
 
@@ -45,5 +47,13 @@ export class LightingManager {
 
     getAllLights() {
         return Object.values(this.loadedLights);
+    }
+
+    updateLightMatrices() {
+        for (const light of Object.values(this.loadedLights)) {
+            if (typeof light.updateMatrices === "function") {
+                light.updateMatrices();
+            }
+        }
     }
 }

@@ -53,27 +53,34 @@ export class Renderer {
         return needResize;
     }
     
-
+    /**
+     * Shadow pass - the light taking a photo of a scene (depth only)
+     */
     renderShadowMap(light) {
         const gl = this.gl;
 
         const shadowRT = this.textureManager.getRenderTarget("shadow");
-        shadowRT.bind();
+        if (shadowRT) {
+            shadowRT.bind();
 
-        gl.clear(gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST); 
+            gl.depthFunc(gl.LESS);
+            gl.disable(gl.CULL_FACE);
+            gl.clearDepth(1.0);
+            gl.clear(gl.DEPTH_BUFFER_BIT);
+            gl.useProgram(this.shadowShader);
+            this.shaderManager.setUniformMatrix(this.shadowShader, "u_lightViewProjection", light.viewProjectionMatrix);
 
-        gl.useProgram(this.shadowShader);
+            const objects = this.objectManager.getAllObjects()
+                .filter(obj => !(obj instanceof ObjectUI || obj instanceof ObjectRTT));
 
-        
-        this.shaderManager.setUniformMatrix(this.shadowShader, "u_lightViewProjection", light.viewProjectionMatrix);
+            for (const object of objects) {
+                this.shaderManager.setUniformMatrix(this.shadowShader, "u_modelWorldMatrix", object.getModelMatrix());
+                object.draw();
+            }
 
-        const objects = this.objectManager.getAllObjects();
-        for (const object of objects) {
-            this.shaderManager.setUniformMatrix(this.shadowShader, "u_model", object.transform);
-            object.draw();
+            shadowRT.unbind();
         }
-
-        shadowRT.unbind();
     }
 
     renderToTexture() {
@@ -86,8 +93,11 @@ export class Renderer {
         this.gl.clearColor(1, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
+        if (!objects) return;
+
         for (const obj of objects) {
             if (obj.outputTarget === "square") {
+
                 const shader = obj.shaderProgram;
                 this.gl.useProgram(shader);
 
@@ -102,7 +112,8 @@ export class Renderer {
                 
                 mat4.multiply(mvp, projection, obj.getModelMatrix());
                 this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
-
+                const useTexLoc = this.gl.getUniformLocation(obj.shaderProgram, "u_useTexture");
+                this.gl.uniform1i(useTexLoc, 0);
                 obj.draw();
             }
         }
@@ -132,13 +143,50 @@ export class Renderer {
                 this.gl.useProgram(shader);
                 currentShader = shader;
                 camera.setUniforms(this.gl, shader);
+
+                // --- Bind shadow map ---
+                const shadowRT = this.textureManager.getRenderTarget("shadow");
+                if (shadowRT && shadowRT.depthTexture) {
+                    // Bind depth texture to texture unit 7
+                    this.gl.activeTexture(this.gl.TEXTURE7);
+                    this.gl.bindTexture(this.gl.TEXTURE_2D, shadowRT.depthTexture);
+                    
+                    // Tell shader which texture unit to use
+                    const shadowLoc = this.gl.getUniformLocation(shader, "u_shadowMap");
+                    if (shadowLoc) this.gl.uniform1i(shadowLoc, 7);
+
+                    // Pass light view-projection matrix
+                    const dirLight = this.lightManager.getLight(LightType.DIRECTIONAL);
+                    if (dirLight) {
+                        this.shaderManager.setUniformMatrix(
+                            shader,
+                            "u_lightViewProjection",
+                            dirLight.viewProjectionMatrix
+                        );
+                    }
+                }
             }
             
             this.gl.uniform4fv(this.gl.getUniformLocation(shader, "u_color"), [0.5, 0.0, 0.0, 1.0]);
             this.shaderManager.setUniformMatrix(shader, 'u_mvpMatrix', mvp);
             this.shaderManager.setUniformMatrix(shader, 'u_modelWorldMatrix', obj.getModelMatrix());
 
+
+
+            const hasTexture = Boolean(obj.texture && obj.texcoordBuffer);
+            const useTexLoc = this.gl.getUniformLocation(obj.shaderProgram, "u_useTexture");
+            if (useTexLoc) this.gl.uniform1i(useTexLoc, hasTexture ? 1 : 0);
+
+            if (hasTexture) {
+                const texLoc = this.gl.getUniformLocation(obj.shaderProgram, 'u_texture');
+                this.gl.activeTexture(this.gl.TEXTURE0);
+                this.gl.bindTexture(this.gl.TEXTURE_2D, obj.texture);
+                this.gl.uniform1i(texLoc, 0);
+            }
+
             obj.draw();
+
+            if (hasTexture) this.gl.bindTexture(this.gl.TEXTURE_2D, null);
         });
     }
 
@@ -172,25 +220,24 @@ export class Renderer {
         const uiProjection = camera.getProjectionMatrix(CameraType.ORTHOGRAPHIC);
 
         const dirLight = this.lightManager.getLight(LightType.DIRECTIONAL);
-        if (dirLight) {
-            dirLight.updateMatrices();
-            // Shadow pass
-            if (this.shadowShader) {
-                this.renderShadowMap(dirLight);
-            }
-        }
+        // if (dirLight) {
+        //     //dirLight.updateMatrices();
+        //     // Shadow pass
+        //     if (this.shadowShader) {
+        //         this.renderShadowMap(dirLight);
+        //     }
+        // }
+        if (dirLight && this.shadowShader) { this.renderShadowMap(dirLight); }
 
         // Screen pass
-        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height); // ensure canvas-sized viewport
-        this.gl.clearColor(0, 0, 0, 0);
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        this.gl.clearColor(0, 0, 0, 0.1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.CULL_FACE);
         
         this.renderScene(camera, perspective);
         this.renderUI(uiProjection);
-        this.renderToTexture(); 
-        // offscreen
-        //this.renderToTexture(); // offscreen
+        this.renderToTexture();
     }
 };
