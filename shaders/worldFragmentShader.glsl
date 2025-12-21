@@ -33,6 +33,41 @@ uniform bool u_useTexture;
 in vec2 v_texcoord;
 // The texture.
 uniform sampler2D u_texture;
+uniform sampler2D u_shadowMap;
+uniform mat4 u_lightViewProjection;
+in vec4 v_worldPos;
+
+
+float computeShadow(vec4 worldPos) {
+    vec4 lightSpace = u_lightViewProjection * worldPos;
+
+    vec3 proj = lightSpace.xyz / lightSpace.w;
+    proj = proj * 0.5 + 0.5;
+
+    // if outside shadow map, treat as lit 
+    if (proj.x < 0.0 || proj.x > 1.0 ||
+        proj.y < 0.0 || proj.y > 1.0 ||
+        proj.z < 0.0 || proj.z > 1.0) {
+        return 1.0;
+    }
+
+    float closestDepth = texture(u_shadowMap, proj.xy).r;
+    float currentDepth = proj.z;
+
+    return currentDepth - 0.005 > closestDepth ? 0.3 : 1.0;
+
+
+    /*
+       // return currentDepth - 0.005 > closestDepth ? 0.3 : 1.0;
+    float bias = 0.005; 
+    // Smooth fade from lit → shadowed
+     float t = smoothstep(closestDepth, closestDepth + bias, currentDepth); 
+     // Blend between lit (1.0) and shadowed (0.3) 
+     return mix(1.0, 0.3, t);
+     */
+}
+
+
 
 void main() {
     vec3 normal = normalize(v_normal);
@@ -90,14 +125,16 @@ void main() {
 
     vec3 specularColor = u_specularColor * specular;
     //outColor = vec4(diffuse + specularColor + ambient, u_color.a);
-    vec3 finalColor = diffuse + specularColor * specular + ambient;
+
+
+    //vec3 finalColor = diffuse + specularColor * specular + ambient;    
+    //outColor = vec4(finalColor, alpha);
+
+    float shadow = computeShadow(v_worldPos);
+    //vec3 finalColor = (diffuse + specularColor * specular + ambient) * shadow;
+    vec3 finalColor = diffuse * shadow + specularColor * specular + ambient;
+    //outColor = vec4(finalColor, alpha);
     outColor = vec4(finalColor, alpha);
+    //outColor = vec4(vec3(shadow), 1.0);
 
-    // vec4 texColor = texture(u_texture, v_texcoord);
-
-    // Multiply the lighting result with the texture color
-    // vec3 baseColor = texColor.rgb * ((directionalLight + pointLight + spotLight) * u_lightColor);
-    // vec3 finalColor = baseColor + u_specularColor * specular + ambient;
-
-    // outColor = vec4(finalColor, texColor.a);
 }

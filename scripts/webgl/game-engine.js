@@ -44,12 +44,13 @@ export class GameEngine {
         this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager, this.textureManager);
         await this.objectLoader.loadGameObjects();
 
-        this.lightManager = new LightingManager(this.gl);
+        this.cameraManager = new CameraManager(this.canvas);
+        console.log("Texture manager", this.textureManager);
+
+        this.lightManager = new LightingManager(this.gl, this.cameraManager);
         this.lightLoader = new LightingLoader(this.lightManager, this.shaderManager);
         await this.lightLoader.loadLights();
 
-        this.cameraManager = new CameraManager(this.canvas);
-        console.log("Texture manager", this.textureManager);
         this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager, this.lightManager, this.textureManager);
         this.inputManager = this.globalContext ? this.globalContext.inputManager : null;
         debugLog("GameEngine initialized");
@@ -109,6 +110,7 @@ export class GameEngine {
         let deltaTime = this.calculateDeltatime();
         this.handleInput(deltaTime);
         
+        this.lightManager.updateLightMatrices();
         this.renderer.render();
         
         const objects = this.objectManager.getAllObjects();

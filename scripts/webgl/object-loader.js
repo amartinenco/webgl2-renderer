@@ -67,7 +67,7 @@ export class ObjectLoader {
             .setName("square")
             .setType(ObjectType.TWO_D)
             .setShaderProgram(shaderRTT)
-            .setPosition([-150, -150, 0])
+            .setPosition([-250, 50, 0])
             .setVertices(squareVertices)
             .setNormals(squareNormals)
             .setRotation({ x: 0, y: 45 })
@@ -82,6 +82,56 @@ export class ObjectLoader {
             .setOutputTarget("screen")
             .build();
         //square.setTexture(textureManager.getRenderTarget("square").texture);
+
+        const ground = new GameObjectDefinition.Builder()
+            .setName("ground")
+            .setType(ObjectType.TWO_D)
+            .setShaderProgram(shaderThreeD)
+            .setPosition([-80, -150, -90])
+            .setVertices(squareVertices)
+            .setNormals(squareNormals)
+            .setRotation({ x: 90, y: 0 })
+            .build();
+
+        const wall_one = new GameObjectDefinition.Builder()
+            .setName("wall_one")
+            .setType(ObjectType.TWO_D)
+            .setShaderProgram(shaderThreeD)
+            .setPosition([100, -150, -120])
+            .setVertices(squareVertices)
+            .setNormals(squareNormals)
+            .setRotation({ x: 0, y: 180 })
+            .build();
+
+        const wall_two = new GameObjectDefinition.Builder()
+            .setName("wall_two")
+            .setType(ObjectType.TWO_D)
+            .setShaderProgram(shaderThreeD)
+            .setPosition([100, 150, -90])
+            .setVertices(squareVertices)
+            .setNormals(squareNormals)
+            .setRotation({ x: 0, y: 180 })
+            .build();
+        
+        const wall_side = new GameObjectDefinition.Builder()
+            .setName("wall_side")
+            .setType(ObjectType.TWO_D)
+            .setShaderProgram(shaderThreeD)
+            .setPosition([-200, -150, 20])
+            .setVertices(squareVertices)
+            .setNormals(squareNormals)
+            .setRotation({ x: 0, y: 45 })
+            .build();
+
+        const wall_three = new GameObjectDefinition.Builder()
+            .setName("wall_three")
+            .setType(ObjectType.TWO_D)
+            .setShaderProgram(shaderThreeD)
+            .setPosition([-110, -150, 250])
+            .setVertices(squareVertices)
+            .setNormals(squareNormals)
+            .setRotation({ x: 0, y: 120 })
+            .build();
 
         const triangle = new GameObjectDefinition.Builder()
             .setName("triangle")
@@ -138,10 +188,16 @@ export class ObjectLoader {
             .setOutputTarget("screen")
             .build();
 
+        
         this.objectManager.loadObject(triangle);
         this.objectManager.loadObject(f3d);
-        this.objectManager.loadObject(triangle2d);
+        //this.objectManager.loadObject(triangle2d);
         this.objectManager.loadObject(square);
         this.objectManager.loadObject(triangleInSquare);
+        this.objectManager.loadObject(ground);
+        this.objectManager.loadObject(wall_one);
+        this.objectManager.loadObject(wall_two);
+        this.objectManager.loadObject(wall_side);
+        this.objectManager.loadObject(wall_three);
     }
 }

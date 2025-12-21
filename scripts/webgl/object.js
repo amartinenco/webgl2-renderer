@@ -66,60 +66,95 @@ export class MeshObject extends Renderable {
         this.texcoordBuffer = this.uvCoords.length ? createBuffer(gl, this.uvCoords) : null;
     }
 
+
     _setupVAO() {
         const gl = this.gl;
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
 
+        // Position at location 0
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        const posLoc = gl.getAttribLocation(this.shaderProgram, "a_position");
-        if (posLoc !== -1) {
-            gl.enableVertexAttribArray(posLoc);
-            gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
-        } else warnLog("Attribute a_position not found in shader.");
+        const posLoc = 0;
+        gl.enableVertexAttribArray(posLoc);
+        gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
 
+        // Normal at location 1 (if present)
         if (this.normalBuffer) {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
-            const normalLoc = gl.getAttribLocation(this.shaderProgram, "a_normal");
-            if (normalLoc !== -1) {
-                gl.enableVertexAttribArray(normalLoc);
-                gl.vertexAttribPointer(normalLoc, 3, gl.FLOAT, false, 0, 0);
-            } //else warnLog("Attribute a_normal not found in shader.");
+            const normalLoc = 1;
+            gl.enableVertexAttribArray(normalLoc);
+            gl.vertexAttribPointer(normalLoc, 3, gl.FLOAT, false, 0, 0);
         }
 
+        // Texcoord at location 2 (if present)
         if (this.texcoordBuffer) {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer);
-            const texLoc = gl.getAttribLocation(this.shaderProgram, "a_texcoord");
-            if (texLoc !== -1) {
-                gl.enableVertexAttribArray(texLoc);
-                gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
-            } else warnLog("Attribute a_texcoord not found in shader.");
+            const texLoc = 2;
+            gl.enableVertexAttribArray(texLoc);
+            gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
         }
 
         gl.bindVertexArray(null);
     }
 
+
+    // _setupVAO() {
+    //     const gl = this.gl;
+    //     this.vao = gl.createVertexArray();
+    //     gl.bindVertexArray(this.vao);
+
+    //     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+    //     const posLoc = gl.getAttribLocation(this.shaderProgram, "a_position");
+    //     if (posLoc !== -1) {
+    //         gl.enableVertexAttribArray(posLoc);
+    //         gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
+    //     } else warnLog("Attribute a_position not found in shader.");
+
+    //     if (this.normalBuffer) {
+    //         gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+    //         const normalLoc = gl.getAttribLocation(this.shaderProgram, "a_normal");
+    //         if (normalLoc !== -1) {
+    //             gl.enableVertexAttribArray(normalLoc);
+    //             gl.vertexAttribPointer(normalLoc, 3, gl.FLOAT, false, 0, 0);
+    //         } //else warnLog("Attribute a_normal not found in shader.");
+    //     }
+
+    //     if (this.texcoordBuffer) {
+    //         gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer);
+    //         const texLoc = gl.getAttribLocation(this.shaderProgram, "a_texcoord");
+    //         if (texLoc !== -1) {
+    //             gl.enableVertexAttribArray(texLoc);
+    //             gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
+    //         } else warnLog("Attribute a_texcoord not found in shader.");
+    //     }
+
+    //     gl.bindVertexArray(null);
+    // }
+
+
+
+
     draw() {
         const gl = this.gl;
-        gl.useProgram(this.shaderProgram);
+        // gl.useProgram(this.shaderProgram);
 
         // Texture
-        const hasTexture = Boolean(this.texture && this.texcoordBuffer);
-        const useTexLoc = gl.getUniformLocation(this.shaderProgram, "u_useTexture");
-        if (useTexLoc) gl.uniform1i(useTexLoc, hasTexture ? 1 : 0);
+        // const hasTexture = Boolean(this.texture && this.texcoordBuffer);
+        // const useTexLoc = gl.getUniformLocation(this.shaderProgram, "u_useTexture");
+        // if (useTexLoc) gl.uniform1i(useTexLoc, hasTexture ? 1 : 0);
 
-        if (hasTexture) {
-            const texLoc = gl.getUniformLocation(this.shaderProgram, 'u_texture');
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.uniform1i(texLoc, 0);
-        }
+        // if (hasTexture) {
+        //     const texLoc = gl.getUniformLocation(this.shaderProgram, 'u_texture');
+        //     gl.activeTexture(gl.TEXTURE0);
+        //     gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        //     gl.uniform1i(texLoc, 0);
+        // }
 
         gl.bindVertexArray(this.vao);
         this.render();
         gl.bindVertexArray(null);
 
-        if (hasTexture) gl.bindTexture(gl.TEXTURE_2D, null);
+        // if (hasTexture) gl.bindTexture(gl.TEXTURE_2D, null);
     }
 }
 

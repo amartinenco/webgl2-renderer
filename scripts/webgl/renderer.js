@@ -3,6 +3,8 @@ import { mat4, vec4 } from "../math/gl-matrix/index.js";
 import { Object3D, Object2D, ObjectUI, ObjectRTT } from "./object.js";
 import { CameraType } from "./utils/constants.js";
 import { groupBy } from "./utils/objhelper.js";
+import { ShaderType } from "./utils/constants.js";
+import { LightType } from "./utils/constants.js";
 
 export class Renderer {
     constructor(gl, canvas, shaderManager, objectManager, cameraManager, lightManager, textureManager) {
@@ -13,10 +15,7 @@ export class Renderer {
         this.cameraManager = cameraManager;
         this.lightManager = lightManager;
         this.textureManager = textureManager;
-        
-        this.cameraManager.getActiveCamera().updateProjection();
-        
-        //this.renderTarget = this.textureManager.getRenderTarget();
+    
         this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
     
         // load render targets groups
@@ -24,10 +23,14 @@ export class Renderer {
         console.log(this.rtGroups);
 
         this.resizeCanvasToDisplaySize();
+        this.cameraManager.getActiveCamera().updateProjection();
         window.addEventListener("resize", () => { 
             this.resizeCanvasToDisplaySize();
             this.cameraManager.getActiveCamera().updateProjection();
         });
+
+        this.shadowShader = this.shaderManager.getShader(ShaderType.SHADOW);
+        console.log(this.shadowShader);
     }
 
     resizeCanvasToDisplaySize() {
@@ -50,6 +53,35 @@ export class Renderer {
         return needResize;
     }
     
+    /**
+     * Shadow pass - the light taking a photo of a scene (depth only)
+     */
+    renderShadowMap(light) {
+        const gl = this.gl;
+
+        const shadowRT = this.textureManager.getRenderTarget("shadow");
+        if (shadowRT) {
+            shadowRT.bind();
+
+            gl.enable(gl.DEPTH_TEST); 
+            gl.depthFunc(gl.LESS);
+            gl.disable(gl.CULL_FACE);
+            gl.clearDepth(1.0);
+            gl.clear(gl.DEPTH_BUFFER_BIT);
+            gl.useProgram(this.shadowShader);
+            this.shaderManager.setUniformMatrix(this.shadowShader, "u_lightViewProjection", light.viewProjectionMatrix);
+
+            const objects = this.objectManager.getAllObjects()
+                .filter(obj => !(obj instanceof ObjectUI || obj instanceof ObjectRTT));
+
+            for (const object of objects) {
+                this.shaderManager.setUniformMatrix(this.shadowShader, "u_modelWorldMatrix", object.getModelMatrix());
+                object.draw();
+            }
+
+            shadowRT.unbind();
+        }
+    }
 
     renderToTexture() {
         const rt = this.textureManager.getRenderTarget("square");
@@ -61,8 +93,11 @@ export class Renderer {
         this.gl.clearColor(1, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
+        if (!objects) return;
+
         for (const obj of objects) {
             if (obj.outputTarget === "square") {
+
                 const shader = obj.shaderProgram;
                 this.gl.useProgram(shader);
 
@@ -77,7 +112,8 @@ export class Renderer {
                 
                 mat4.multiply(mvp, projection, obj.getModelMatrix());
                 this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
-
+                const useTexLoc = this.gl.getUniformLocation(obj.shaderProgram, "u_useTexture");
+                this.gl.uniform1i(useTexLoc, 0);
                 obj.draw();
             }
         }
@@ -107,13 +143,50 @@ export class Renderer {
                 this.gl.useProgram(shader);
                 currentShader = shader;
                 camera.setUniforms(this.gl, shader);
+
+                // --- Bind shadow map ---
+                const shadowRT = this.textureManager.getRenderTarget("shadow");
+                if (shadowRT && shadowRT.depthTexture) {
+                    // Bind depth texture to texture unit 7
+                    this.gl.activeTexture(this.gl.TEXTURE7);
+                    this.gl.bindTexture(this.gl.TEXTURE_2D, shadowRT.depthTexture);
+                    
+                    // Tell shader which texture unit to use
+                    const shadowLoc = this.gl.getUniformLocation(shader, "u_shadowMap");
+                    if (shadowLoc) this.gl.uniform1i(shadowLoc, 7);
+
+                    // Pass light view-projection matrix
+                    const dirLight = this.lightManager.getLight(LightType.DIRECTIONAL);
+                    if (dirLight) {
+                        this.shaderManager.setUniformMatrix(
+                            shader,
+                            "u_lightViewProjection",
+                            dirLight.viewProjectionMatrix
+                        );
+                    }
+                }
             }
             
             this.gl.uniform4fv(this.gl.getUniformLocation(shader, "u_color"), [0.5, 0.0, 0.0, 1.0]);
             this.shaderManager.setUniformMatrix(shader, 'u_mvpMatrix', mvp);
             this.shaderManager.setUniformMatrix(shader, 'u_modelWorldMatrix', obj.getModelMatrix());
 
+
+
+            const hasTexture = Boolean(obj.texture && obj.texcoordBuffer);
+            const useTexLoc = this.gl.getUniformLocation(obj.shaderProgram, "u_useTexture");
+            if (useTexLoc) this.gl.uniform1i(useTexLoc, hasTexture ? 1 : 0);
+
+            if (hasTexture) {
+                const texLoc = this.gl.getUniformLocation(obj.shaderProgram, 'u_texture');
+                this.gl.activeTexture(this.gl.TEXTURE0);
+                this.gl.bindTexture(this.gl.TEXTURE_2D, obj.texture);
+                this.gl.uniform1i(texLoc, 0);
+            }
+
             obj.draw();
+
+            if (hasTexture) this.gl.bindTexture(this.gl.TEXTURE_2D, null);
         });
     }
 
@@ -146,17 +219,25 @@ export class Renderer {
         const perspective = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
         const uiProjection = camera.getProjectionMatrix(CameraType.ORTHOGRAPHIC);
 
+        const dirLight = this.lightManager.getLight(LightType.DIRECTIONAL);
+        // if (dirLight) {
+        //     //dirLight.updateMatrices();
+        //     // Shadow pass
+        //     if (this.shadowShader) {
+        //         this.renderShadowMap(dirLight);
+        //     }
+        // }
+        if (dirLight && this.shadowShader) { this.renderShadowMap(dirLight); }
+
         // Screen pass
-        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height); // ensure canvas-sized viewport
-        this.gl.clearColor(0, 0, 0, 0);
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        this.gl.clearColor(0, 0, 0, 0.1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.CULL_FACE);
         
         this.renderScene(camera, perspective);
         this.renderUI(uiProjection);
-        this.renderToTexture(); 
-        // offscreen
-        //this.renderToTexture(); // offscreen
+        this.renderToTexture();
     }
 };

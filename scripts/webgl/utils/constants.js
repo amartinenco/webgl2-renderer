@@ -13,7 +13,8 @@ export const ShaderType = Object.freeze({
     TWO_D: "twoD",
     THREE_D: "world",
     UI: "ui",
-    RTT: "rtt"
+    RTT: "rtt",
+    SHADOW: "shadow"
 });
 
 export const CameraType = Object.freeze({

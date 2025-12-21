@@ -1,9 +1,11 @@
 import { warnLog } from "../logger/logger.js";
-import { vec3, mat4 } from "../math/gl-matrix/index.js";
+import { vec3, vec4, mat4 } from "../math/gl-matrix/index.js";
+import { CameraType } from './utils/constants.js';
 
 export class LightBase {
-    constructor(gl, lightObjectDefinition) {
+    constructor(gl, lightObjectDefinition, camera) {
         this.gl = gl;
+        this.camera = camera;
         this.name = lightObjectDefinition.name;
         this.shaderProgram = lightObjectDefinition.shaderProgram;
         const colorArray = lightObjectDefinition.color || [1, 1, 1];
@@ -76,13 +78,52 @@ export class LightBase {
 }
 
 export class DirectionalLight extends LightBase {
-    constructor(gl, lightObjectDefinition) {
-        super(gl, lightObjectDefinition);
+    constructor(gl, lightObjectDefinition, camera) {
+        super(gl, lightObjectDefinition, camera);
+
         this.direction = vec3.create();
-        const directionArray = lightObjectDefinition.direction || [1, 1, 0];
+        const directionArray = lightObjectDefinition.direction || [0, -1, -1];
+        //const directionArray = [0, -1, -1];
         const actualLightDirection = vec3.fromValues(...directionArray);
         vec3.normalize(actualLightDirection, actualLightDirection);
         this.direction = actualLightDirection;
+
+        this.viewMatrix = mat4.create();
+        this.projectionMatrix = mat4.create();
+        this.viewProjectionMatrix = mat4.create();
+    }
+
+    updateMatrices() {
+        const lightPos = vec3.create();
+        vec3.scale(lightPos, this.direction, -500.0);  // far enough back
+
+        const target = vec3.fromValues(0, 0, 0); // look at scene center
+
+        mat4.lookAt(
+            this.viewMatrix,
+            lightPos,
+            target,
+            [0, 1, 0]
+        );
+
+        // 3. Simple fixed orthographic box that covers your whole scene
+        const size = 400.0;
+        const near = 1.0;
+        const far  = 2000.0;
+
+        mat4.ortho(
+            this.projectionMatrix,
+            -size, size,
+            -size, size,
+            near, far
+        );
+
+        // 4. Combine
+        mat4.multiply(
+            this.viewProjectionMatrix,
+            this.projectionMatrix,
+            this.viewMatrix
+        );
     }
 
     setupUniforms() {
@@ -105,7 +146,9 @@ export class DirectionalLight extends LightBase {
         }
 
         if (reverseLightDirectionLocation !== null) {
-            this.gl.uniform3fv(reverseLightDirectionLocation, this.direction);
+            let rev = vec3.create(); 
+            vec3.negate(rev, this.direction);
+            this.gl.uniform3fv(reverseLightDirectionLocation, rev);
         } else {
             warnLog("Uniform 'u_reverseLightDirection' not found in shader.");
         }
@@ -126,8 +169,8 @@ export class DirectionalLight extends LightBase {
 }
 
 export class PointLight extends LightBase {
-    constructor(gl, lightObjectDefinition) {
-        super(gl, lightObjectDefinition);
+    constructor(gl, lightObjectDefinition, camera) {
+        super(gl, lightObjectDefinition, camera);
         if (lightObjectDefinition.position) {
             this.position = lightObjectDefinition.position;
         } else {
@@ -194,7 +237,7 @@ export class PointLight extends LightBase {
 
 export class SpotLight extends LightBase {
     constructor(gl, lightObjectDefinition) {
-        super(gl, lightObjectDefinition);
+        super(gl, lightObjectDefinition, camera);
         vec3.scale(this.color, this.color, this.lightIntensity);
         if (lightObjectDefinition.position) {
             this.position = lightObjectDefinition.position;
