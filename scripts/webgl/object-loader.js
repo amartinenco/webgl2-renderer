@@ -4,6 +4,12 @@ import { fVertices, fNormals, fColors, fTextureCoords } from '../shapes/3df.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
 import { errorLog } from '../logger/logger.js';
 import { TextureFactory } from './texture-factory.js';
+import { LoaderObj } from './loader-obj.js';
+import { LoaderMtl } from './loader-mtl.js';
+import { MeshBuilder } from './mesh-builder.js';
+
+const isLocal = window.location.hostname === "localhost";
+const FILE_PATH = isLocal ? "./scripts/shapes" : `${window.location.origin}/scripts/shapes`;
 
 export class GameObjectDefinition {
     constructor(builder) {
@@ -55,6 +61,7 @@ export class ObjectLoader {
         this.objectManager = objectManager; 
         this.shaderManager = shaderManager;
         this.textureManager = textureManager;
+        this.filePath = FILE_PATH;
     }
 
     async loadGameObjects() {
@@ -199,5 +206,21 @@ export class ObjectLoader {
         this.objectManager.loadObject(wall_two);
         this.objectManager.loadObject(wall_side);
         this.objectManager.loadObject(wall_three);
+
+
+  
+        // Test obj and mtl loader
+        const testMaterials = await LoaderMtl.load(`${this.filePath}/test.mtl`);
+        const testObj = await LoaderObj.load(`${this.filePath}/test.obj`);
+        const testMesh = MeshBuilder.fromObj(testObj, testMaterials.materials);
+        
+
+        const objTest = new GameObjectDefinition.Builder()
+            .setName("testModel") .setType(ObjectType.THREE_D)
+            .setShaderProgram(shaderThreeD)
+            .setMeshes(testMesh.submeshes)
+            .setPosition([30, 30, 30]).build(); 
+        
+        this.objectManager.loadObject(objTest);
     }
 }
