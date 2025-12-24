@@ -29,19 +29,40 @@ export class Mesh {
 
             for (let face_array of faces) {
                 for (let face of face_array) {
-                    const [vStr, uvStr, nStr] = face.split("/");
+                    //const [vStr, uvStr, nStr] = face.split("/");
+                    const parts = face.split("/"); 
+                    const vStr = parts[0]; 
+                    const uvStr = parts[1]; 
+                    const nStr = parts[2];
+
                     const vIndex = parseInt(vStr) - 1; 
-                    const uvIndex = parseInt(uvStr) - 1; 
-                    const nIndex = parseInt(nStr) - 1;
-                    
+                    //const uvIndex = parseInt(uvStr) - 1; 
+                    //const nIndex = parseInt(nStr) - 1;
+                    const uvIndex = uvStr !== "" && uvStr !== undefined ? parseInt(uvStr) - 1 : null;
+                    const nIndex = nStr !== "" && nStr !== undefined ? parseInt(nStr) - 1 : null;
+
                     let position = this.obj.positions[vIndex];
                     positions.push(position[0], position[1], position[2]);
 
-                    let uv = this.obj.uvs[uvIndex];
-                    uvs.push(uv[0], uv[1]);
+                    //let uv = this.obj.uvs[uvIndex];
+                    //if (uv && uv.length >= 2) {
+                    if (uvIndex !== null && this.obj.uvs[uvIndex]) {
+                        const uv = this.obj.uvs[uvIndex];
+                        uvs.push(uv[0], uv[1]);
+                    }
+                    else { 
+                        // fallback UVs (0,0) 
+                        uvs.push(0, 0); 
+                    }
 
-                    let normal = this.obj.normals[nIndex];
-                    normals.push(normal[0], normal[1], normal[2]);
+                    //let normal = this.obj.normals[nIndex];
+                    //normals.push(normal[0], normal[1], normal[2]);
+                    if (nIndex !== null && this.obj.normals[nIndex]) { 
+                        const normal = this.obj.normals[nIndex]; 
+                        normals.push(normal[0], normal[1], normal[2]); 
+                    } else { 
+                        normals.push(0, 0, 1); 
+                    }
 
                     indices.push(indexCounter++);
                 }

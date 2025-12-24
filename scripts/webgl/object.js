@@ -54,9 +54,14 @@ export class MeshObject extends Renderable {
         this.rotation = options.rotation || { x: 0, y: 0 };
         this.outputTarget = options.outputTarget || null;
         this.vao = null;
+        this.submeshes = options.meshes || null;
 
-        this._setupBuffers();
-        this._setupVAO();
+        if (!this.submeshes) {
+            this._setupBuffers();
+            this._setupVAO();
+        } else {    
+            this._setupSubmeshVAOs();
+        }
     }
 
     _setupBuffers() {
@@ -97,64 +102,86 @@ export class MeshObject extends Renderable {
         gl.bindVertexArray(null);
     }
 
-
-    // _setupVAO() {
-    //     const gl = this.gl;
-    //     this.vao = gl.createVertexArray();
-    //     gl.bindVertexArray(this.vao);
-
-    //     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    //     const posLoc = gl.getAttribLocation(this.shaderProgram, "a_position");
-    //     if (posLoc !== -1) {
-    //         gl.enableVertexAttribArray(posLoc);
-    //         gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
-    //     } else warnLog("Attribute a_position not found in shader.");
-
-    //     if (this.normalBuffer) {
-    //         gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
-    //         const normalLoc = gl.getAttribLocation(this.shaderProgram, "a_normal");
-    //         if (normalLoc !== -1) {
-    //             gl.enableVertexAttribArray(normalLoc);
-    //             gl.vertexAttribPointer(normalLoc, 3, gl.FLOAT, false, 0, 0);
-    //         } //else warnLog("Attribute a_normal not found in shader.");
-    //     }
-
-    //     if (this.texcoordBuffer) {
-    //         gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer);
-    //         const texLoc = gl.getAttribLocation(this.shaderProgram, "a_texcoord");
-    //         if (texLoc !== -1) {
-    //             gl.enableVertexAttribArray(texLoc);
-    //             gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
-    //         } else warnLog("Attribute a_texcoord not found in shader.");
-    //     }
-
-    //     gl.bindVertexArray(null);
-    // }
-
-
-
-
-    draw() {
+    _setupSubmeshVAOs() {
         const gl = this.gl;
-        // gl.useProgram(this.shaderProgram);
+        this.submeshVAOs = [];
 
-        // Texture
-        // const hasTexture = Boolean(this.texture && this.texcoordBuffer);
-        // const useTexLoc = gl.getUniformLocation(this.shaderProgram, "u_useTexture");
-        // if (useTexLoc) gl.uniform1i(useTexLoc, hasTexture ? 1 : 0);
+        for (const sub of this.submeshes) {
+            const vao = gl.createVertexArray();
+            gl.bindVertexArray(vao);
 
-        // if (hasTexture) {
-        //     const texLoc = gl.getUniformLocation(this.shaderProgram, 'u_texture');
-        //     gl.activeTexture(gl.TEXTURE0);
-        //     gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        //     gl.uniform1i(texLoc, 0);
-        // }
+            // Positions
+            const posBuf = createBuffer(gl, sub.positions);
+            gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+            gl.enableVertexAttribArray(0);
+            gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 
+            // Normals
+            if (sub.normals && sub.normals.length) {
+                const nBuf = createBuffer(gl, sub.normals);
+                gl.bindBuffer(gl.ARRAY_BUFFER, nBuf);
+                gl.enableVertexAttribArray(1);
+                gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+            }
+
+            // UVs
+            if (sub.uvs && sub.uvs.length) {
+                const uvBuf = createBuffer(gl, sub.uvs);
+                gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+                gl.enableVertexAttribArray(2);
+                gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
+            }
+
+            // Indices
+            const idxBuf = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sub.indices, gl.STATIC_DRAW);
+
+            gl.bindVertexArray(null);
+
+            this.submeshVAOs.push({
+                vao,
+                count: sub.indices.length,
+                material: sub.material
+            });
+        }
+    }
+
+    draw(activeShader) {
+        if (this.submeshes) {
+            //console.log("drawSubmeshes");
+            this.drawSubmeshes(activeShader);
+        } else {
+            //console.log("drawSingleMesh");
+            this.drawSingleMesh(); 
+        }
+        // const gl = this.gl;
+        // gl.bindVertexArray(this.vao);
+        // this.render();
+        // gl.bindVertexArray(null);
+    }
+
+    drawSingleMesh() {
+        const gl = this.gl;
         gl.bindVertexArray(this.vao);
         this.render();
         gl.bindVertexArray(null);
+    }
 
-        // if (hasTexture) gl.bindTexture(gl.TEXTURE_2D, null);
+    drawSubmeshes(activeShader) {
+        const gl = this.gl;
+        for (const sm of this.submeshVAOs) {
+            gl.bindVertexArray(sm.vao);
+
+            // Material color
+            if (sm.material && sm.material.diffuse) {
+                const [r, g, b] = sm.material.diffuse;
+                const loc = gl.getUniformLocation(activeShader, "u_color");
+                if (loc) gl.uniform4fv(loc, [r, g, b, 1.0]);
+            }
+            gl.drawElements(gl.TRIANGLES, sm.count, gl.UNSIGNED_SHORT, 0);
+        }
+        gl.bindVertexArray(null);
     }
 }
 
@@ -164,6 +191,7 @@ export class Object3D extends MeshObject {
         super(gl, options);
         this.rotationSpeed = options.rotationSpeed || 0.5;
         this.angle = 0;
+        this.scaleBy = options.scale ?? [1, 1, 1];
     }
 
     update(deltaTime) {
@@ -171,6 +199,7 @@ export class Object3D extends MeshObject {
         mat4.identity(this.modelMatrix);
         mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
         this.rotate(this.angle, [0, 1, 0]);
+        mat4.scale(this.modelMatrix, this.modelMatrix, this.scaleBy);
     }
 
     render() {

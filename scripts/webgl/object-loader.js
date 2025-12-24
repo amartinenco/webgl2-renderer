@@ -23,10 +23,11 @@ export class GameObjectDefinition {
         this.indices = builder.indices ?? [];
         this.uvCoords = builder.uvCoords ?? [];
         this.material = builder.material ?? null;
-        this.meshes = builder.meshes ?? [];
+        this.meshes = builder.meshes ?? null;
         this.animations = builder.animations ?? [];
         this.texture = builder.texture ?? null;
         this.rotation = builder.rotation || { x: 0, y: 0 };
+        this.scale = builder.scale ?? [1, 1, 1];
         this.outputTarget = builder.outputTarget || null;
     }
 
@@ -47,6 +48,7 @@ export class GameObjectDefinition {
             setTexture(texture) { this.texture = texture; return this; }
             setRotation(rotation) { this.rotation = rotation; return this; }
             setOutputTarget(targetName) { this.outputTarget = targetName; return this; }
+            setScale(scale) { this.scale = scale; return this; };
 
             build() {
                 return new GameObjectDefinition(this);
@@ -197,8 +199,8 @@ export class ObjectLoader {
 
         
         this.objectManager.loadObject(triangle);
-        this.objectManager.loadObject(f3d);
-        //this.objectManager.loadObject(triangle2d);
+        //this.objectManager.loadObject(f3d);
+        // //this.objectManager.loadObject(triangle2d);
         this.objectManager.loadObject(square);
         this.objectManager.loadObject(triangleInSquare);
         this.objectManager.loadObject(ground);
@@ -210,16 +212,19 @@ export class ObjectLoader {
 
   
         // Test obj and mtl loader
-        const testMaterials = await LoaderMtl.load(`${this.filePath}/test.mtl`);
-        const testObj = await LoaderObj.load(`${this.filePath}/test.obj`);
+        const testMaterials = await LoaderMtl.load(`${this.filePath}/monkey.mtl`);
+        const testObj = await LoaderObj.load(`${this.filePath}/monkey.obj`);
         const testMesh = MeshBuilder.fromObj(testObj, testMaterials.materials);
-        
 
         const objTest = new GameObjectDefinition.Builder()
-            .setName("testModel") .setType(ObjectType.THREE_D)
+            .setName("testModel")
+            .setType(ObjectType.THREE_D)
             .setShaderProgram(shaderThreeD)
             .setMeshes(testMesh.submeshes)
-            .setPosition([30, 30, 30]).build(); 
+            .setPosition([30, 30, 30])
+            .setScale([30, 30, 30])
+            .setOutputTarget("screen")
+            .build(); 
         
         this.objectManager.loadObject(objTest);
     }
