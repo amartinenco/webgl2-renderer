@@ -25,48 +25,69 @@ export class Mesh {
             let normals = [];
             const indices = [];
 
+            const vertexMap = new Map();
             let indexCounter = 0;
 
-            for (let face_array of faces) {
+            for (let originalFace of faces) {
+
+                // Triangulate: 
+                // - if the face has more than 3 vertices, turn it into a triangle fan.
+                let face_array = originalFace;
+
+                if (face_array.length > 3) {
+                    const triangulated = [];
+                    // fan: (v0, v1, v2), (v0, v2, v3), (v0, v3, v4) etc
+                    for (let i = 1; i < face_array.length - 1; i++) {
+                        triangulated.push(
+                            face_array[0],
+                            face_array[i],
+                            face_array[i + 1]
+                        );
+                    }
+                    face_array = triangulated;
+                }
+
                 for (let face of face_array) {
-                    //const [vStr, uvStr, nStr] = face.split("/");
-                    const parts = face.split("/"); 
-                    const vStr = parts[0]; 
-                    const uvStr = parts[1]; 
+                    const parts = face.split("/");
+                    const vStr = parts[0];
+                    const uvStr = parts[1];
                     const nStr = parts[2];
 
-                    const vIndex = parseInt(vStr) - 1; 
-                    //const uvIndex = parseInt(uvStr) - 1; 
-                    //const nIndex = parseInt(nStr) - 1;
+                    const vIndex = parseInt(vStr) - 1;
                     const uvIndex = uvStr !== "" && uvStr !== undefined ? parseInt(uvStr) - 1 : null;
                     const nIndex = nStr !== "" && nStr !== undefined ? parseInt(nStr) - 1 : null;
 
-                    let position = this.obj.positions[vIndex];
-                    positions.push(position[0], position[1], position[2]);
+                    const key = `${vIndex}/${uvIndex}/${nIndex}`;
 
-                    //let uv = this.obj.uvs[uvIndex];
-                    //if (uv && uv.length >= 2) {
-                    if (uvIndex !== null && this.obj.uvs[uvIndex]) {
-                        const uv = this.obj.uvs[uvIndex];
-                        uvs.push(uv[0], uv[1]);
-                    }
-                    else { 
-                        // fallback UVs (0,0) 
-                        uvs.push(0, 0); 
+                    let finalIndex;
+                    if (vertexMap.has(key)) {
+                        finalIndex = vertexMap.get(key);
+                    } else {
+                        const position = this.obj.positions[vIndex];
+                        positions.push(position[0], position[1], position[2]);
+
+                        if (uvIndex !== null && this.obj.uvs[uvIndex]) {
+                            const uv = this.obj.uvs[uvIndex];
+                            uvs.push(uv[0], uv[1]);
+                        } else {
+                            uvs.push(0, 0);
+                        }
+
+                        if (nIndex !== null && this.obj.normals[nIndex]) {
+                            const normal = this.obj.normals[nIndex];
+                            normals.push(normal[0], normal[1], normal[2]);
+                        } else {
+                            normals.push(0, 0, 1);
+                        }
+
+                        finalIndex = indexCounter++;
+                        vertexMap.set(key, finalIndex);
                     }
 
-                    //let normal = this.obj.normals[nIndex];
-                    //normals.push(normal[0], normal[1], normal[2]);
-                    if (nIndex !== null && this.obj.normals[nIndex]) { 
-                        const normal = this.obj.normals[nIndex]; 
-                        normals.push(normal[0], normal[1], normal[2]); 
-                    } else { 
-                        normals.push(0, 0, 1); 
-                    }
-
-                    indices.push(indexCounter++);
+                    indices.push(finalIndex);
                 }
             }
+
             let submesh = new Submesh(
                 materialName, 
                 new Float32Array(positions), 
@@ -75,9 +96,7 @@ export class Mesh {
                 new Uint16Array(indices), 
                 this.materials[materialName] || null
             );
-
             this.submeshes.push(submesh);
-            
         }
     }
 };

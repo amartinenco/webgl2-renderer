@@ -107,7 +107,7 @@ export class DirectionalLight extends LightBase {
         );
 
         // 3. Simple fixed orthographic box that covers your whole scene
-        const size = 400.0;
+        const size = 120.0;
         const near = 1.0;
         const far  = 2000.0;
 

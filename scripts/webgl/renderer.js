@@ -215,7 +215,6 @@ export class Renderer {
         this.gl.enable(this.gl.DEPTH_TEST);
     }
 
-    
     render() {
         const camera = this.cameraManager.getActiveCamera();
         const perspective = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
@@ -229,7 +228,10 @@ export class Renderer {
         //         this.renderShadowMap(dirLight);
         //     }
         // }
-        if (dirLight && this.shadowShader) { this.renderShadowMap(dirLight); }
+        if (dirLight && this.shadowShader) {
+            //updateDirectionalLightMatrices(dirLight);
+            this.renderShadowMap(dirLight);
+        }
 
         // Screen pass
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);

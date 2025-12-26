@@ -15,7 +15,7 @@ export class TextureLoader {
 
         const renderTargets = [
             { name: "square" },
-            { name: "shadow", depthOnly: true, width: 1024, height: 1024 }
+            { name: "shadow", depthOnly: true, width: 2048, height: 2048 }
         ];
 
         for (const rt of renderTargets) {

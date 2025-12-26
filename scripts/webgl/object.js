@@ -203,6 +203,7 @@ export class Object3D extends MeshObject {
     }
 
     render() {
+        // for simple hardcoded objects
         this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length / 3);
     }
 }
