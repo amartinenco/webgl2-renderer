@@ -76,7 +76,7 @@ export class Renderer {
 
             for (const object of objects) {
                 this.shaderManager.setUniformMatrix(this.shadowShader, "u_modelWorldMatrix", object.getModelMatrix());
-                object.draw();
+                object.draw(this.shadowShader);
             }
 
             shadowRT.unbind();
@@ -127,7 +127,7 @@ export class Renderer {
 
         this.lightManager.getAllLights().forEach(light => {
             light.applyLighting();
-            currentShader = light.getShader();
+            //currentShader = light.getShader();
         });
 
         if (currentShader) camera.setUniforms(this.gl, currentShader);
@@ -139,7 +139,9 @@ export class Renderer {
 
             //const shader = obj.getShader();
             const shader = obj.shaderProgram;
+
             if (shader !== currentShader) {
+                
                 this.gl.useProgram(shader);
                 currentShader = shader;
                 camera.setUniforms(this.gl, shader);
@@ -167,7 +169,7 @@ export class Renderer {
                 }
             }
             
-            this.gl.uniform4fv(this.gl.getUniformLocation(shader, "u_color"), [0.5, 0.0, 0.0, 1.0]);
+            //this.gl.uniform4fv(this.gl.getUniformLocation(shader, "u_color"), [0.5, 0.0, 0.0, 1.0]);
             this.shaderManager.setUniformMatrix(shader, 'u_mvpMatrix', mvp);
             this.shaderManager.setUniformMatrix(shader, 'u_modelWorldMatrix', obj.getModelMatrix());
 
@@ -183,8 +185,8 @@ export class Renderer {
                 this.gl.bindTexture(this.gl.TEXTURE_2D, obj.texture);
                 this.gl.uniform1i(texLoc, 0);
             }
-
-            obj.draw();
+            
+            obj.draw(currentShader);
 
             if (hasTexture) this.gl.bindTexture(this.gl.TEXTURE_2D, null);
         });
@@ -213,7 +215,6 @@ export class Renderer {
         this.gl.enable(this.gl.DEPTH_TEST);
     }
 
-    
     render() {
         const camera = this.cameraManager.getActiveCamera();
         const perspective = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
@@ -227,7 +228,10 @@ export class Renderer {
         //         this.renderShadowMap(dirLight);
         //     }
         // }
-        if (dirLight && this.shadowShader) { this.renderShadowMap(dirLight); }
+        if (dirLight && this.shadowShader) {
+            //updateDirectionalLightMatrices(dirLight);
+            this.renderShadowMap(dirLight);
+        }
 
         // Screen pass
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);

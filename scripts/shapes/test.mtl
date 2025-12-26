@@ -1,0 +1,17 @@
+newmtl A
+Kd 1.0 0.0 0.0     # Red
+
+newmtl B
+Kd 0.0 1.0 0.0     # Green
+
+newmtl C
+Kd 0.0 0.0 1.0     # Blue
+
+newmtl D
+Kd 1.0 1.0 0.0     # Yellow
+
+newmtl E
+Kd 1.0 0.0 1.0     # Magenta
+
+newmtl F
+Kd 0.0 1.0 1.0     # Cyan
