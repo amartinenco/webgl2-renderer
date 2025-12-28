@@ -20,7 +20,7 @@ export class Renderer {
     
         // load render targets groups
         this.rtGroups = groupBy(this.objectManager.getAllObjects().filter(obj => obj.outputTarget), o => o.outputTarget);
-        console.log(this.rtGroups);
+        console.log("RT Groups:", this.rtGroups);
 
         this.resizeCanvasToDisplaySize();
         this.cameraManager.getActiveCamera().updateProjection();
@@ -119,6 +119,220 @@ export class Renderer {
         }
         rt.unbind();
     }
+
+    // renderComputerScreen() {
+    //     const rt = this.textureManager.getRenderTarget("computerScreen");
+    //     const objects = this.rtGroups["computerScreen"];
+    //     console.log(objects);
+    //     // console.log("----------------");
+    //     // console.log(rt.width)
+    //     // console.log(rt.height)
+
+    //     if (!rt || !objects) return;
+
+    //     rt.bind();
+    //     this.gl.viewport(0, 0, rt.width, rt.height);
+
+    //     this.gl.activeTexture(this.gl.TEXTURE0);
+    //     this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+
+    //     // Clear to green or black or whatever
+    //     this.gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    //     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
+    //     for (const obj of objects) {
+    //         const shader = obj.shaderProgram;
+    //         this.gl.useProgram(shader);
+
+    //         const mvp = mat4.create();
+    //         //const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
+    //          const projection = mat4.ortho(
+    //                 mat4.create(),
+    //                 -0.6, rt.width - 0.6,   // x
+    //                 -0.6, rt.height - 0.6,  // y
+    //                 -1, 1                   // z
+    //             );
+    //         mat4.multiply(mvp, projection, obj.getModelMatrix());
+
+    //         this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
+
+    //         const useTexLoc = this.gl.getUniformLocation(shader, "u_useTexture");
+    //         this.gl.uniform1i(useTexLoc, 0);
+    //         this.gl.bindVertexArray(obj.vao);
+    //         obj.draw();
+    //     }
+
+    //     rt.unbind();
+    // }
+
+// renderComputerScreen() {
+//     const rt = this.textureManager.getRenderTarget("computerScreen");
+//     const objects = this.rtGroups["computerScreen"];
+//     if (!rt || !objects || !objects.length) return;
+
+//     rt.bind();
+//     this.gl.viewport(0, 0, rt.width, rt.height);
+
+//     this.gl.disable(this.gl.DEPTH_TEST);
+//     this.gl.disable(this.gl.CULL_FACE); //-- temporary 
+
+//     this.gl.clearColor(0.0, 1.0, 0.0, 1.0);
+//     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+//     const obj = objects[0];
+//     const shader = obj.shaderProgram;
+//     this.gl.useProgram(shader);
+
+//     const projection = mat4.ortho(
+//         mat4.create(),
+//         0, rt.width,
+//         0, rt.height,
+//         -1, 1
+//     );
+
+//     const mvp = mat4.create();
+//     mat4.multiply(mvp, projection, obj.getModelMatrix());
+//     this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
+
+//     obj.draw(shader);
+
+//     rt.unbind();
+// }
+
+   
+
+
+
+
+
+// renderComputerScreen() {
+//     const rt = this.textureManager.getRenderTarget("computerScreen");
+//     const objects = this.rtGroups["computerScreen"];
+//     if (!rt || !objects || !objects.length) return;
+
+//     const gl = this.gl;
+//     rt.bind();
+//     gl.viewport(0, 0, rt.width, rt.height);
+
+//     gl.disable(gl.DEPTH_TEST);
+//     gl.disable(gl.CULL_FACE);
+
+//     gl.clearColor(0.0, 1.0, 0.0, 1.0);
+//     gl.clear(gl.COLOR_BUFFER_BIT);
+
+//     const obj = objects[0];
+//     const shader = obj.shaderProgram;
+//     gl.useProgram(shader);
+
+//     const mvp = mat4.create(); // identity
+//     this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
+
+//     obj.draw(shader);
+
+//     rt.unbind();
+// }
+renderComputerScreen() {
+    const rt = this.textureManager.getRenderTarget("computerScreen");
+    const objects = this.rtGroups["computerScreen"];
+    if (!rt || !objects || !objects.length) return;
+
+    const gl = this.gl;
+    rt.bind();
+    gl.viewport(0, 0, rt.width, rt.height);
+
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+
+    gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const obj = objects[0];
+    const shader = obj.shaderProgram;
+
+    gl.useProgram(shader);
+    const identity = mat4.create(); 
+    
+    //mat4.rotateZ(identity, identity, -Math.PI / 2);
+    
+    const loc = gl.getUniformLocation(shader, "u_mvpMatrix"); 
+    gl.uniformMatrix4fv(loc, false, identity);
+    //console.log("u_mvpMatrix location:", loc);
+    
+    // const mvp = mat4.create();
+    //             //const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
+    //             const projection = mat4.ortho(
+    //                 mat4.create(),
+    //                 -0.6, rt.width - 0.6,   // x
+    //                 -0.6, rt.height - 0.6,  // y
+    //                 -1, 1                   // z
+    //             );
+                
+    //             mat4.multiply(mvp, projection, obj.getModelMatrix());
+    //             this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
+    
+    obj.draw(shader);
+
+    rt.unbind();
+}
+
+
+
+
+
+
+
+
+
+//     renderComputerScreen() {
+//     const rt = this.textureManager.getRenderTarget("computerScreen");
+//     const objects = this.rtGroups["computerScreen"];
+//     //console.log("computerScreen objects:", objects);
+
+//     if (!rt || !objects) return;
+
+//     rt.bind();
+//     this.gl.viewport(0, 0, rt.width, rt.height);
+
+//     this.gl.disable(this.gl.DEPTH_TEST);
+//     this.gl.disable(this.gl.CULL_FACE);
+
+//     this.gl.clearColor(0.0, 1.0, 0.0, 1.0);
+//     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
+//     const obj = objects[0]; // terminalUI
+//     const shader = obj.shaderProgram;
+//     this.gl.useProgram(shader);
+
+//     // Super simple projection: NDC space
+//     const mvp = mat4.create();
+//     mat4.identity(mvp);
+//     //console.log("MODEL MATRIX:")
+//     //console.log(obj.modelMatrix);
+//     //const projection = mat4.ortho( mat4.create(), 0, rt.width, 0, rt.height, -1, 1 ); 
+//     //mat4.multiply(mvp, projection, obj.getModelMatrix());
+
+//     //         //const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
+//     //          const projection = mat4.ortho(
+//     //                 mat4.create(),
+//     //                 -0.6, rt.width - 0.6,   // x
+//     //                 -0.6, rt.height - 0.6,  // y
+//     //                 -1, 1                   // z
+//     //             );
+//     //         mat4.multiply(mvp, projection, obj.getModelMatrix());
+
+//     this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
+
+//     const useTexLoc = this.gl.getUniformLocation(shader, "u_useTexture");
+//     if (useTexLoc) this.gl.uniform1i(useTexLoc, 0);
+
+//     this.gl.bindVertexArray(obj.vao);
+//     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+
+
+
+//     rt.unbind();
+// }
+
 
     renderScene(camera, projection) {
         const viewMatrix = camera.getViewMatrix();
@@ -233,15 +447,19 @@ export class Renderer {
             this.renderShadowMap(dirLight);
         }
 
+        //this.renderToTexture();
+        this.renderComputerScreen();    
+
+
         // Screen pass
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.clearColor(0, 0, 0, 0.1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.CULL_FACE);
-        
+     
         this.renderScene(camera, perspective);
         this.renderUI(uiProjection);
-        this.renderToTexture();
+
     }
 };

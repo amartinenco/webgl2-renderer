@@ -103,11 +103,92 @@ export class Mesh {
 
 export class MeshBuilder {
 
+    // static normalizeUVs(mesh) {
+    //     const uvs = mesh.uvs;
+    //     for (let i = 0; i < uvs.length; i += 2) {
+    //         const u = uvs[i];
+    //         const v = uvs[i + 1];
+
+    //         // Rotate UVs 90° clockwise and normalize
+    //         uvs[i]     = v;
+    //         uvs[i + 1] = 1.0 - u;
+    //     }
+    // }
+    
+    // static normalizeUVs(submesh) {
+    //     const uvs = submesh.uvs;
+
+    //     // 1. Find the bounding box of the existing UVs
+    //     let minU = Infinity, maxU = -Infinity;
+    //     let minV = Infinity, maxV = -Infinity;
+
+    //     for (let i = 0; i < uvs.length; i += 2) {
+    //         const u = uvs[i];
+    //         const v = uvs[i + 1];
+
+    //         if (u < minU) minU = u;
+    //         if (u > maxU) maxU = u;
+    //         if (v < minV) minV = v;
+    //         if (v > maxV) maxV = v;
+    //     }
+
+    //     const scaleU = 1.0 / (maxU - minU);
+    //     const scaleV = 1.0 / (maxV - minV);
+
+    //     // 2. Normalize to [0,1]
+    //     for (let i = 0; i < uvs.length; i += 2) {
+    //         uvs[i]     = (uvs[i]     - minU) * scaleU;
+    //         uvs[i + 1] = (uvs[i + 1] - minV) * scaleV;
+    //     }
+
+        
+    // }
+    static normalizeUVs(submesh) {
+    const uvs = submesh.uvs;
+
+    // 1. Find bounding box
+    let minU = Infinity, maxU = -Infinity;
+    let minV = Infinity, maxV = -Infinity;
+
+    for (let i = 0; i < uvs.length; i += 2) {
+        const u = uvs[i];
+        const v = uvs[i + 1];
+
+        if (u < minU) minU = u;
+        if (u > maxU) maxU = u;
+        if (v < minV) minV = v;
+        if (v > maxV) maxV = v;
+    }
+
+    const scaleU = 1.0 / (maxU - minU);
+    const scaleV = 1.0 / (maxV - minV);
+
+    // 2. Normalize AND rotate 90° clockwise
+    for (let i = 0; i < uvs.length; i += 2) {
+        const u = (uvs[i]     - minU) * scaleU; // normalized U
+        const v = (uvs[i + 1] - minV) * scaleV; // normalized V
+
+        // ROTATION FIX:
+        // newU = v
+        // newV = 1 - u
+        uvs[i]     = v;
+        uvs[i + 1] = 1.0 - u;
+    }
+}
+
+
+
+
     static fromObj(obj, materials) {
         
         const mesh = new Mesh(obj, materials);
+        
+        for (const sub of mesh.submeshes) { if (sub.name && sub.name.toLowerCase().includes("red")) { MeshBuilder.normalizeUVs(sub); } }
+        
         console.log("MESH");
         console.log(mesh);
+
+        //MeshBuilder.normalizeUVs(mesh);
         return mesh;
     }
 };
