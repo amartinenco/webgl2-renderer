@@ -7,6 +7,7 @@ import { TextureFactory } from './texture-factory.js';
 import { LoaderObj } from './loader-obj.js';
 import { LoaderMtl } from './loader-mtl.js';
 import { MeshBuilder } from './mesh-builder.js';
+import { TextRenderer } from './text-renderer.js'
 
 const isLocal = window.location.hostname === "localhost";
 const FILE_PATH = isLocal ? "./scripts/shapes" : `${window.location.origin}/scripts/shapes`;
@@ -59,10 +60,11 @@ export class GameObjectDefinition {
 }
 
 export class ObjectLoader {
-    constructor(objectManager, shaderManager, textureManager) {
+    constructor(objectManager, shaderManager, textureManager, fontManager) {
         this.objectManager = objectManager; 
         this.shaderManager = shaderManager;
         this.textureManager = textureManager;
+        this.fontManager = fontManager;
         this.filePath = FILE_PATH;
     }
 
@@ -238,8 +240,8 @@ export class ObjectLoader {
 
 
 
-        const testMaterials = await LoaderMtl.load(`${this.filePath}/computer.mtl`);
-        const testObj = await LoaderObj.load(`${this.filePath}/computer.obj`);
+        const testMaterials = await LoaderMtl.load(`${this.filePath}/computer2.mtl`);
+        const testObj = await LoaderObj.load(`${this.filePath}/computer2.obj`);
         const testMesh = MeshBuilder.fromObj(testObj, testMaterials.materials);
 
         const screenRT = this.textureManager.getRenderTarget("computerScreen");
@@ -264,8 +266,8 @@ export class ObjectLoader {
             .setType(ObjectType.THREE_D)
             .setShaderProgram(shaderThreeD)
             .setMeshes(testMesh.submeshes)
-            .setPosition([30, 30, 30])
-            .setScale([100, 100, 100])
+            .setPosition([30, 10, 30])
+            .setScale([30, 30, 30])
             .setOutputTarget("screen")
             //.setTexture(screenRT.texture)
             .build();
@@ -296,7 +298,7 @@ export class ObjectLoader {
         */
 
         //const x = -0.5; const y = 0.9; const size = 0.02; 
-        const x = -0.6; const y = 0.1; const size = 0.01; 
+        const x = -0.9; const y = 0.9; const size = 0.2; 
 
         const v0 = this.mapToScreen(x, y);
         const v1 = this.mapToScreen(x + size, y);
@@ -413,17 +415,48 @@ export class ObjectLoader {
             //s.setScale([1, 1, 1])
             .build();
 
-         this.objectManager.loadObject(triangleTerminalUI);
+        //this.objectManager.loadObject(triangleTerminalUI);
+        
+        const font = this.fontManager.getFont("default");
+        console.log("hi", this.fontManager.getAllFonts())
+        const renderer = new TextRenderer();
 
-    
+        //const mesh = renderer.buildTextMesh(font, "Hello", this.toClip(30, screenRT.width), this.toClip(30, screenRT.height));
+        const startX = 150; 
+        console.log("----------screen.height", screenRT.height);
+        const startY = 200;
+        //const startY = 50;
+        const mesh = renderer.buildTextMesh(font, "helloworld", startX, startY, 1);
+
+        const textObj = new GameObjectDefinition.Builder()
+            .setName("helloText")
+            .setType(ObjectType.RTT)
+            .setShaderProgram(shaderRTT)
+            .setVertices(mesh.vertices)
+            .setUVCoords(mesh.uvs)
+            .setIndices(mesh.indices)
+            .setTexture(font.texture)
+            .setOutputTarget("computerScreen")
+            .build();
+
+        console.log("MESSSSSSSSSSH");
+        console.log(mesh.vertices.slice(0, 12));
+
+        this.objectManager.loadObject(textObj);
+
     }
 
     mapToScreen(x, y) { 
+        //  because the monitor coordinates are all messed up
         return [ 
             x, // goes to mesh.x (horizontal) 
             0, // mesh.y is constant (depth) 
             y // goes to mesh.z (vertical) 
             ]; 
+    }
+
+    toClip(px, size) {
+        return (px / size) * 2 - 1;
     }
 
     mapToPhysical(logicalVerts) {

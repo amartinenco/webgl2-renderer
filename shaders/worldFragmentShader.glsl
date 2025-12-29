@@ -2,6 +2,7 @@
  
 precision highp float;
 
+uniform bool u_isScreen;
 
 uniform bool u_usePointLight;
 uniform bool u_useSpotLight;
@@ -70,6 +71,77 @@ float computeShadow(vec4 worldPos) {
 
 
 void main() {
+    
+    
+    
+    // Skip all lighting on screen
+    // if (u_isScreen) { 
+    //     vec3 screen = texture(u_texture, v_texcoord).rgb; 
+
+    //     // CRT effects
+    //     //float scan = sin(v_texcoord.y * 800.0) * 0.04; 
+    //     //screen -= vec3(scan);    
+    //     //screen *= scan;
+
+    //     float scan = 0.85 + 0.15 * sin(v_texcoord.y * 800.0); 
+
+    //     // --- Emissive boost ---
+    //     float brightness = dot(screen, vec3(0.299, 0.587, 0.114)); // luminance
+    //     float glow = smoothstep(0.4, 1.0, brightness);             // isolate bright pixels
+    //     screen += glow * 0.35;                                     // boost emission
+
+    //     screen *= scan;
+
+    //     // --- Soft bloom halo ---
+    //     vec3 bloom = vec3(0.0);
+    //     float offset = 1.0 / 1024.0; // adjust based on your RTT resolution
+
+    //     bloom += texture(u_texture, v_texcoord + vec2( offset, 0.0)).rgb;
+    //     bloom += texture(u_texture, v_texcoord + vec2(-offset, 0.0)).rgb;
+    //     bloom += texture(u_texture, v_texcoord + vec2(0.0,  offset)).rgb;
+    //     bloom += texture(u_texture, v_texcoord + vec2(0.0, -offset)).rgb;
+
+    //     bloom /= 4.0;
+
+    //     screen += bloom * 0.15;   // subtle halo
+
+
+    //     outColor = vec4(screen, 1.0); 
+    //     return; 
+    // };
+
+    if (u_isScreen) {
+        vec3 screen = texture(u_texture, v_texcoord).rgb;
+
+        // --- Emissive boost (makes text glow) ---
+        float brightness = dot(screen, vec3(0.299, 0.587, 0.114));
+        float glow = smoothstep(0.2, 0.8, brightness);
+        screen += glow * 0.45;   // stronger boost for bright green text
+
+        // --- Soft bloom halo (correct for 1024x768) ---
+        float offsetX = 1.0 / 1024.0;
+        float offsetY = 1.0 / 768.0;
+
+        vec3 bloom = (
+            texture(u_texture, v_texcoord + vec2( offsetX, 0.0)).rgb +
+            texture(u_texture, v_texcoord + vec2(-offsetX, 0.0)).rgb +
+            texture(u_texture, v_texcoord + vec2(0.0,  offsetY)).rgb +
+            texture(u_texture, v_texcoord + vec2(0.0, -offsetY)).rgb
+        ) * 0.25;
+
+        screen += bloom * 0.25;   // visible halo
+
+        // --- Scanlines (correct frequency for 768px height) ---
+        float scan = 0.85 + 0.15 * sin(v_texcoord.y * 768.0 * 3.14159);
+        screen *= scan;
+
+        outColor = vec4(screen, 1.0);
+        return;
+    }
+
+
+
+
     vec3 normal = normalize(v_normal);
 
     // directional light
@@ -134,7 +206,10 @@ void main() {
     //vec3 finalColor = (diffuse + specularColor * specular + ambient) * shadow;
     vec3 finalColor = diffuse * shadow + specularColor * specular + ambient;
     //outColor = vec4(finalColor, alpha);
+    
     outColor = vec4(finalColor, alpha);
+    
+    
     //outColor = vec4(vec3(shadow), 1.0);
 
 }

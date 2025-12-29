@@ -186,7 +186,12 @@ export class MeshObject extends Renderable {
             this.submeshVAOs.push({
                 vao,
                 count: sub.indices.length,
-                material: sub.material
+                material: sub.material,
+
+                // cruch - will need some kind of Submesh metadata
+                // this is used for shader to determine what is a "3d comptuer screen" and what is plastic corpus
+                // I do it because I want to shade the "3d computer screen" area differently and not be effected by external lighting
+                isScreen: sub.isScreen
             });
         }
     }
@@ -232,6 +237,14 @@ export class MeshObject extends Renderable {
         const gl = this.gl;
 
         for (const sm of this.submeshVAOs) {
+
+
+            const isScreenLoc = this.gl.getUniformLocation(activeShader, "u_isScreen");
+            if (isScreenLoc) {
+                console.log(sm)
+                this.gl.uniform1i(isScreenLoc, sm.isScreen ? 1 : 0);
+            }
+
             gl.bindVertexArray(sm.vao);
 
             // If the material has a texture, bind it
@@ -272,7 +285,7 @@ export class Object3D extends MeshObject {
     constructor(gl, options) {
         super(gl, options);
         this.rotationSpeed = options.rotationSpeed || 0.5;
-        this.angle = 4.6;
+        this.angle = 0;
         this.scaleBy = options.scale ?? [1, 1, 1];
     }
 
@@ -419,10 +432,13 @@ export class ObjectRTT extends MeshObject {
         super(gl, {
             ...options,
             vertices: options.vertices,
-            uvCoords: new Float32Array([1,1, 1,1, 1,0, 0,0])
+            uvCoords: options.uvCoords
+            //uvCoords: new Float32Array([1,1, 1,1, 1,0, 0,0])
         });
-        this._setupBuffers();
-        this._setupVAO(); // override parent VAO
+        this.isScreen = true;
+        console.log("UVS", options.uvCoords);
+   //     this._setupBuffers();
+       // this._setupVAO(); // override parent VAO
 
         console.log("RTT vertices:", this.vertices);
         
@@ -446,41 +462,41 @@ export class ObjectRTT extends MeshObject {
     //     gl.bindVertexArray(null);
     // }
 
-   _setupBuffers() {
-        const gl = this.gl;
+//    _setupBuffers() {
+//         const gl = this.gl;
 
-        // Create ONLY the vertex buffer for RTT quad
-        this.vertexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
-    }
+//         // Create ONLY the vertex buffer for RTT quad
+//         this.vertexBuffer = gl.createBuffer();
+//         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+//         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+//     }
      
 
-    _setupVAO() {
-        const gl = this.gl;
+    // _setupVAO() {
+    //     const gl = this.gl;
 
-        this.vao = gl.createVertexArray();
-        gl.bindVertexArray(this.vao);
+    //     this.vao = gl.createVertexArray();
+    //     gl.bindVertexArray(this.vao);
 
-        // IMPORTANT: bind YOUR vertex buffer before setting attrib 0
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(
-            0,          // attribute location
-            3,          // vec3
-            gl.FLOAT,
-            false,
-            0,
-            0
-        );
+    //     // IMPORTANT: bind YOUR vertex buffer before setting attrib 0
+    //     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+    //     gl.enableVertexAttribArray(0);
+    //     gl.vertexAttribPointer(
+    //         0,          // attribute location
+    //         3,          // vec3
+    //         gl.FLOAT,
+    //         false,
+    //         0,
+    //         0
+    //     );
 
-        // Disable all other attributes so nothing leaks in
-        for (let i = 1; i < 8; i++) {
-            gl.disableVertexAttribArray(i);
-        }
+    //     // Disable all other attributes so nothing leaks in
+    //     for (let i = 1; i < 8; i++) {
+    //         gl.disableVertexAttribArray(i);
+    //     }
 
-        gl.bindVertexArray(null);
-    }
+    //     gl.bindVertexArray(null);
+    // }
 
 
     draw() {
@@ -493,7 +509,9 @@ export class ObjectRTT extends MeshObject {
 
     update(dt) {
         //mat4.identity(this.modelMatrix);
-        this.modelMatrix = mat4.create(); this.worldMatrix = mat4.create();
+        //this.modelMatrix = mat4.create(); 
+        //this.worldMatrix = mat4.create();
+        mat4.identity(this.modelMatrix);
     }
 
     render() {

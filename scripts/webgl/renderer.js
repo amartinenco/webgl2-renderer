@@ -7,7 +7,7 @@ import { ShaderType } from "./utils/constants.js";
 import { LightType } from "./utils/constants.js";
 
 export class Renderer {
-    constructor(gl, canvas, shaderManager, objectManager, cameraManager, lightManager, textureManager) {
+    constructor(gl, canvas, shaderManager, objectManager, cameraManager, lightManager, textureManager, fontManager) {
         this.gl = gl;
         this.canvas = canvas;
         this.shaderManager = shaderManager;
@@ -15,6 +15,7 @@ export class Renderer {
         this.cameraManager = cameraManager;
         this.lightManager = lightManager;
         this.textureManager = textureManager;
+        this.fontManager = fontManager;
     
         this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
     
@@ -31,6 +32,12 @@ export class Renderer {
 
         this.shadowShader = this.shaderManager.getShader(ShaderType.SHADOW);
         console.log(this.shadowShader);
+
+
+        console.log("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
+        console.log("this.fontManager", this.fontManager);
+        this.defaultFont = this.fontManager.getFont("default").texture;
+        console.log(this.defaultFont);
     }
 
     resizeCanvasToDisplaySize() {
@@ -43,9 +50,9 @@ export class Renderer {
             this.canvas.height = displayHeight;
             this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
-            for (const rt of this.textureManager.getRenderTargets()) {
-                rt.resize(displayWidth, displayHeight);
-            }
+            // for (const rt of this.textureManager.getRenderTargets()) {
+            //     rt.resize(displayWidth, displayHeight);
+            // }
 
             debugLog(`Window resized to w:${displayWidth} h:${displayHeight}`);
             this.render();
@@ -231,49 +238,100 @@ export class Renderer {
 
 //     rt.unbind();
 // }
-renderComputerScreen() {
-    const rt = this.textureManager.getRenderTarget("computerScreen");
-    const objects = this.rtGroups["computerScreen"];
-    if (!rt || !objects || !objects.length) return;
 
-    const gl = this.gl;
-    rt.bind();
-    gl.viewport(0, 0, rt.width, rt.height);
+    renderComputerScreen() {
+        
+        const rt = this.textureManager.getRenderTarget("computerScreen");
+        const objects = this.rtGroups["computerScreen"];
+        if (!rt || !objects || !objects.length) return;
 
-    gl.disable(gl.DEPTH_TEST);
-    gl.disable(gl.CULL_FACE);
+        const gl = this.gl;
+        rt.bind();
+        gl.viewport(0, 0, rt.width, rt.height);
 
-    gl.clearColor(0.0, 1.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.CULL_FACE);
 
-    const obj = objects[0];
-    const shader = obj.shaderProgram;
+        // CRITICAL: break feedback loop on unit 0
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, null);
 
-    gl.useProgram(shader);
-    const identity = mat4.create(); 
-    
-    //mat4.rotateZ(identity, identity, -Math.PI / 2);
-    
-    const loc = gl.getUniformLocation(shader, "u_mvpMatrix"); 
-    gl.uniformMatrix4fv(loc, false, identity);
-    //console.log("u_mvpMatrix location:", loc);
-    
-    // const mvp = mat4.create();
-    //             //const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
-    //             const projection = mat4.ortho(
-    //                 mat4.create(),
-    //                 -0.6, rt.width - 0.6,   // x
-    //                 -0.6, rt.height - 0.6,  // y
-    //                 -1, 1                   // z
-    //             );
-                
-    //             mat4.multiply(mvp, projection, obj.getModelMatrix());
-    //             this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
-    
-    obj.draw(shader);
+        //gl.clearColor(0.0, 1.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
 
-    rt.unbind();
-}
+        const obj = objects[0];
+        const shader = obj.shaderProgram;
+
+        gl.useProgram(shader);
+
+        const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
+        gl.uniformMatrix4fv(
+            gl.getUniformLocation(shader, "u_mvpMatrix"),
+            false,
+            projection
+        );
+
+        console.log(this.defaultFont);
+        const fontTex = this.defaultFont; 
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+        //console.log("defaultFont:", this.defaultFont);
+        //const fontText = this.defaultFont.texture;
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, fontTex);
+        gl.uniform1i(gl.getUniformLocation(shader, "u_texture"), 0);
+        gl.uniform1i(gl.getUniformLocation(shader, "u_useTexture"), 1);
+
+        obj.draw(shader);
+        gl.disable(gl.BLEND);
+        rt.unbind();
+    }
+
+
+    // renderComputerScreen() {
+    //     const rt = this.textureManager.getRenderTarget("computerScreen");
+    //     const objects = this.rtGroups["computerScreen"];
+    //     if (!rt || !objects || !objects.length) return;
+
+    //     const gl = this.gl;
+    //     rt.bind();
+    //     gl.viewport(0, 0, rt.width, rt.height);
+
+    //     gl.disable(gl.DEPTH_TEST);
+    //     gl.disable(gl.CULL_FACE);
+
+    //     gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    //     gl.clear(gl.COLOR_BUFFER_BIT);
+
+    //     const obj = objects[0];
+    //     const shader = obj.shaderProgram;
+
+
+
+    //     gl.useProgram(shader);
+        
+        
+        
+    //     //const identity = mat4.create(); 
+        
+    //     //mat4.rotateZ(identity, identity, -Math.PI / 2);
+        
+
+    //     const projection = mat4.ortho( mat4.create(), 0, rt.width, 0, rt.height, -1, 1 );
+
+    //     const loc = gl.getUniformLocation(shader, "u_mvpMatrix"); 
+        
+        
+    //     gl.uniformMatrix4fv(loc, false, projection);
+
+
+        
+    //     obj.draw(shader);
+
+    //     rt.unbind();
+    // }
 
 
 
@@ -386,7 +444,8 @@ renderComputerScreen() {
             //this.gl.uniform4fv(this.gl.getUniformLocation(shader, "u_color"), [0.5, 0.0, 0.0, 1.0]);
             this.shaderManager.setUniformMatrix(shader, 'u_mvpMatrix', mvp);
             this.shaderManager.setUniformMatrix(shader, 'u_modelWorldMatrix', obj.getModelMatrix());
-
+        
+     
 
 
             const hasTexture = Boolean(obj.texture && obj.texcoordBuffer);
@@ -400,6 +459,12 @@ renderComputerScreen() {
                 this.gl.uniform1i(texLoc, 0);
             }
             
+            // reset the isScreen for everything else
+            const isScreenLoc = this.gl.getUniformLocation(shader, "u_isScreen");
+            if (isScreenLoc) {
+                this.gl.uniform1i(isScreenLoc, 0);
+            }
+
             obj.draw(currentShader);
 
             if (hasTexture) this.gl.bindTexture(this.gl.TEXTURE_2D, null);

@@ -19,6 +19,9 @@ layout(location = 2) in vec2 a_texcoord;
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec3 a_normal;
 
+layout(location = 3) in float a_isScreen;
+out float v_isScreen;
+
 out vec3 v_normal;
 out vec3 v_lightDirection;
 
@@ -61,5 +64,5 @@ void main() {
 
   //v_worldPos = u_modelWorldMatrix * vec4(a_position, 1.0);
   v_worldPos = vec4(fragPosition, 1.0);
-
+  v_isScreen = a_isScreen;
 }
