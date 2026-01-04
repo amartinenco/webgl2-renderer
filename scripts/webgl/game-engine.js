@@ -7,7 +7,7 @@ import { Renderer } from './renderer.js';
 import { debugLog, errorLog } from '../logger/logger.js';
 import { CameraManager } from './camera-manager.js';
 import { GlobalContext } from './global-context.js';
-import { Object3D } from './object.js';
+import { MeshObject, Object3D } from './object.js';
 import { TextureManager } from './texture-manager.js';
 import { TextureLoader } from './texture-loader.js';
 import { FontManager } from './font-manager.js';
@@ -125,7 +125,7 @@ export class GameEngine {
         this.renderer.render();
         
         const objects = this.objectManager.getAllObjects();
-        objects.filter(obj => obj instanceof Object3D).forEach(obj => obj.update(deltaTime));
+        objects.filter(obj => obj instanceof MeshObject).forEach(obj => obj.update(deltaTime));
 
         
         requestAnimationFrame(this.engineRun);

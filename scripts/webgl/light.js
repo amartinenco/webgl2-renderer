@@ -19,7 +19,11 @@ export class LightBase {
         
 
         this.specularIntensity = lightObjectDefinition.specularIntensity || 1.0;
-        this.direction = lightObjectDefinition.direction;
+        this.direction = vec3.fromValues(
+            lightObjectDefinition.direction[0],
+            lightObjectDefinition.direction[1],
+            lightObjectDefinition.direction[2]
+        );
         this.limit = lightObjectDefinition.limit;
         const normalizedSpecularColor = vec3.create();
         const specularColorArray = lightObjectDefinition.specularColor || [1, 1, 1];
@@ -236,7 +240,7 @@ export class PointLight extends LightBase {
 }
 
 export class SpotLight extends LightBase {
-    constructor(gl, lightObjectDefinition) {
+    constructor(gl, lightObjectDefinition, camera) {
         super(gl, lightObjectDefinition, camera);
         vec3.scale(this.color, this.color, this.lightIntensity);
         if (lightObjectDefinition.position) {
@@ -246,6 +250,10 @@ export class SpotLight extends LightBase {
         } else {
             this.position = vec3.create();
         }
+
+        this.viewMatrix = mat4.create();
+        this.projectionMatrix = mat4.create();
+        this.viewProjectionMatrix = mat4.create();
     }
 
     applyLighting() {
@@ -254,7 +262,7 @@ export class SpotLight extends LightBase {
 
     setupUniforms() {
         super.setupUniforms();
-
+        
         const useSpotLightLocation = this.gl.getUniformLocation(this.shaderProgram, "u_useSpotLight");
         if (useSpotLightLocation !== null) {
             this.gl.uniform1i(useSpotLightLocation, 1);
@@ -313,6 +321,190 @@ export class SpotLight extends LightBase {
         }
     }
 
+    // updateMatrices() {
+    //     const lightPos = this.position;
+    //     //const target = vec3.create();
+    //     //const target = vec3.fromValues(30, -120, 30);
+    //     //vec3.add(target, lightPos, this.direction);
+
+    //     // mat4.lookAt(
+    //     //     this.viewMatrix,
+    //     //     lightPos,
+    //     //     target,
+    //     //     [0, 0, 1] // [0, 1, 0]
+    //     // );
+
+    //     vec3.normalize(this.direction, this.direction);
+
+    //     const target = vec3.create();
+    //     vec3.scale(target, this.direction, 1000); // look far down the cone
+    //     vec3.add(target, lightPos, target);
+
+
+
+    //     let up = [0, 1, 0];
+    //     if (Math.abs(this.direction[1]) > 0.99) {
+    //         up = [0, 0, 1];   // avoid degeneracy when looking straight down/up
+    //     }
+
+    //     mat4.lookAt(this.viewMatrix, lightPos, target, up);
+
+
+
+    //     //const fov = this.outerLimit;
+    //     const fov = 120;
+    //     const near = 0.1; // 1.0
+    //     const far = 2000.0;
+
+    //     mat4.perspective(
+    //         this.projectionMatrix,
+    //         fov * (Math.PI / 180),
+    //         1.0,
+    //         near,
+    //         far
+    //     );
+
+    //     mat4.multiply(
+    //         this.viewProjectionMatrix,
+    //         this.projectionMatrix,
+    //         this.viewMatrix
+    //     );
+    // }
+
+    // updateMatrices() {
+    //     const lightPos = this.position;
+
+    //     // Normalize direction
+    //     vec3.normalize(this.direction, this.direction);
+
+    //     // Look far down the cone
+    //     const target = vec3.create();
+    //     vec3.scale(target, this.direction, 1000);
+    //     vec3.add(target, lightPos, target);
+
+    //     // Choose a safe UP vector
+    //     let up = [0, 1, 0];
+    //     if (Math.abs(this.direction[1]) > 0.99) {
+    //         up = [0, 0, 1];
+    //     }
+
+    //     mat4.lookAt(this.viewMatrix, lightPos, target, up);
+
+    //     const fov = this.outerLimit;
+    //     const near = 0.1;
+    //     const far = 2000.0;
+
+    //     // mat4.perspective(
+    //     //     this.projectionMatrix,
+    //     //     fov * (Math.PI / 180),
+    //     //     1.0,
+    //     //     near,
+    //     //     far
+    //     // );
+
+    //     mat4.ortho( this.projectionMatrix, -500, 500, -500, 500, 0.1, 2000 );
+
+    //     mat4.multiply(
+    //         this.viewProjectionMatrix,
+    //         this.projectionMatrix,
+    //         this.viewMatrix
+    //     );
+    // }
+
+//     updateMatrices() {
+//     const lightPos = this.position;
+
+//     // Normalize direction
+//     const dir = vec3.create();
+//     vec3.normalize(dir, this.direction);
+
+//     // Choose a stable UP vector
+//     let up = vec3.fromValues(0, 1, 0);
+//     if (Math.abs(dir[1]) > 0.99) {
+//         up = vec3.fromValues(0, 0, 1);
+//     }
+
+//     // Compute target far along the direction
+//     const target = vec3.create();
+//     vec3.scale(target, dir, 1000);
+//     vec3.add(target, lightPos, target);
+
+//     // Build a stable right-handed view matrix
+//     mat4.lookAt(this.viewMatrix, lightPos, target, up);
+
+//     // Perspective projection
+//     const fov = this.outerLimit * (Math.PI / 180);
+//     //mat4.perspective(this.projectionMatrix, fov, 1.0, 0.1, 2000.0);
+//     //mat4.ortho( this.projectionMatrix, -500, 500, -500, 500, 0.1, 2000 );
+
+//          const size = 120.0;
+//         const near = 1.0;
+//         const far  = 2000.0;
+
+//         mat4.ortho(
+//             this.projectionMatrix,
+//             -size, size,
+//             -size, size,
+//             near, far
+//         );
+
+//     // Combine
+//     mat4.multiply(this.viewProjectionMatrix, this.projectionMatrix, this.viewMatrix);
+// }
+
+updateMatrices() {
+    const lightPos = this.position;
+
+    // Normalize direction
+    const dir = vec3.create();
+    vec3.normalize(dir, this.direction);
+
+    // Choose a stable UP vector
+    let up = vec3.fromValues(0, 1, 0);
+    if (Math.abs(dir[1]) > 0.99) {
+        up = vec3.fromValues(0, 0, 1);
+    }
+
+    // Compute right = normalize(cross(up, dir))
+    const right = vec3.create();
+    vec3.cross(right, up, dir);
+    vec3.normalize(right, right);
+
+    // Recompute up = cross(dir, right)
+    vec3.cross(up, dir, right);
+
+    // Build view matrix manually
+    const target = vec3.create();
+    vec3.add(target, lightPos, dir);
+
+    mat4.lookAt(this.viewMatrix, lightPos, target, up);
+
+    // Orthographic projection
+    // mat4.ortho(
+    //     this.projectionMatrix,
+    //     -500, 500,
+    //     -500, 500,
+    //     0.1, 2000
+    // );
+      // 3. Simple fixed orthographic box that covers your whole scene
+        const size = 120.0;
+        const near = 1.0;
+        const far  = 2000.0;
+
+        mat4.ortho(
+            this.projectionMatrix,
+            -size, size,
+            -size, size,
+            near, far
+        );
+
+    // Combine
+    mat4.multiply(this.viewProjectionMatrix, this.projectionMatrix, this.viewMatrix);
+}
+
+
+
+
     getLightData() {
         return {
             name: this.name,
@@ -320,6 +512,81 @@ export class SpotLight extends LightBase {
             position: this.position, 
             color: this.color, 
             direction: this.direction
+        };
+    }
+}
+
+
+export class ScreenLight extends LightBase {
+    constructor(gl, lightObjectDefinition, camera) {
+        super(gl, lightObjectDefinition, camera);
+        this.position = lightObjectDefinition.position;
+        this.normal = lightObjectDefinition.direction;
+        this.intensity = lightObjectDefinition.lightIntensity;
+    }
+
+    applyLighting() {
+        this.setupUniforms();
+    }
+
+    setupUniforms() {
+        //super.setupUniforms()
+
+
+
+        if (!this.shaderProgram) {
+            warnLog("Shader program is missing. Cannot set uniforms.");
+            return;
+        }
+
+        this.gl.useProgram(this.shaderProgram);
+
+        const colorLocation = this.gl.getUniformLocation(this.shaderProgram, "u_color");
+        if (colorLocation !== null) {
+            this.gl.uniform4fv(colorLocation, [1, 1, 1, 1]);
+        } else {
+            warnLog("Uniform 'u_color' not found in shader.");
+        }
+
+        //const uselightColorLocation = this.gl.getUniformLocation(this.shaderProgram, "u_lightColor");
+        
+        // if (uselightColorLocation !== null) {
+        //     this.gl.uniform3fv(uselightColorLocation, this.color);
+        //     //this.gl.uniform3fv(uselightColorLocation, [0.0, 0.0, 0.0]);
+        // } else {
+        //     warnLog("Uniform 'u_lightColor' not found in shader.");
+        // }
+
+
+
+
+
+
+
+
+        const gl = this.gl;
+        const program = this.shaderProgram; 
+        gl.uniform1i(gl.getUniformLocation(program, "u_useScreenLight"), 1);
+        gl.uniform3fv(gl.getUniformLocation(program, "u_screenLightPos"), this.position);
+        gl.uniform3fv(gl.getUniformLocation(program, "u_screenLightNormal"), this.normal);
+        gl.uniform1f(gl.getUniformLocation(program, "u_screenLightIntensity"), this.intensity);
+        let scaledColor = vec3.create();
+        vec3.scale(scaledColor, this.color, this.intensity);
+        gl.uniform3fv(gl.getUniformLocation(program, "u_screenLightColor"), scaledColor);
+        const now = performance.now() * 0.001; 
+        //console.log(now);
+        // seconds 
+        gl.uniform1f(gl.getUniformLocation(program, "u_time"), now);
+    }
+
+    getLightData() {
+        return {
+            name: this.name,
+            type: "screen",
+            position: this.position,
+            direction: this.normal,
+            color: this.color,
+            intensity: this.intensity
         };
     }
 }

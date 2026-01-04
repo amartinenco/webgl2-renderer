@@ -75,7 +75,7 @@ export class LightingLoader {
             .setPosition([110, -75, -15])
             .setSpecularColor([1, 1, 1])
             .setSpecularIntensity(50.0)
-            .setLightIntensity(1000.0)
+            .setLightIntensity(100.0)
             .build();
 
         const plSquareDefinition = new LightObjectDefinition.Builder()
@@ -92,22 +92,63 @@ export class LightingLoader {
             .setName("spot")
             .setType(LightType.SPOT)
             .setShaderProgram(shaderProgram)
-            .setPosition([110, -75, -15])
-            .setDirection([-1, 0, 0])
+            //.setPosition([110, -75, -15])
+            //.setPosition([310, 0, 0])
+            //.setPosition([310, 0, 0])
+            
+            
+            .setPosition([-150, 15, 150]) // good position
+            //.setDirection([0.832, 0, -0.555]) // to computer
+            //.setDirection([0.832,-0.539, -0.809])
+
+            //.setPosition([0, 200, 0])
+            //.setDirection([0.154, -0.976, 0.154])
+            //.setPosition([30, 200, 30]) 
+            //.setPosition([30, 75, 30])
+            //.setDirection([0, -1, 0])
+            
+            .setDirection([0.836, -0.539, -0.309]) // to ground
+            .setColor([1, 1, 1])
+            .setSpecularColor([1, 1, 1])
+            .setSpecularIntensity(50.0)
+            .setRotation({ x: 0, y: 0 })
+            .setLightIntensity(2)
+            .setInnerLimit(5) //5
+            .setOuterLimit(50) // 50
+            .build();
+            
+        //this.lightingManager.addLight(directionalLightDefinition);
+        //this.lightingManager.addLight(plSquareDefinition);
+        //this.lightingManager.addLight(pointLightDefinition);
+        this.lightingManager.addLight(spotLightDefinition);
+
+        const screenLightDefinition = new LightObjectDefinition.Builder()
+            .setName("screen")
+            .setType(LightType.SCREEN)
+            .setShaderProgram(shaderProgram)
+            .setPosition([30, 25, 55]) // screen center in world space
+            //.setPosition([0, 0, 0])
+            .setDirection([0, 0, 1]) // screen normal
+            .setColor([0.0, 1.0, 0.6]) // reddish glow 1.0, 0.2, 0.2 //0.0, 1.0, 0.6 real crt
+            .setLightIntensity(3) // can be dynamic later
+            .build();
+
+        this.lightingManager.addLight(screenLightDefinition);
+        
+    }
+
+    /*
+            const directionalLightDefinition = new LightObjectDefinition.Builder()
+            .setName("directional")
+            .setType(LightType.DIRECTIONAL)
+            .setShaderProgram(shaderProgram)
+            //.setDirection([0.5, 0.7, 1])
+            .setDirection([0, -1, -1])
             .setColor([1, 1, 1])
             .setSpecularColor([1, 1, 1])
             .setSpecularIntensity(50.0)
             .setRotation({ x: 0, y: 0 })
             .setLightIntensity(2)
             .setInnerLimit(5)
-            .setOuterLimit(30)
-            .build();
-            
-        this.lightingManager.addLight(directionalLightDefinition);
-        //this.lightingManager.addLight(plSquareDefinition);
-        //this.lightingManager.addLight(pointLightDefinition);
-        //this.lightingManager.addLight(spotLightDefinition);
-
-        
-    }
+            .setOuterLimit(30) //30 */
 }

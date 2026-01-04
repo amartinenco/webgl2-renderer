@@ -16,7 +16,8 @@ export class TextureLoader {
         const renderTargets = [
             { name: "square" },
             { name: "computerScreen", width: 1024, height: 768},
-            { name: "shadow", depthOnly: true, width: 2048, height: 2048 }
+            { name: "shadow", depthOnly: true, width: 2048, height: 2048 },
+            { name: "spotShadow", depthOnly: true, width: 2048, height: 2048 }
         ];
 
         for (const rt of renderTargets) {

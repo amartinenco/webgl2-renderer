@@ -5,6 +5,7 @@ import { CameraType } from "./utils/constants.js";
 import { groupBy } from "./utils/objhelper.js";
 import { ShaderType } from "./utils/constants.js";
 import { LightType } from "./utils/constants.js";
+import { DirectionalLight, SpotLight } from "./light.js";
 
 export class Renderer {
     constructor(gl, canvas, shaderManager, objectManager, cameraManager, lightManager, textureManager, fontManager) {
@@ -21,7 +22,7 @@ export class Renderer {
     
         // load render targets groups
         this.rtGroups = groupBy(this.objectManager.getAllObjects().filter(obj => obj.outputTarget), o => o.outputTarget);
-        console.log("RT Groups:", this.rtGroups);
+        //console.log("RT Groups:", this.rtGroups);
 
         this.resizeCanvasToDisplaySize();
         this.cameraManager.getActiveCamera().updateProjection();
@@ -31,18 +32,20 @@ export class Renderer {
         });
 
         this.shadowShader = this.shaderManager.getShader(ShaderType.SHADOW);
-        console.log(this.shadowShader);
+        //console.log(this.shadowShader);
 
 
-        console.log("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
-        console.log("this.fontManager", this.fontManager);
+        //console.log("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
+        //console.log("this.fontManager", this.fontManager);
         this.defaultFont = this.fontManager.getFont("default").texture;
-        console.log(this.defaultFont);
+        //console.log(this.defaultFont);
     }
 
     resizeCanvasToDisplaySize() {
-        const displayWidth = this.canvas.clientWidth;
-        const displayHeight = this.canvas.clientHeight;
+         const dpr = window.devicePixelRatio || 1;
+
+        const displayWidth  = Math.round(this.canvas.clientWidth  * dpr);
+        const displayHeight = Math.round(this.canvas.clientHeight * dpr);
 
         const needResize = this.canvas.width  !== displayWidth || this.canvas.height !== displayHeight;
         if (needResize) {
@@ -63,10 +66,10 @@ export class Renderer {
     /**
      * Shadow pass - the light taking a photo of a scene (depth only)
      */
-    renderShadowMap(light) {
+    renderShadowMap(light, renderTarget="shadow") {
         const gl = this.gl;
 
-        const shadowRT = this.textureManager.getRenderTarget("shadow");
+        const shadowRT = this.textureManager.getRenderTarget(renderTarget);
         if (shadowRT) {
             shadowRT.bind();
 
@@ -83,7 +86,8 @@ export class Renderer {
 
             for (const object of objects) {
                 this.shaderManager.setUniformMatrix(this.shadowShader, "u_modelWorldMatrix", object.getModelMatrix());
-                object.draw(this.shadowShader);
+                //object.draw(this.shadowShader);
+                object.drawShadow();
             }
 
             shadowRT.unbind();
@@ -271,7 +275,7 @@ export class Renderer {
             projection
         );
 
-        console.log(this.defaultFont);
+        //console.log(this.defaultFont);
         const fontTex = this.defaultFont; 
 
         gl.enable(gl.BLEND);
@@ -439,6 +443,16 @@ export class Renderer {
                         );
                     }
                 }
+
+                const spotLightRT = this.textureManager.getRenderTarget("spotShadow");
+                const spotLight = this.lightManager.getLight(LightType.SPOT);
+
+                if (spotLightRT && spotLight && spotLightRT.depthTexture) {
+                    this.gl.activeTexture(this.gl.TEXTURE8);
+                    this.gl.bindTexture(this.gl.TEXTURE_2D, spotLightRT.depthTexture);
+                    this.gl.uniform1i(this.gl.getUniformLocation(shader, "u_spotShadowMap"), 8);
+                    this.shaderManager.setUniformMatrix(shader, "u_spotLightViewProjection", spotLight.viewProjectionMatrix);
+                }
             }
             
             //this.gl.uniform4fv(this.gl.getUniformLocation(shader, "u_color"), [0.5, 0.0, 0.0, 1.0]);
@@ -499,18 +513,25 @@ export class Renderer {
         const perspective = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
         const uiProjection = camera.getProjectionMatrix(CameraType.ORTHOGRAPHIC);
 
-        const dirLight = this.lightManager.getLight(LightType.DIRECTIONAL);
-        // if (dirLight) {
-        //     //dirLight.updateMatrices();
-        //     // Shadow pass
-        //     if (this.shadowShader) {
-        //         this.renderShadowMap(dirLight);
-        //     }
+        // const dirLight = this.lightManager.getLight(LightType.DIRECTIONAL);
+        // if (dirLight && this.shadowShader) {
+        //     //updateDirectionalLightMatrices(dirLight);
+        //     this.renderShadowMap(dirLight);
         // }
-        if (dirLight && this.shadowShader) {
-            //updateDirectionalLightMatrices(dirLight);
-            this.renderShadowMap(dirLight);
+
+        for (const light of this.lightManager.getAllLights()) {
+            if (this.shadowShader) {
+                if (light instanceof DirectionalLight) {
+                    //light.updateMatrices();
+                    this.renderShadowMap(light);
+                }
+                else if (light instanceof SpotLight) {
+                    light.updateMatrices();
+                    this.renderShadowMap(light, "spotShadow");
+                }
+            }
         }
+
 
         //this.renderToTexture();
         this.renderComputerScreen();    

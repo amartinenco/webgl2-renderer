@@ -55,14 +55,47 @@ export class MeshObject extends Renderable {
         this.outputTarget = options.outputTarget || null;
         this.vao = null;
         this.submeshes = options.meshes || null;
-
+        this.pivotOffset = [0, 0, 0];
         if (!this.submeshes) {
             this._setupBuffers();
             this._setupVAO();
         } else {    
             this._setupSubmeshVAOs();
+            this.pivotOffset = this.computePivotOffset(this.submeshes.flatMap(sub => Array.from(sub.positions)) );
         }
     }
+    
+    update(deltaTime) {
+        
+    }
+
+    computePivotOffset(positions) {
+        let min = [Infinity, Infinity, Infinity];
+        let max = [-Infinity, -Infinity, -Infinity];
+
+        for (let i = 0; i < positions.length; i += 3) {
+            const x = positions[i];
+            const y = positions[i+1];
+            const z = positions[i+2];
+
+            min[0] = Math.min(min[0], x);
+            min[1] = Math.min(min[1], y);
+            min[2] = Math.min(min[2], z);
+
+            max[0] = Math.max(max[0], x);
+            max[1] = Math.max(max[1], y);
+            max[2] = Math.max(max[2], z);
+        }
+
+        const center = [
+            (min[0] + max[0]) * 0.5,
+            (min[1] + max[1]) * 0.5,
+            (min[2] + max[2]) * 0.5
+        ];
+
+        return center; 
+    }
+
 
     _setupBuffers() {
         const gl = this.gl;
@@ -211,6 +244,23 @@ export class MeshObject extends Renderable {
         // gl.bindVertexArray(null);
     }
 
+    drawShadow() {
+        const gl = this.gl;
+        
+        if (this.submeshes) {
+            for (const sm of this.submeshVAOs) {
+                gl.bindVertexArray(sm.vao);
+                gl.drawElements(gl.TRIANGLES, sm.count, gl.UNSIGNED_SHORT, 0);
+            }
+        } else {
+            gl.bindVertexArray(this.vao);
+            gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length / 3);
+        }
+
+        gl.bindVertexArray(null);
+    }
+
+
     drawSingleMesh() {
         const gl = this.gl;
         gl.bindVertexArray(this.vao);
@@ -241,7 +291,7 @@ export class MeshObject extends Renderable {
 
             const isScreenLoc = this.gl.getUniformLocation(activeShader, "u_isScreen");
             if (isScreenLoc) {
-                console.log(sm)
+                //console.log(sm)
                 this.gl.uniform1i(isScreenLoc, sm.isScreen ? 1 : 0);
             }
 
@@ -289,11 +339,41 @@ export class Object3D extends MeshObject {
         this.scaleBy = options.scale ?? [1, 1, 1];
     }
 
+    
+
+
     update(deltaTime) {
+        // this.angle += this.rotationSpeed * deltaTime;
+        // mat4.identity(this.modelMatrix);
+        // mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+        // this.rotate(this.angle, [0, 1, 0]);
+        // mat4.scale(this.modelMatrix, this.modelMatrix, this.scaleBy);
+        
+        // this.angle += this.rotationSpeed * deltaTime;
+        // mat4.identity(this.modelMatrix);
+        // mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+        // this.rotate(this.angle, [0, 1, 0]);
+        // mat4.scale(this.modelMatrix, this.modelMatrix, this.scaleBy);
+        
         //this.angle += this.rotationSpeed * deltaTime;
         mat4.identity(this.modelMatrix);
+
+        // // 1. Move object to world position
         mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+
+        // 2. Move pivot to origin
+        mat4.translate(this.modelMatrix, this.modelMatrix, this.pivotOffset);
+
+        // 3. Rotate around pivot
+        //mat4.rotateY(this.modelMatrix, this.angle, [0, 1, 0]);
         this.rotate(this.angle, [0, 1, 0]);
+        
+        // 4. Move pivot back
+        const negPivot = vec3.create();
+        vec3.negate(negPivot, this.pivotOffset);
+        mat4.translate(this.modelMatrix, this.modelMatrix, negPivot);
+
+        // 5. Apply scale
         mat4.scale(this.modelMatrix, this.modelMatrix, this.scaleBy);
     }
 
@@ -320,7 +400,23 @@ export class Object2D extends MeshObject {
             mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotationY);
             mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotationX);
         }
+        this.scaleBy = options.scale ?? [1, 1, 1];
     }
+
+    update(deltaTime) {
+        mat4.identity(this.modelMatrix);
+        if (this.position) {
+            mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+        }
+
+        if (this.rotationX || this.rotationY) {
+            mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotationY);
+            mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotationX);
+        }
+
+        mat4.scale(this.modelMatrix, this.modelMatrix, this.scaleBy);
+    }
+
 
     render() {
         this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length / 3);

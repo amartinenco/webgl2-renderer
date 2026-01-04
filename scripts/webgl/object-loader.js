@@ -102,6 +102,7 @@ export class ObjectLoader {
             .setVertices(squareVertices)
             .setNormals(squareNormals)
             .setRotation({ x: 90, y: 0 })
+            .setScale([2, 2, 1])
             .build();
 
         const wall_one = new GameObjectDefinition.Builder()
@@ -155,7 +156,10 @@ export class ObjectLoader {
             .setName("triangle2d")
             .setType(ObjectType.TWO_D)
             .setShaderProgram(shaderThreeD)
-            .setPosition([110, -75, -15])
+            //.setPosition([110, -75, -15])
+            //.setPosition([30, 10, 220])
+            //.setPosition([30, 10, 110]) old screen
+            .setPosition([-150, 10, 150])
             .setVertices(triangleVertices)
             .setOutputTarget("screen")  // test target
             .build();
@@ -202,7 +206,11 @@ export class ObjectLoader {
         
         this.objectManager.loadObject(triangle);
         //this.objectManager.loadObject(f3d);
-        // //this.objectManager.loadObject(triangle2d);
+        
+        
+        
+        
+        //this.objectManager.loadObject(triangle2d);
         
         
         //this.objectManager.loadObject(square);
@@ -212,7 +220,7 @@ export class ObjectLoader {
         this.objectManager.loadObject(wall_one);
         this.objectManager.loadObject(wall_two);
         this.objectManager.loadObject(wall_side);
-        this.objectManager.loadObject(wall_three);
+        //this.objectManager.loadObject(wall_three);
 
 
   
@@ -253,8 +261,6 @@ export class ObjectLoader {
                 sm.material.diffuseTexture = screenRT.texture;
                 sm.material.hasTexture = true;
             }
-              
-
         }
 
 
@@ -266,19 +272,23 @@ export class ObjectLoader {
             .setType(ObjectType.THREE_D)
             .setShaderProgram(shaderThreeD)
             .setMeshes(testMesh.submeshes)
-            .setPosition([30, 10, 30])
+            .setPosition([30, 15, 30])
             .setScale([30, 30, 30])
             .setOutputTarget("screen")
             //.setTexture(screenRT.texture)
             .build();
 
 
-        for (const sm of testMesh.submeshes) {
-            console.log("-------------------->", sm.name, sm.material?.hasTexture);
-        }
+        // for (const sm of testMesh.submeshes) {
+        //     console.log("-------------------->", sm.name, sm.material?.hasTexture);
+        // }
         
 
+        // Computer
         this.objectManager.loadObject(objTest);
+
+
+
 
         //const test2TriangleInTextureVertices = new Float32Array([ -0.5, -0.5, 0, 0.5, -0.5, 0, 0.0, 0.5, 0 ]);
 
@@ -422,7 +432,7 @@ export class ObjectLoader {
         const renderer = new TextRenderer();
 
         //const mesh = renderer.buildTextMesh(font, "Hello", this.toClip(30, screenRT.width), this.toClip(30, screenRT.height));
-        const startX = 150; 
+        const startX = 50; 
         console.log("----------screen.height", screenRT.height);
         const startY = 200;
         //const startY = 50;
