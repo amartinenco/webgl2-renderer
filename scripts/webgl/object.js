@@ -64,6 +64,31 @@ export class MeshObject extends Renderable {
             this.pivotOffset = this.computePivotOffset(this.submeshes.flatMap(sub => Array.from(sub.positions)) );
         }
     }
+
+    updateBuffers() {
+        const gl = this.gl;
+
+        gl.bindVertexArray(this.vao);
+
+        // Update vertex buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
+
+        // Update UV buffer
+        if (this.texcoordBuffer) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, this.uvCoords, gl.DYNAMIC_DRAW);
+        }
+
+        // Update index buffer
+        if (this.indexBuffer) {
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.DYNAMIC_DRAW);
+        }
+
+        gl.bindVertexArray(null);
+    }
+
     
     update(deltaTime) {
         
@@ -608,6 +633,10 @@ export class ObjectRTT extends MeshObject {
         //this.modelMatrix = mat4.create(); 
         //this.worldMatrix = mat4.create();
         mat4.identity(this.modelMatrix);
+
+        if (this.onUpdate) {
+            this.onUpdate(dt);
+        }
     }
 
     render() {

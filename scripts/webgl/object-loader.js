@@ -2,7 +2,7 @@ import { triangleVertices, triangleVerticesUITest, testTriangleInTextureVertices
 import { squareVertices, squareNormals } from '../shapes/square.js';
 import { fVertices, fNormals, fColors, fTextureCoords } from '../shapes/3df.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
-import { errorLog } from '../logger/logger.js';
+import { errorLog, warnLog } from '../logger/logger.js';
 import { TextureFactory } from './texture-factory.js';
 import { LoaderObj } from './loader-obj.js';
 import { LoaderMtl } from './loader-mtl.js';
@@ -60,12 +60,18 @@ export class GameObjectDefinition {
 }
 
 export class ObjectLoader {
-    constructor(objectManager, shaderManager, textureManager, fontManager) {
+    constructor(objectManager, shaderManager, textureManager, fontManager, controller) {
         this.objectManager = objectManager; 
         this.shaderManager = shaderManager;
         this.textureManager = textureManager;
         this.fontManager = fontManager;
         this.filePath = FILE_PATH;
+        this.controller = controller;
+    }
+
+    setController(controller) {
+        warnLog("SEtting controller")
+        this.controller = controller;
     }
 
     async loadGameObjects() {
@@ -308,20 +314,15 @@ export class ObjectLoader {
         */
 
         //const x = -0.5; const y = 0.9; const size = 0.02; 
-        const x = -0.9; const y = 0.9; const size = 0.2; 
-
-        const v0 = this.mapToScreen(x, y);
-        const v1 = this.mapToScreen(x + size, y);
-        const v2 = this.mapToScreen(x, y + size);
-
+        const x = -0.9; const y = 0.9; const size = 0.2;
 
         // .setVertices(new Float32Array([
         //     ...v0,
         //     ...v1,
         //     ...v2
         // ]));
-        console.log("V");
-        console.log(v0, v1, v2);
+        // console.log("V");
+        // console.log(v0, v1, v2);
 
         const triangleTerminalUI = new GameObjectDefinition.Builder()
             .setName("terminalUI")
@@ -436,7 +437,21 @@ export class ObjectLoader {
         console.log("----------screen.height", screenRT.height);
         const startY = 200;
         //const startY = 50;
-        const mesh = renderer.buildTextMesh(font, "helloworld", startX, startY, 1);
+
+
+
+
+
+
+
+
+        // TERMINAL HERE
+        
+        const text = this.controller ? this.controller.terminal.getCurrentLine() : "test";
+        console.log("------------------------------", this.controller)
+
+        //const mesh = renderer.buildTextMesh(font, "helloworld", startX, startY, 1);
+        const mesh = renderer.buildTextMesh(font, text, startX, startY, 1);
 
         const textObj = new GameObjectDefinition.Builder()
             .setName("helloText")
@@ -449,46 +464,28 @@ export class ObjectLoader {
             .setOutputTarget("computerScreen")
             .build();
 
-        console.log("MESSSSSSSSSSH");
-        console.log(mesh.vertices.slice(0, 12));
 
-        this.objectManager.loadObject(textObj);
+        let loadedTextObj = this.objectManager.loadObject(textObj);
+        loadedTextObj.controller = this.controller;
+        loadedTextObj.textRenderer = renderer;
+        loadedTextObj.font = font;
 
-    }
+        loadedTextObj.onUpdate = function(dt) {
+            //console.log(this.controller);
+            if (!this.controller) return;
+            
+            const newText = this.controller.terminal.getCurrentLine();
+         
+            if (newText !== this.lastText) {
+                const mesh = this.textRenderer.buildTextMesh(this.font, newText, 50, 200, 1);
 
-    mapToScreen(x, y) { 
-        //  because the monitor coordinates are all messed up
-        return [ 
-            x, // goes to mesh.x (horizontal) 
-            0, // mesh.y is constant (depth) 
-            y // goes to mesh.z (vertical) 
-            ]; 
-    }
+                this.vertices = mesh.vertices;
+                this.uvCoords = mesh.uvs;
+                this.indices = mesh.indices;
 
-    toClip(px, size) {
-        return (px / size) * 2 - 1;
-    }
-
-    mapToPhysical(logicalVerts) {
-        const physical = new Float32Array(logicalVerts.length);
-
-        for (let i = 0; i < logicalVerts.length; i += 3) {
-            const xL = logicalVerts[i];
-            const yL = logicalVerts[i + 1];
-            const zL = logicalVerts[i + 2];
-
-            // Map logical [-1,1] → physical [1,0] horizontally
-            const x = -0.5 * xL + 0.5;
-
-            // Map logical [-1,1] → physical [-0.3,0.3] vertically
-            const y = 0.3 * yL;
-
-            physical[i]     = x;
-            physical[i + 1] = y;
-            physical[i + 2] = zL;
-        }
-
-        return physical;
-    }
-
+                this.updateBuffers();
+                this.lastText = newText;
+            }
+        };
+    }   
 }
