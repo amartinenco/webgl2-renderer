@@ -1,4 +1,4 @@
-import { debugLog } from "../logger/logger.js";
+import { debugLog, errorLog } from "../logger/logger.js";
 import { TextureFactory } from "./texture-factory.js";
 import { RenderTarget } from "./render-target.js";
 
@@ -15,7 +15,9 @@ export class TextureLoader {
 
         const renderTargets = [
             { name: "square" },
-            { name: "shadow", depthOnly: true, width: 2048, height: 2048 }
+            { name: "computerScreen", width: 1024, height: 768},
+            { name: "shadow", depthOnly: true, width: 2048, height: 2048 },
+            { name: "spotShadow", depthOnly: true, width: 2048, height: 2048 }
         ];
 
         for (const rt of renderTargets) {
@@ -49,5 +51,16 @@ export class TextureLoader {
             )
         );
         debugLog("Finished loading textures.");
+    }
+
+    async loadTexture(name, src) { 
+        try { 
+            const texture = await this.textureFactory.loadImage(name, src); 
+            debugLog(`Texture "${name}" loaded from ${src}`);
+            return texture;
+        } catch (err) { 
+            errorLog(`Failed to load texture "${name}" from ${src}`);
+            return null
+        }
     }
 }

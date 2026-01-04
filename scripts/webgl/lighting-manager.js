@@ -1,6 +1,6 @@
 import { LightType } from "./utils/constants.js";
 import { warnLog, debugLog } from "../logger/logger.js";
-import { DirectionalLight, PointLight, SpotLight } from "./light.js";
+import { DirectionalLight, PointLight, SpotLight, ScreenLight } from "./light.js";
 
 export class LightingManager {
     constructor(gl, cameraManager) {
@@ -22,6 +22,7 @@ export class LightingManager {
             [LightType.DIRECTIONAL]: DirectionalLight,
             [LightType.POINT]: PointLight,
             [LightType.SPOT]: SpotLight,
+            [LightType.SCREEN]: ScreenLight
         };
 
         if (!objectMapping[type]) {

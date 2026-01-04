@@ -7,9 +7,11 @@ import { Renderer } from './renderer.js';
 import { debugLog, errorLog } from '../logger/logger.js';
 import { CameraManager } from './camera-manager.js';
 import { GlobalContext } from './global-context.js';
-import { Object3D } from './object.js';
+import { MeshObject, Object3D } from './object.js';
 import { TextureManager } from './texture-manager.js';
 import { TextureLoader } from './texture-loader.js';
+import { FontManager } from './font-manager.js';
+import { FontLoader } from './font-loader.js';
 
 export class GameEngine {
 
@@ -23,6 +25,8 @@ export class GameEngine {
         this.lightLoader = null;
         this.textureManager = null;
         this.textureLoader = null;
+        this.fontManager = null;
+        this.fontLoader = null;
         this.engineRun = this.engineRun.bind(this); // pre-bind 'this' for the looping
         this.renderer = null;
         this.cameraManager = null;
@@ -40,8 +44,12 @@ export class GameEngine {
         await this.textureLoader.loadTextures();
         this.textureLoader.loadRenderTargets();
 
+        this.fontManager = new FontManager(this.gl);
+        this.fontLoader = new FontLoader(this.fontManager, this.textureLoader);
+        await this.fontLoader.loadAllFonts();
+
         this.objectManager = new ObjectManager(this.gl);
-        this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager, this.textureManager);
+        this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager, this.textureManager, this.fontManager);
         await this.objectLoader.loadGameObjects();
 
         this.cameraManager = new CameraManager(this.canvas);
@@ -51,7 +59,10 @@ export class GameEngine {
         this.lightLoader = new LightingLoader(this.lightManager, this.shaderManager);
         await this.lightLoader.loadLights();
 
-        this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, this.objectManager, this.cameraManager, this.lightManager, this.textureManager);
+        this.renderer = new Renderer(this.gl, this.canvas, this.shaderManager, 
+            this.objectManager, this.cameraManager, this.lightManager, this.textureManager,
+            this.fontManager
+        );
         this.inputManager = this.globalContext ? this.globalContext.inputManager : null;
         debugLog("GameEngine initialized");
     }
@@ -114,7 +125,7 @@ export class GameEngine {
         this.renderer.render();
         
         const objects = this.objectManager.getAllObjects();
-        objects.filter(obj => obj instanceof Object3D).forEach(obj => obj.update(deltaTime));
+        objects.filter(obj => obj instanceof MeshObject).forEach(obj => obj.update(deltaTime));
 
         
         requestAnimationFrame(this.engineRun);

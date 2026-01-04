@@ -6,6 +6,9 @@ export class Submesh {
         this.uvs = uvs;
         this.indices = indices;
         this.material = material
+
+        // for screen shader
+        this.isScreen = false;
     }
 };
 
@@ -68,7 +71,7 @@ export class Mesh {
 
                         if (uvIndex !== null && this.obj.uvs[uvIndex]) {
                             const uv = this.obj.uvs[uvIndex];
-                            uvs.push(uv[0], uv[1]);
+                            uvs.push(uv[1], uv[0]);
                         } else {
                             uvs.push(0, 0);
                         }
@@ -103,11 +106,51 @@ export class Mesh {
 
 export class MeshBuilder {
 
+    static normalizeUVs(submesh) {
+        const uvs = submesh.uvs;
+
+        let minU = Infinity, maxU = -Infinity;
+        let minV = Infinity, maxV = -Infinity;
+
+        // Find bounds
+        for (let i = 0; i < uvs.length; i += 2) {
+            const u = uvs[i];
+            const v = uvs[i + 1];
+
+            if (u < minU) minU = u;
+            if (u > maxU) maxU = u;
+            if (v < minV) minV = v;
+            if (v > maxV) maxV = v;
+        }
+
+        const scaleU = 1.0 / (maxU - minU);
+        const scaleV = 1.0 / (maxV - minV);
+
+        // Normalize to [0,1]
+        for (let i = 0; i < uvs.length; i += 2) {
+            let u = (uvs[i]     - minU) * scaleU;
+            let v = (uvs[i + 1] - minV) * scaleV;
+
+            // FIX: flip U only
+            u = 1.0 - u;
+
+            uvs[i]     = u;
+            uvs[i + 1] = v;
+        }
+    }
+
     static fromObj(obj, materials) {
         
         const mesh = new Mesh(obj, materials);
-        console.log("MESH");
-        console.log(mesh);
+        
+        for (const sub of mesh.submeshes) { 
+            if (sub.name && sub.name.toLowerCase().includes("red")) { 
+                MeshBuilder.normalizeUVs(sub);
+                sub.isScreen = true;
+            }
+        }
+
+        //MeshBuilder.normalizeUVs(mesh);
         return mesh;
     }
 };
