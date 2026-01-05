@@ -1,0 +1,24 @@
+import { TextRenderer } from "./text-renderer.js";
+
+export class TerminalState {
+    constructor() {
+        this.prompt = "0x00@desktop:~$ ";
+        this.input = "";
+        this.cursorVisible = true;
+        this.cursorTimer = 0;
+        this.cursorBlinkRate = 0.5;
+        this.textRenderer = new TextRenderer();
+    }
+
+    update(dt) {
+        this.cursorTimer += dt;
+        if (this.cursorTimer >= this.cursorBlinkRate) { 
+            this.cursorVisible = !this.cursorVisible; 
+            this.cursorTimer = 0; 
+        }
+    }
+
+    getCurrentLine() {
+        return this.prompt + this.input + (this.cursorVisible ? "_" : " "); // "█"  // (U+2588)
+    }
+}
