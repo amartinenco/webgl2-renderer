@@ -253,10 +253,11 @@ if (u_isScreen) {
     // 8. INNER BEZEL MASK (rounded rect)
     // -----------------------------
     vec2 p = curvedUV - 0.5;
-    vec2 b = vec2(0.48, 0.30);     // screen extents
+    //vec2 b = vec2(0.48, 0.30);     // screen extents
+    vec2 b = vec2(0.48, 0.30);
     float dBorder = length(max(abs(p) - b, 0.0)) - 0.02;
     float innerMask = smoothstep(0.0, 0.01, -dBorder);
-    screen *= innerMask;
+//    screen *= innerMask;
 
 
     // -----------------------------

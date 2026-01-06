@@ -8,6 +8,14 @@ export class TerminalState {
         this.cursorTimer = 0;
         this.cursorBlinkRate = 0.5;
         this.textRenderer = new TextRenderer();
+
+        this.lines = [];
+        this.maxLines = 15;
+
+        this.history = [];
+        this.historyIndex = -1;
+        
+        this.maxInputLength = 34;
     }
 
     update(dt) {
@@ -19,6 +27,14 @@ export class TerminalState {
     }
 
     getCurrentLine() {
-        return this.prompt + this.input + (this.cursorVisible ? "_" : " "); // "█"  // (U+2588)
+        return this.prompt + this.input.slice(0, this.maxInputLength) + (this.cursorVisible ? "_" : " "); // █ (U+2588)
     }
+
+    getVisibleText() {
+        const all = [...this.lines, this.getCurrentLine()]; 
+        const start = Math.max(0, all.length - this.maxLines); 
+        return all.slice(start).join("\n");
+    }
+
+
 }

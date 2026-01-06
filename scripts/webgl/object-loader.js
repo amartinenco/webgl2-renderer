@@ -435,7 +435,7 @@ export class ObjectLoader {
         //const mesh = renderer.buildTextMesh(font, "Hello", this.toClip(30, screenRT.width), this.toClip(30, screenRT.height));
         const startX = 50; 
         console.log("----------screen.height", screenRT.height);
-        const startY = 200;
+        const startY = 100;
         //const startY = 50;
 
 
@@ -474,10 +474,16 @@ export class ObjectLoader {
             //console.log(this.controller);
             if (!this.controller) return;
             
-            const newText = this.controller.terminal.getCurrentLine();
+            //const newText = this.controller.terminal.getCurrentLine();
+            const newText = this.controller.terminal.getVisibleText();
+            const lines = newText.split("\n");
+
+            const baseX = 50; 
+            const bottomY = 65;
          
             if (newText !== this.lastText) {
-                const mesh = this.textRenderer.buildTextMesh(this.font, newText, 50, 200, 1);
+                const startY = bottomY + (lines.length - 1) * this.font.lineHeight;
+                const mesh = this.textRenderer.buildTextMesh(this.font, newText, baseX, startY, 1);
 
                 this.vertices = mesh.vertices;
                 this.uvCoords = mesh.uvs;
