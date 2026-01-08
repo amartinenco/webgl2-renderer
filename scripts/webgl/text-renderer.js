@@ -5,12 +5,9 @@ export class TextRenderer {
     buildTextMesh(font, text, startX = 0, startY = 0, scale=1) {
         const vertices = [];
         const uvs = [];
-        const indices = [];
 
         let cursorX = startX;
         let cursorY = startY;
-
-        let indexOffset = 0;
 
         for (const char of text) {
 
@@ -33,7 +30,6 @@ export class TextRenderer {
             const y0 = cursorY + (font.lineHeight - glyph.yoffset) * scale; // top
             const y1 = y0 - glyph.height * scale;                           // bottom
 
-            // instead of 4 verts + indices, do:
             vertices.push(
                 x0, y0, 0,
                 x1, y0, 0,
@@ -54,22 +50,13 @@ export class TextRenderer {
                 glyph.u0, glyph.v1   // bottom-left
             );
 
-            // Push indices
-            indices.push(
-                indexOffset, indexOffset + 1, indexOffset + 2,
-                indexOffset, indexOffset + 2, indexOffset + 3
-            );
-
-            indexOffset += 4;
-
             // Move cursor
             cursorX += glyph.xadvance * scale;
         }
 
         return {
             vertices: new Float32Array(vertices),
-            uvs: new Float32Array(uvs),
-            indices: new Uint16Array(indices)
+            uvs: new Float32Array(uvs)
         };
     }
 }

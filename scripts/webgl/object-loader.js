@@ -435,7 +435,7 @@ export class ObjectLoader {
         //const mesh = renderer.buildTextMesh(font, "Hello", this.toClip(30, screenRT.width), this.toClip(30, screenRT.height));
         const startX = 50; 
         console.log("----------screen.height", screenRT.height);
-        const startY = 100;
+        const startY = 65;
         //const startY = 50;
 
 
@@ -459,7 +459,6 @@ export class ObjectLoader {
             .setShaderProgram(shaderRTT)
             .setVertices(mesh.vertices)
             .setUVCoords(mesh.uvs)
-            .setIndices(mesh.indices)
             .setTexture(font.texture)
             .setOutputTarget("computerScreen")
             .build();
