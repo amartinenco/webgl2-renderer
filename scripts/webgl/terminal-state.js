@@ -9,7 +9,24 @@ export class TerminalState {
         this.cursorBlinkRate = 0.5;
         this.textRenderer = new TextRenderer();
 
-        this.lines = [];
+        this.lines = [
+            "               ____     ____",
+            "              / __ \\   / __ \\",
+            "      \\\\//   / / / /  / / / /  x00 TERMINAL v1.0",
+            "      //\\\\  / /_/ /  / /_/ /   -----------------",
+            "            \\____/   \\____/    Welcome, Andrei!",
+            "",
+            "System Info:",
+            "  OS: Retro 0x00 Linux (x86_64)",
+            "  GPU: Custom WebGL Renderer",
+            "  Shell: bash (simulated)",
+            "",
+            " Type 'help' to list available commands",
+            ""
+        ];
+
+
+
         this.maxLines = 15;
 
         this.history = [];
