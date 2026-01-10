@@ -11,7 +11,7 @@ export class GameController {
     handleKey(e) {
         const t = this.terminal;
 
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && this.terminal.bootStage === 2) {
             const cmd = t.input.trim();
 
             t.lines.push(t.prompt + cmd);
@@ -89,11 +89,53 @@ export class GameController {
 
         switch (name) {
             case "ls":
-                return ["-rw-r--r-- 3518 education.txt", "-rw-r--r-- 2880 experience.txt"];
+                return ["-rw-r--r-- 2880 about.txt", "-rw-r--r-- 5518 skills.txt", "-rw-r--r-- 3518 education.txt"];
             case "rm":
                 return ["Must be a sudo user"];
             case "sudo":
                 return ["Guest user. Not part of a sudo group"];
+            case "help":
+                return ["Commands you can run:", "ls - list files", "cat <filename> - to view the file content"];
+            case "cat":
+                if (!args[0]) return ["Usage: cat <filename>"];
+                if (args[0].includes("education.txt")) {
+                    return [
+                        "", "Lassonde School of Engineering - York University", "Bachelor's degree - Computer Science", "", "Seneca Polytechnic", "Computer Systems Technology (CTY)", ""
+                    ]
+                } else if (args[0].includes("skills.txt")) {
+                    return [
+                        "Java - Spring, SpringBoot, Rest API", 
+                        "JavaScript - NodeJS (Express), Rest API, React,", 
+                        "             Redux, Angular, OpenAI API", 
+                        "Python - General automation scripts, AWS Lambdas,", 
+                        "         Github Actions, Rest API",
+                        "Bash - General automation scripts",
+                        "AWS - EC2, S3, Cloudformation",
+                        "      Lambda, WAF, CloudFront, DyanmoDB",
+                        "      ELB, SQS, SES, Deploy, Pipeline",
+                
+                        "Other Technologies:",
+                        "Linux, Windows Server (AD), Docker, Git, MySQL,",
+                        "Oracle, MongoDB, Redis, WebRTC, Datadog"
+                    ]
+                } else if (args[0].includes("about.txt")) {
+                    return [
+                        "I'm a well rounded software engineer with ", 
+                        "experience in backend Java, frontend development, ",
+                        "and AWS based DevOps/SRE work. I've built", 
+                        "production features with Spring Boot,", 
+                        "created internal tools in Angular,",
+                        "and worked across cloud infrastructure, automation, ",
+                        "and monitoring. I also enjoy experimenting", 
+                        "with JavaScript, real time systems,",
+                        "and game development in my personal projects.",
+                        "", 
+                        "I'm not tied to a single specialty. I like solving", 
+                        "problems across the stack."
+                    ]
+                } else {
+                    return ["Invalid: file not found"]
+                }
             case "clear":
                 this.terminal.lines = [];
                 return [];
