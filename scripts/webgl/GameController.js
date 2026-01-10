@@ -9,6 +9,8 @@ export class GameController {
     }
 
     handleKey(e) {
+        if (!this.engine.inputEnabled) return;
+
         const t = this.terminal;
 
         if (e.key === "Enter" && this.terminal.bootStage === 2) {

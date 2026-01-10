@@ -10,6 +10,8 @@ export class InputManager {
         InputManager.instance = this;
 
         this.keys = new Set();
+        this.prevKeys = new Set();
+
         this.mouse = { x: 0, y: 0};
         this.gamepad = null;
         this.yaw = -Math.PI / 2;
@@ -43,6 +45,14 @@ export class InputManager {
         return this.keys.has(key);
     }
 
+    isKeyJustPressed(key) { 
+        return this.keys.has(key) && !this.prevKeys.has(key);
+    }
+    
+    isKeyJustReleased(key) { 
+        return !this.keys.has(key) && this.prevKeys.has(key);
+    }
+
     getMousePosition() {
         return this.mouse;
     }
@@ -52,13 +62,14 @@ export class InputManager {
         return navigator.getGamepads()[this.gamepad.index];
     }
 
-    update(deltaTime) {
-        if (this.mouse.pressed) {
+    update(deltaTime, inputEnabled = false) {
+        if (!inputEnabled && this.mouse.pressed) {
             this.yaw += this.mouse.x * this.sensitivity * deltaTime;
             this.pitch -= this.mouse.y * this.sensitivity * deltaTime;
             this.pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.pitch));
-            this.mouse.x = 0;
-            this.mouse.y = 0;
         }
+        this.mouse.x = 0;
+        this.mouse.y = 0;
+        this.prevKeys = new Set(this.keys);
     }
 };

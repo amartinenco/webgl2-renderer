@@ -34,6 +34,7 @@ export class GameEngine {
         this.globalContext = GlobalContext.getInstance();
         this.lastTime = performance.now();
         this.controller = null;
+        this.inputEnabled = true;
     }
     
     async initialize() {
@@ -70,6 +71,17 @@ export class GameEngine {
 
     handleInput(deltaTime) {
         if (!this.inputManager) return;
+        
+        if (this.inputManager.isKeyJustPressed("F2")) {
+            this.inputEnabled = !this.inputEnabled;
+            console.log("Mode:", this.inputEnabled ? "GAME" : "TERMINAL");
+        }
+
+        if (this.inputEnabled) { 
+            this.inputManager.update(deltaTime, this.inputEnabled); 
+            return; 
+        }
+
         const actions = {
             "KeyW": () => { 
                 this.cameraManager.activeCamera.move(0, 0, this.inputManager.cameraSpeed * deltaTime);
