@@ -180,6 +180,8 @@ export class PointLight extends LightBase {
         } else {
             this.position = vec3.create();
         }
+        this.lightIntensity = lightObjectDefinition.lightIntensity || 1.0;
+        //vec3.scale(this.color, this.color, this.lightIntensity);
     }
 
     applyLighting() {
@@ -216,6 +218,11 @@ export class PointLight extends LightBase {
             this.gl.uniform3fv(useSpecularColorLocation, this.specularColor);
         } else {
             warnLog("Uniform 'u_specularColor' not found in shader.");
+        }
+
+        const intensityLoc = this.gl.getUniformLocation(this.shaderProgram, "u_pointLightIntensity"); 
+        if (intensityLoc !== null) { 
+            this.gl.uniform1f(intensityLoc, this.lightIntensity); 
         }
 
         // const useLimitLocation = this.gl.getUniformLocation(this.shaderProgram, "u_limit");

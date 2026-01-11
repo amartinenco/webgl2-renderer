@@ -39,6 +39,8 @@ uniform mat4 u_lightViewProjection;
 in vec4 v_worldPos;
 
 
+uniform float u_pointLightIntensity;
+
 uniform bool u_useScreenLight;
 uniform vec3 u_screenLightPos;
 uniform vec3 u_screenLightNormal;
@@ -288,7 +290,8 @@ if (u_isScreen) {
         
         float pointFactor = float(u_usePointLight); 
         pointLight = pointFactor * max(dot(normal, surfaceToLightDirection), 0.0);
-
+        pointLight *= u_pointLightIntensity;
+        
         float spotFactor = float(u_useSpotLight);
         float dotFromDirection = dot(surfaceToLightDirection,-u_lightDirection);
         float inLight = smoothstep(u_outerLimit, u_innerLimit, dotFromDirection);
