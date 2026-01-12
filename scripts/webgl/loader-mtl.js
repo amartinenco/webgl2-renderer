@@ -45,6 +45,10 @@ export class LoaderMtl {
                     parseFloat(parts[3])
                 ];
             }
+
+            if (parts[0] === "map_Kd" && current) { 
+                mtl.materials[current].texture = parts[1]; 
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ import { ObjectLoader } from './object-loader.js';
 import { LightingManager } from './lighting-manager.js';
 import { LightingLoader } from './lighting-loader.js';
 import { Renderer } from './renderer.js';
-import { debugLog, errorLog } from '../logger/logger.js';
+import { debugLog, errorLog, warnLog } from '../logger/logger.js';
 import { CameraManager } from './camera-manager.js';
 import { GlobalContext } from './global-context.js';
 import { MeshObject, Object3D } from './object.js';
@@ -33,6 +33,8 @@ export class GameEngine {
         this.inputManager = null;
         this.globalContext = GlobalContext.getInstance();
         this.lastTime = performance.now();
+        this.controller = null;
+        this.inputEnabled = true;
     }
     
     async initialize() {
@@ -49,7 +51,7 @@ export class GameEngine {
         await this.fontLoader.loadAllFonts();
 
         this.objectManager = new ObjectManager(this.gl);
-        this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager, this.textureManager, this.fontManager);
+        this.objectLoader = new ObjectLoader(this.objectManager, this.shaderManager, this.textureManager, this.fontManager, this.controller);
         await this.objectLoader.loadGameObjects();
 
         this.cameraManager = new CameraManager(this.canvas);
@@ -69,6 +71,17 @@ export class GameEngine {
 
     handleInput(deltaTime) {
         if (!this.inputManager) return;
+        
+        if (this.inputManager.isKeyJustPressed("F2")) {
+            this.inputEnabled = !this.inputEnabled;
+            console.log("Mode:", this.inputEnabled ? "GAME" : "TERMINAL");
+        }
+
+        if (this.inputEnabled) { 
+            this.inputManager.update(deltaTime, this.inputEnabled); 
+            return; 
+        }
+
         const actions = {
             "KeyW": () => { 
                 this.cameraManager.activeCamera.move(0, 0, this.inputManager.cameraSpeed * deltaTime);
@@ -127,8 +140,24 @@ export class GameEngine {
         const objects = this.objectManager.getAllObjects();
         objects.filter(obj => obj instanceof MeshObject).forEach(obj => obj.update(deltaTime));
 
+        if (this.controller) {
+            this.controller.update(deltaTime);
+        }
         
         requestAnimationFrame(this.engineRun);
+    }
+
+    setController(controller) {
+        if (!controller || typeof controller.update !== "function") { 
+            warnLog("Invalid controller passed to GameEngine"); 
+            return; 
+        }
+        
+        this.controller = controller;
+        if (this.objectLoader && typeof this.objectLoader.setController === "function") { 
+            console.error("setting controller")
+            this.objectLoader.setController(controller);
+        }
     }
 };
 

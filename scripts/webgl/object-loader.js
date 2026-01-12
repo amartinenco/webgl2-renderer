@@ -2,7 +2,7 @@ import { triangleVertices, triangleVerticesUITest, testTriangleInTextureVertices
 import { squareVertices, squareNormals } from '../shapes/square.js';
 import { fVertices, fNormals, fColors, fTextureCoords } from '../shapes/3df.js';
 import { ObjectType, ShaderType } from './utils/constants.js';
-import { errorLog } from '../logger/logger.js';
+import { errorLog, warnLog } from '../logger/logger.js';
 import { TextureFactory } from './texture-factory.js';
 import { LoaderObj } from './loader-obj.js';
 import { LoaderMtl } from './loader-mtl.js';
@@ -60,12 +60,18 @@ export class GameObjectDefinition {
 }
 
 export class ObjectLoader {
-    constructor(objectManager, shaderManager, textureManager, fontManager) {
+    constructor(objectManager, shaderManager, textureManager, fontManager, controller) {
         this.objectManager = objectManager; 
         this.shaderManager = shaderManager;
         this.textureManager = textureManager;
         this.fontManager = fontManager;
         this.filePath = FILE_PATH;
+        this.controller = controller;
+    }
+
+    setController(controller) {
+        warnLog("SEtting controller")
+        this.controller = controller;
     }
 
     async loadGameObjects() {
@@ -159,7 +165,8 @@ export class ObjectLoader {
             //.setPosition([110, -75, -15])
             //.setPosition([30, 10, 220])
             //.setPosition([30, 10, 110]) old screen
-            .setPosition([-150, 10, 150])
+            //.setPosition([-120, 30, 80])
+            .setPosition([-110, 15, 150])
             .setVertices(triangleVertices)
             .setOutputTarget("screen")  // test target
             .build();
@@ -248,10 +255,12 @@ export class ObjectLoader {
 
 
 
-        const testMaterials = await LoaderMtl.load(`${this.filePath}/computer2.mtl`);
-        const testObj = await LoaderObj.load(`${this.filePath}/computer2.obj`);
+        const testMaterials = await LoaderMtl.load(`${this.filePath}/computer5.mtl`);
+        const testObj = await LoaderObj.load(`${this.filePath}/computer5.obj`);
         const testMesh = MeshBuilder.fromObj(testObj, testMaterials.materials);
 
+        
+        
         const screenRT = this.textureManager.getRenderTarget("computerScreen");
 
         for (const sm of testMesh.submeshes) {
@@ -261,28 +270,25 @@ export class ObjectLoader {
                 sm.material.diffuseTexture = screenRT.texture;
                 sm.material.hasTexture = true;
             }
+
+            if (sm.material && sm.material.texture) {
+                const stickyTexture = this.textureManager.get("sticky");
+                if (stickyTexture) {
+                    sm.material.diffuseTexture = stickyTexture;
+                    sm.material.hasTexture = true;
+                }
+            }
         }
-
-
-
-
 
         const objTest = new GameObjectDefinition.Builder()
             .setName("testModel")
             .setType(ObjectType.THREE_D)
             .setShaderProgram(shaderThreeD)
             .setMeshes(testMesh.submeshes)
-            .setPosition([30, 15, 30])
+            .setPosition([30, -15, 30])
             .setScale([30, 30, 30])
             .setOutputTarget("screen")
-            //.setTexture(screenRT.texture)
             .build();
-
-
-        // for (const sm of testMesh.submeshes) {
-        //     console.log("-------------------->", sm.name, sm.material?.hasTexture);
-        // }
-        
 
         // Computer
         this.objectManager.loadObject(objTest);
@@ -308,20 +314,15 @@ export class ObjectLoader {
         */
 
         //const x = -0.5; const y = 0.9; const size = 0.02; 
-        const x = -0.9; const y = 0.9; const size = 0.2; 
-
-        const v0 = this.mapToScreen(x, y);
-        const v1 = this.mapToScreen(x + size, y);
-        const v2 = this.mapToScreen(x, y + size);
-
+        const x = -0.9; const y = 0.9; const size = 0.2;
 
         // .setVertices(new Float32Array([
         //     ...v0,
         //     ...v1,
         //     ...v2
         // ]));
-        console.log("V");
-        console.log(v0, v1, v2);
+        // console.log("V");
+        // console.log(v0, v1, v2);
 
         const triangleTerminalUI = new GameObjectDefinition.Builder()
             .setName("terminalUI")
@@ -434,9 +435,23 @@ export class ObjectLoader {
         //const mesh = renderer.buildTextMesh(font, "Hello", this.toClip(30, screenRT.width), this.toClip(30, screenRT.height));
         const startX = 50; 
         console.log("----------screen.height", screenRT.height);
-        const startY = 200;
+        const startY = 65;
         //const startY = 50;
-        const mesh = renderer.buildTextMesh(font, "helloworld", startX, startY, 1);
+
+
+
+
+
+
+
+
+        // TERMINAL HERE
+        
+        const text = this.controller ? this.controller.terminal.getCurrentLine() : "test";
+        console.log("------------------------------", this.controller)
+
+        //const mesh = renderer.buildTextMesh(font, "helloworld", startX, startY, 1);
+        const mesh = renderer.buildTextMesh(font, text, startX, startY, 1);
 
         const textObj = new GameObjectDefinition.Builder()
             .setName("helloText")
@@ -444,51 +459,59 @@ export class ObjectLoader {
             .setShaderProgram(shaderRTT)
             .setVertices(mesh.vertices)
             .setUVCoords(mesh.uvs)
-            .setIndices(mesh.indices)
             .setTexture(font.texture)
             .setOutputTarget("computerScreen")
             .build();
 
-        console.log("MESSSSSSSSSSH");
-        console.log(mesh.vertices.slice(0, 12));
 
-        this.objectManager.loadObject(textObj);
+        let loadedTextObj = this.objectManager.loadObject(textObj);
+        loadedTextObj.controller = this.controller;
+        loadedTextObj.textRenderer = renderer;
+        loadedTextObj.font = font;
 
-    }
+        loadedTextObj.onUpdate = function(dt) {
+            //console.log(this.controller);
+            if (!this.controller) return;
+            
+            //const newText = this.controller.terminal.getCurrentLine();
+            const newText = this.controller.terminal.getVisibleText();
+            const lines = newText.split("\n");
 
-    mapToScreen(x, y) { 
-        //  because the monitor coordinates are all messed up
-        return [ 
-            x, // goes to mesh.x (horizontal) 
-            0, // mesh.y is constant (depth) 
-            y // goes to mesh.z (vertical) 
-            ]; 
-    }
+            const baseX = 50; 
+            const bottomY = 40;
+         
+            if (newText !== this.lastText) {
+                const startY = bottomY + (lines.length - 1) * this.font.lineHeight;
+                const mesh = this.textRenderer.buildTextMesh(this.font, newText, baseX, startY, 1);
 
-    toClip(px, size) {
-        return (px / size) * 2 - 1;
-    }
+                this.vertices = mesh.vertices;
+                this.uvCoords = mesh.uvs;
+                this.indices = mesh.indices;
 
-    mapToPhysical(logicalVerts) {
-        const physical = new Float32Array(logicalVerts.length);
+                this.updateBuffers();
+                this.lastText = newText;
+            }
+        };
 
-        for (let i = 0; i < logicalVerts.length; i += 3) {
-            const xL = logicalVerts[i];
-            const yL = logicalVerts[i + 1];
-            const zL = logicalVerts[i + 2];
 
-            // Map logical [-1,1] → physical [1,0] horizontally
-            const x = -0.5 * xL + 0.5;
 
-            // Map logical [-1,1] → physical [-0.3,0.3] vertically
-            const y = 0.3 * yL;
+        const lampMaterials = await LoaderMtl.load(`${this.filePath}/lamp.mtl`);
+        const lampObj = await LoaderObj.load(`${this.filePath}/lamp.obj`);
+        const lampMesh = MeshBuilder.fromObj(lampObj, lampMaterials.materials);
 
-            physical[i]     = x;
-            physical[i + 1] = y;
-            physical[i + 2] = zL;
-        }
 
-        return physical;
-    }
+        const objLamp = new GameObjectDefinition.Builder()
+            .setName("lampModel")
+            .setType(ObjectType.THREE_D)
+            .setShaderProgram(shaderThreeD)
+            .setMeshes(lampMesh.submeshes)
+            .setPosition([-200, -110, 110])
+            .setScale([8, 8, 8])
+            .setRotation({x: 0, y: 80, z: 0})
+            .setOutputTarget("screen")
+            .build();
 
+        this.objectManager.loadObject(objLamp);
+
+    }   
 }

@@ -37,7 +37,8 @@ export class TextureLoader {
     async loadTextures() {
 
         const texture = [
-            { name: "3df", src: "resources/textures/f-texture.png" }
+            { name: "3df", src: "resources/textures/f-texture.png" },
+            { name: "sticky", src: "resources/textures/StickyTexture.001.png" }
         ];
 
         // const promises = [

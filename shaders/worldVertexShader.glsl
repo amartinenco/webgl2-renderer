@@ -37,7 +37,6 @@ out vec4 v_worldPos;
 void main() {
 
   // world position of each fragment
-  //vec3 fragPosition = vec3(u_modelWorldMatrix * a_position);
   vec3 fragPosition = vec3(u_modelWorldMatrix * vec4(a_position, 1.0));
 
   // direction for point light
@@ -45,7 +44,8 @@ void main() {
     v_lightDirection = normalize(u_lightPosition - fragPosition);
 
     // compute surface to light (light to surface)
-    v_surface2light = v_lightDirection;
+    //v_surface2light = v_lightDirection;
+    v_surface2light = fragPosition - u_lightPosition;
     
     // compute surface to view (camera to surface)
     v_surface2view = u_viewWorldPosition - fragPosition;

@@ -1,6 +1,7 @@
 import { errorLog, setLogLevel } from './logger/logger.js';
 import { initWebGL } from './webgl/webgl-core.js';
 import { GameEngine } from './webgl/game-engine.js';
+import { GameController } from './webgl/GameController.js';
 
 async function main() {
     setLogLevel("DEBUG");
@@ -12,7 +13,12 @@ async function main() {
         return;
     }
     const gameEngine = new GameEngine(gl, canvas);
+
+    const gameController = new GameController(gameEngine);
+    gameEngine.setController(gameController);
+
     await gameEngine.initialize();
+
     gameEngine.engineRun();
 }
 
