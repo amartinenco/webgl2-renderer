@@ -4,8 +4,15 @@ export class GameController {
     constructor(engine) {
         this.engine = engine;
         this.terminal = new TerminalState();
-
+    
+        this.soundManager = null;
+    
         window.addEventListener("keydown", (e) => this.handleKey(e));
+    }
+
+    initialize() {
+        this.soundManager = this.engine.soundManager;
+        this.soundManager.playLoop("hum", 0.4);
     }
 
     handleKey(e) {
@@ -33,12 +40,13 @@ export class GameController {
             if (t.lines.length > t.maxLines * 3) {
                 t.lines = t.lines.slice(-t.maxLines * 2);
             }
-
+            this.soundManager.play("kbclick2", 0.4);
             return;
         }
 
         // Backspace
         if (e.key === "Backspace") {
+            this.soundManager.play("kbclick2", 0.4);
             t.input = t.input.slice(0, -1);
             return;
         }
@@ -51,6 +59,12 @@ export class GameController {
         if (e.key === "ArrowDown") {
             this.navigateHistory(1);
             return;
+        }
+
+        if (e.code !== "Space") {
+            this.soundManager.play("kbclick", 0.15);
+        } else {
+            this.soundManager.play("spacebar", 0.4);
         }
 
         // Ignore non-printable

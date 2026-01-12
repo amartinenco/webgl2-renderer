@@ -12,6 +12,8 @@ import { TextureManager } from './texture-manager.js';
 import { TextureLoader } from './texture-loader.js';
 import { FontManager } from './font-manager.js';
 import { FontLoader } from './font-loader.js';
+import { SoundLoader } from './sound-loader.js';
+import { SoundManager } from './sound-manager.js';
 
 export class GameEngine {
 
@@ -66,6 +68,10 @@ export class GameEngine {
             this.fontManager
         );
         this.inputManager = this.globalContext ? this.globalContext.inputManager : null;
+
+        this.soundManager = new SoundManager();
+        this.SoundLoader = new SoundLoader(this.soundManager);
+        await this.SoundLoader.loadSounds();
         debugLog("GameEngine initialized");
     }
 
@@ -155,7 +161,7 @@ export class GameEngine {
         
         this.controller = controller;
         if (this.objectLoader && typeof this.objectLoader.setController === "function") { 
-            console.error("setting controller")
+            errorLog("setting controller")
             this.objectLoader.setController(controller);
         }
     }
