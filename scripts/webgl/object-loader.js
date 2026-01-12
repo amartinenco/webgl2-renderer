@@ -165,7 +165,8 @@ export class ObjectLoader {
             //.setPosition([110, -75, -15])
             //.setPosition([30, 10, 220])
             //.setPosition([30, 10, 110]) old screen
-            .setPosition([-150, 10, 150])
+            //.setPosition([-120, 30, 80])
+            .setPosition([-110, 15, 150])
             .setVertices(triangleVertices)
             .setOutputTarget("screen")  // test target
             .build();
@@ -254,10 +255,12 @@ export class ObjectLoader {
 
 
 
-        const testMaterials = await LoaderMtl.load(`${this.filePath}/computer2.mtl`);
-        const testObj = await LoaderObj.load(`${this.filePath}/computer2.obj`);
+        const testMaterials = await LoaderMtl.load(`${this.filePath}/computer5.mtl`);
+        const testObj = await LoaderObj.load(`${this.filePath}/computer5.obj`);
         const testMesh = MeshBuilder.fromObj(testObj, testMaterials.materials);
 
+        
+        
         const screenRT = this.textureManager.getRenderTarget("computerScreen");
 
         for (const sm of testMesh.submeshes) {
@@ -267,28 +270,25 @@ export class ObjectLoader {
                 sm.material.diffuseTexture = screenRT.texture;
                 sm.material.hasTexture = true;
             }
+
+            if (sm.material && sm.material.texture) {
+                const stickyTexture = this.textureManager.get("sticky");
+                if (stickyTexture) {
+                    sm.material.diffuseTexture = stickyTexture;
+                    sm.material.hasTexture = true;
+                }
+            }
         }
-
-
-
-
 
         const objTest = new GameObjectDefinition.Builder()
             .setName("testModel")
             .setType(ObjectType.THREE_D)
             .setShaderProgram(shaderThreeD)
             .setMeshes(testMesh.submeshes)
-            .setPosition([30, 15, 30])
+            .setPosition([30, -15, 30])
             .setScale([30, 30, 30])
             .setOutputTarget("screen")
-            //.setTexture(screenRT.texture)
             .build();
-
-
-        // for (const sm of testMesh.submeshes) {
-        //     console.log("-------------------->", sm.name, sm.material?.hasTexture);
-        // }
-        
 
         // Computer
         this.objectManager.loadObject(objTest);
@@ -478,7 +478,7 @@ export class ObjectLoader {
             const lines = newText.split("\n");
 
             const baseX = 50; 
-            const bottomY = 65;
+            const bottomY = 40;
          
             if (newText !== this.lastText) {
                 const startY = bottomY + (lines.length - 1) * this.font.lineHeight;
@@ -492,5 +492,26 @@ export class ObjectLoader {
                 this.lastText = newText;
             }
         };
+
+
+
+        const lampMaterials = await LoaderMtl.load(`${this.filePath}/lamp.mtl`);
+        const lampObj = await LoaderObj.load(`${this.filePath}/lamp.obj`);
+        const lampMesh = MeshBuilder.fromObj(lampObj, lampMaterials.materials);
+
+
+        const objLamp = new GameObjectDefinition.Builder()
+            .setName("lampModel")
+            .setType(ObjectType.THREE_D)
+            .setShaderProgram(shaderThreeD)
+            .setMeshes(lampMesh.submeshes)
+            .setPosition([-200, -110, 110])
+            .setScale([8, 8, 8])
+            .setRotation({x: 0, y: 80, z: 0})
+            .setOutputTarget("screen")
+            .build();
+
+        this.objectManager.loadObject(objLamp);
+
     }   
 }

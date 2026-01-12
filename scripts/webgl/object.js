@@ -51,7 +51,7 @@ export class MeshObject extends Renderable {
         this.uvCoords = options.uvCoords || [];
         this.texture = options.texture || null;
         this.position = options.position || [0, 0, 0];
-        this.rotation = options.rotation || { x: 0, y: 0 };
+        this.rotation = options.rotation || { x: 0, y: 0, z: 0 };
         this.outputTarget = options.outputTarget || null;
         this.vao = null;
         this.submeshes = options.meshes || null;
@@ -166,49 +166,6 @@ export class MeshObject extends Renderable {
 
         for (const sub of this.submeshes) {
 
-            // if (sub.uvs && sub.uvs.length) {
-            //     for (let i = 0; i < sub.uvs.length; i += 2) {
-            //         const u = sub.uvs[i];
-            //         const v = sub.uvs[i + 1];
-
-            //         // Rotate UVs 90° clockwise
-            //         sub.uvs[i]     = v;
-            //         sub.uvs[i + 1] = 1.0 - u;
-            //     }
-            // }
-
-
-            
-            // REMOVE or comment this whole block
-            // if (sub.uvs && sub.uvs.length) {
-            //     const uv = sub.uvs;
-            //     for (let i = 0; i < uv.length; i += 2) {
-            //         //uv[i] = 1.0 - uv[i]
-            //         // const x = uv[i];
-            //         // const y = uv[i + 1];
-
-            //         // uv[i]     = 1.0 - x;
-            //         // uv[i + 1] = 1.0 - y;
-                    
-            //     }
-            // }
-            // if (sub && sub.name === "Red") {
-            //     const uv = sub.uvs;
-            //     for (let i = 0; i < uv.length; i += 2) {
-            //         const u = uv[i];
-            //         const v = uv[i + 1];
-
-            //         // Rotate UVs 90° clockwise
-            //         uv[i]     = v;
-            //         uv[i + 1] = 1.0 - u;
-            //     }
-            // }
-
-            
-
-
-
-
             const vao = gl.createVertexArray();
             gl.bindVertexArray(vao);
 
@@ -257,16 +214,10 @@ export class MeshObject extends Renderable {
     draw(activeShader) {
         
         if (this.submeshes) {
-            //console.log("drawSubmeshes");
             this.drawSubmeshes(activeShader);
         } else {
-            //console.log("drawSingleMesh");
             this.drawSingleMesh(); 
         }
-        // const gl = this.gl;
-        // gl.bindVertexArray(this.vao);
-        // this.render();
-        // gl.bindVertexArray(null);
     }
 
     drawShadow() {
@@ -293,21 +244,6 @@ export class MeshObject extends Renderable {
         gl.bindVertexArray(null);
     }
 
-    // drawSubmeshes(activeShader) {
-    //     const gl = this.gl;
-    //     for (const sm of this.submeshVAOs) {
-    //         gl.bindVertexArray(sm.vao);
-
-    //         // Material color
-    //         if (sm.material && sm.material.diffuse) {
-    //             const [r, g, b] = sm.material.diffuse;
-    //             const loc = gl.getUniformLocation(activeShader, "u_color");
-    //             if (loc) gl.uniform4fv(loc, [r, g, b, 1.0]);
-    //         }
-    //         gl.drawElements(gl.TRIANGLES, sm.count, gl.UNSIGNED_SHORT, 0);
-    //     }
-    //     gl.bindVertexArray(null);
-    // }
     drawSubmeshes(activeShader) {
         const gl = this.gl;
 
@@ -361,6 +297,18 @@ export class Object3D extends MeshObject {
         super(gl, options);
         this.rotationSpeed = options.rotationSpeed || 0.5;
         this.angle = 0;
+        
+        if (options.rotation) {
+            const { x = 0, y = 0, z = 0 } = options.rotation;
+            this.rotationX = x * Math.PI / 180;
+            this.rotationY = y * Math.PI / 180;
+            this.rotationZ = z * Math.PI / 180;
+
+            // mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotationY);
+            // mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotationX);
+            this.initialRotation = { x: this.rotationX, y: this.rotationY, z: this.rotationZ };
+        }
+
         this.scaleBy = options.scale ?? [1, 1, 1];
     }
 
@@ -391,7 +339,12 @@ export class Object3D extends MeshObject {
 
         // 3. Rotate around pivot
         //mat4.rotateY(this.modelMatrix, this.angle, [0, 1, 0]);
-        this.rotate(this.angle, [0, 1, 0]);
+        //this.rotate(this.angle, [0, 1, 0]);
+        if (this.initialRotation) { 
+            mat4.rotateX(this.modelMatrix, this.modelMatrix, this.initialRotation.x);
+            mat4.rotateY(this.modelMatrix, this.modelMatrix, this.initialRotation.y);
+            mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.initialRotation.z); 
+        }
         
         // 4. Move pivot back
         const negPivot = vec3.create();
@@ -417,7 +370,7 @@ export class Object2D extends MeshObject {
             this.position = options.position;
             mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
         }
-         if (options.rotation) {
+        if (options.rotation) {
             const { x = 0, y = 0 } = options.rotation;
             this.rotationX = x * Math.PI / 180;
             this.rotationY = y * Math.PI / 180;
@@ -475,154 +428,18 @@ export class ObjectUI extends MeshObject {
     }
 }
 
-// // --- Render-to-texture object ---
-// export class ObjectRTT extends MeshObject {
-//     constructor(gl, options) {
-//         super(gl, {
-//             ...options,
-//             texture: options.texture,      // RTT texture as input
-//             //uvCoords: options.uvCoords,
-//             // uvCoords: options.uvCoords || [
-//             //     0, 0,
-//             //     1, 0,
-//             //     0, 1,
-//             //     1, 1
-//             // ],
-//             // vertices: options.vertices || [
-//             //     -1, -1, 0,
-//             //      1, -1, 0,
-//             //     -1,  1, 0,
-//             //      1,  1, 0
-//             // ]
-//             //vertices: options.vertices
-//             // vertices: options.vertices || new Float32Array([ -1, -1, 0, 1, -1, 0, -1, 1, 0, 1, 1, 0 ]), 
-//             // uvCoords: options.uvCoords || new Float32Array([ 0, 0, 1, 0, 0, 1, 1, 1 ])
-//             vertices: options.vertices, 
-//             //uvCoords: options.uvCoords
-//             uvCoords: new Float32Array([ 0,0, 1,0, 0,1, 1,1 ])
-//         });
-
-//         // if (options.position) {
-//         //     this.position = options.position;
-//         //     mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
-//         // }
-//     }
-
-//     _setupVAO() {
-//         console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_----------------");
-//     const gl = this.gl;
-//     this.vao = gl.createVertexArray();
-//     gl.bindVertexArray(this.vao);
-
-//     // Position at location 0
-//     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-//     gl.enableVertexAttribArray(0);
-//     gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-
-//     // Disable normals (location 1)
-//     gl.disableVertexAttribArray(1);
-
-//     // Disable texcoords (location 2) if you don't use them
-//     gl.disableVertexAttribArray(2);
-
-//     gl.bindVertexArray(null);
-//     }
-    
-//     draw(activeShader) { 
-//         const gl = this.gl; 
-//         gl.bindVertexArray(this.vao); // FORCE your VAO 
-//         this.render(); 
-//         gl.bindVertexArray(null); 
-//     }
-
-//     update(dt) {
-//         // Usually empty for RTT quads
-//         mat4.identity(this.modelMatrix);
-//     }
-
-//     // render() {
-//     //     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
-//     // }
-//     render() {
-//         this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length / 3);
-//     }
-// }
-
 export class ObjectRTT extends MeshObject {
     constructor(gl, options) {
         super(gl, {
             ...options,
             vertices: options.vertices,
             uvCoords: options.uvCoords
-            //uvCoords: new Float32Array([1,1, 1,1, 1,0, 0,0])
         });
         this.isScreen = true;
-        console.log("UVS", options.uvCoords);
-   //     this._setupBuffers();
-       // this._setupVAO(); // override parent VAO
-
-        console.log("RTT vertices:", this.vertices);
-        
     }
-
-    // _setupVAO() {
-    //     const gl = this.gl;
-    //     this.vao = gl.createVertexArray();
-    //     gl.bindVertexArray(this.vao);
-
-    //     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    //     gl.enableVertexAttribArray(0);
-    //     gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-
-    //     gl.disableVertexAttribArray(1);
-    //     gl.disableVertexAttribArray(2);
-    //     gl.disableVertexAttribArray(3); 
-    //     gl.disableVertexAttribArray(4); 
-    //     gl.disableVertexAttribArray(5);
-
-    //     gl.bindVertexArray(null);
-    // }
-
-//    _setupBuffers() {
-//         const gl = this.gl;
-
-//         // Create ONLY the vertex buffer for RTT quad
-//         this.vertexBuffer = gl.createBuffer();
-//         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-//         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
-//     }
-     
-
-    // _setupVAO() {
-    //     const gl = this.gl;
-
-    //     this.vao = gl.createVertexArray();
-    //     gl.bindVertexArray(this.vao);
-
-    //     // IMPORTANT: bind YOUR vertex buffer before setting attrib 0
-    //     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    //     gl.enableVertexAttribArray(0);
-    //     gl.vertexAttribPointer(
-    //         0,          // attribute location
-    //         3,          // vec3
-    //         gl.FLOAT,
-    //         false,
-    //         0,
-    //         0
-    //     );
-
-    //     // Disable all other attributes so nothing leaks in
-    //     for (let i = 1; i < 8; i++) {
-    //         gl.disableVertexAttribArray(i);
-    //     }
-
-    //     gl.bindVertexArray(null);
-    // }
-
 
     draw() {
         const gl = this.gl;
-        //gl.useProgram(activeShader);
         gl.bindVertexArray(this.vao);
         this.render();
         gl.bindVertexArray(null);

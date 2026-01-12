@@ -64,18 +64,29 @@ export class LightingLoader {
             .setSpecularColor([1, 1, 1])
             .setSpecularIntensity(50.0)
             .setRotation({ x: 0, y: 0 })
-            .setLightIntensity(2)
+            .setLightIntensity(1)
             .setInnerLimit(5)
             .setOuterLimit(30) //30
         
+        // const pointLightDefinition = new LightObjectDefinition.Builder()
+        //     .setName("point")
+        //     .setType(LightType.POINT)
+        //     .setShaderProgram(shaderProgram)
+        //     .setPosition([110, -75, -15])
+        //     .setSpecularColor([1, 1, 1])
+        //     //.setSpecularIntensity(11)
+        //     .setLightIntensity(0.5) // 0 to 1
+        //     .build();
+
         const pointLightDefinition = new LightObjectDefinition.Builder()
             .setName("point")
             .setType(LightType.POINT)
             .setShaderProgram(shaderProgram)
-            .setPosition([110, -75, -15])
+            //.setPosition([-120, 30, 80])
+            .setPosition([-120, 30, 125])
             .setSpecularColor([1, 1, 1])
             //.setSpecularIntensity(11)
-            .setLightIntensity(0.5) // 0 to 1
+            .setLightIntensity(4) // 0 to 1
             .build();
 
         const plSquareDefinition = new LightObjectDefinition.Builder()
@@ -96,8 +107,10 @@ export class LightingLoader {
             //.setPosition([310, 0, 0])
             //.setPosition([310, 0, 0])
             
+            .setPosition([-100, 15, 150])
+            //.setPosition([-120, 15, 75]) // good position
             
-            .setPosition([-150, 15, 150]) // good position
+            
             //.setDirection([0.832, 0, -0.555]) // to computer
             //.setDirection([0.832,-0.539, -0.809])
 
@@ -107,12 +120,13 @@ export class LightingLoader {
             //.setPosition([30, 75, 30])
             //.setDirection([0, -1, 0])
             
-            .setDirection([0.836, -0.539, -0.309]) // to ground
+            .setDirection([13.836, -8.539, -1.109]) // to ground
+            //.setDirection([0, -1, 0])
             .setColor([1, 1, 1])
             .setSpecularColor([1, 1, 1])
             .setSpecularIntensity(50.0)
             .setRotation({ x: 0, y: 0 })
-            .setLightIntensity(2)
+            .setLightIntensity(1.2) // 1.2
             .setInnerLimit(5) //5
             .setOuterLimit(50) // 50
             .build();
@@ -130,7 +144,7 @@ export class LightingLoader {
             //.setPosition([0, 0, 0])
             .setDirection([0, 0, 1]) // screen normal
             .setColor([0.0, 1.0, 0.6]) // reddish glow 1.0, 0.2, 0.2 //0.0, 1.0, 0.6 real crt
-            .setLightIntensity(3) // can be dynamic later
+            .setLightIntensity(2.0) // can be dynamic later
             .build();
 
         this.lightingManager.addLight(screenLightDefinition);
