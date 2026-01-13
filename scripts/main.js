@@ -16,8 +16,9 @@ async function main() {
 
     const gameController = new GameController(gameEngine);
     gameEngine.setController(gameController);
-
     await gameEngine.initialize();
+
+    gameController.initialize();
 
     gameEngine.engineRun();
 }
