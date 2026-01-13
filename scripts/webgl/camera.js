@@ -49,7 +49,7 @@ export class Camera {
     }
 
     updateViewMatrix() {
-        vec3.add(this.target, this.position, this.front); // Camera looks along the front direction
+        //vec3.add(this.target, this.position, this.front); // Camera looks along the front direction
         mat4.lookAt(this.viewMatrix, this.position, this.target, this.up);
     }
 
@@ -75,9 +75,12 @@ export class Camera {
         vec3.scaleAndAdd(this.movement, this.movement, this.front, z); // Forward/backward movement
         vec3.scaleAndAdd(this.movement, this.movement, this.right, x); // Left/right movement
         vec3.scaleAndAdd(this.movement, this.movement, this.up, y); // Up/down movement
-
+    
         vec3.add(this.position, this.position, this.movement);
         vec3.add(this.target, this.position, this.front);
+
+        console.log(this.position);
+        console.log(this.target);
         this.updateViewMatrix();
     }
 

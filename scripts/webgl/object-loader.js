@@ -223,10 +223,14 @@ export class ObjectLoader {
         //this.objectManager.loadObject(square);
         //this.objectManager.loadObject(triangleInSquare);
         
-        this.objectManager.loadObject(ground);
-        this.objectManager.loadObject(wall_one);
-        this.objectManager.loadObject(wall_two);
-        this.objectManager.loadObject(wall_side);
+        // debug walls
+        // this.objectManager.loadObject(ground);
+        // this.objectManager.loadObject(wall_one);
+        // this.objectManager.loadObject(wall_two);
+        // this.objectManager.loadObject(wall_side);
+
+
+
         //this.objectManager.loadObject(wall_three);
 
 
@@ -513,5 +517,41 @@ export class ObjectLoader {
 
         this.objectManager.loadObject(objLamp);
 
+
+
+
+        const tableMaterials = await LoaderMtl.load(`${this.filePath}/table.mtl`);
+        const tableObj = await LoaderObj.load(`${this.filePath}/table.obj`);
+        const tableMesh = MeshBuilder.fromObj(tableObj, tableMaterials.materials);
+
+
+        const objTable = new GameObjectDefinition.Builder()
+            .setName("tableModel")
+            .setType(ObjectType.THREE_D)
+            .setShaderProgram(shaderThreeD)
+            .setMeshes(tableMesh.submeshes)
+            .setPosition([-60, -115, 110])
+            .setScale([110, 110, 110])
+            .setRotation({x: 0, y: -90, z: 0})
+            .setOutputTarget("screen")
+            .build();
+
+        this.objectManager.loadObject(objTable);
+
+        const robotMaterials = await LoaderMtl.load(`${this.filePath}/robot.mtl`);
+        const robotObj = await LoaderObj.load(`${this.filePath}/robot.obj`);
+        const robotMesh = MeshBuilder.fromObj(robotObj, robotMaterials.materials);
+        const objRobot = new GameObjectDefinition.Builder()
+            .setName("robotModel")
+            .setType(ObjectType.THREE_D)
+            .setShaderProgram(shaderThreeD)
+            .setMeshes(robotMesh.submeshes)
+            .setPosition([-125, -8, -42])
+            .setScale([10, 10, 10])
+            .setRotation({x: 0, y: 60, z: 0})
+            .setOutputTarget("screen")
+            .build();
+
+        this.objectManager.loadObject(objRobot);
     }   
 }
