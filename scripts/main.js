@@ -4,7 +4,8 @@ import { GameEngine } from './webgl/game-engine.js';
 import { GameController } from './webgl/GameController.js';
 
 async function main() {
-    setLogLevel("DEBUG");
+    //setLogLevel("DEBUG");
+    setLogLevel("ERROR");
     const canvas = document.getElementById("canvas");
     
     const gl = initWebGL("canvas");

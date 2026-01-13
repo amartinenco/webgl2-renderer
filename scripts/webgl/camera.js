@@ -79,8 +79,6 @@ export class Camera {
         vec3.add(this.position, this.position, this.movement);
         vec3.add(this.target, this.position, this.front);
 
-        console.log(this.position);
-        console.log(this.target);
         this.updateViewMatrix();
     }
 

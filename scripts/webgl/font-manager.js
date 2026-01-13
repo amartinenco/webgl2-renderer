@@ -12,7 +12,6 @@ export class FontManager {
         }
         this.loadedFonts.set(name, font);
         debugLog(`Loaded font ${name}`);
-        console.log(this.loadedFonts)
     }
 
     getFont(name) {

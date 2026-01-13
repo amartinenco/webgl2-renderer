@@ -268,7 +268,6 @@ export class ObjectLoader {
         const screenRT = this.textureManager.getRenderTarget("computerScreen");
 
         for (const sm of testMesh.submeshes) {
-            console.log(sm);
             if (sm.name.toLowerCase().includes("red")) {
                 //sm.material.diffuse = [0.0, 1.0, 0.0];
                 sm.material.diffuseTexture = screenRT.texture;
@@ -433,12 +432,11 @@ export class ObjectLoader {
         //this.objectManager.loadObject(triangleTerminalUI);
         
         const font = this.fontManager.getFont("default");
-        console.log("hi", this.fontManager.getAllFonts())
         const renderer = new TextRenderer();
 
         //const mesh = renderer.buildTextMesh(font, "Hello", this.toClip(30, screenRT.width), this.toClip(30, screenRT.height));
         const startX = 50; 
-        console.log("----------screen.height", screenRT.height);
+        //console.log("----------screen.height", screenRT.height);
         const startY = 65;
         //const startY = 50;
 
@@ -452,7 +450,7 @@ export class ObjectLoader {
         // TERMINAL HERE
         
         const text = this.controller ? this.controller.terminal.getCurrentLine() : "test";
-        console.log("------------------------------", this.controller)
+        //console.log("------------------------------", this.controller)
 
         //const mesh = renderer.buildTextMesh(font, "helloworld", startX, startY, 1);
         const mesh = renderer.buildTextMesh(font, text, startX, startY, 1);
