@@ -57,7 +57,6 @@ export class GameEngine {
         await this.objectLoader.loadGameObjects();
 
         this.cameraManager = new CameraManager(this.canvas);
-        console.log("Texture manager", this.textureManager);
 
         this.lightManager = new LightingManager(this.gl, this.cameraManager);
         this.lightLoader = new LightingLoader(this.lightManager, this.shaderManager);
