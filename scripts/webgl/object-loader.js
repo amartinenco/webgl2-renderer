@@ -9,8 +9,9 @@ import { LoaderMtl } from './loader-mtl.js';
 import { MeshBuilder } from './mesh-builder.js';
 import { TextRenderer } from './text-renderer.js'
 
-const isLocal = window.location.hostname === "localhost";
-const FILE_PATH = isLocal ? "./scripts/shapes" : `${window.location.origin}/scripts/shapes`;
+//const isLocal = window.location.hostname === "localhost";
+//const FILE_PATH = isLocal ? "./scripts/shapes" : `${window.location.origin}/scripts/shapes`;
+const FILE_PATH = "./scripts/shapes";
 
 export class GameObjectDefinition {
     constructor(builder) {

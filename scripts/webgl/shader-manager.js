@@ -1,8 +1,8 @@
 import { errorLog, warnLog } from "../logger/logger.js";
 import { ShaderType } from "./utils/constants.js";
 
-const isLocal = window.location.hostname === "localhost";
-const SHADER_PATH = isLocal ? "./shaders" : `${window.location.origin}/shaders`;
+//const isLocal = window.location.hostname === "localhost";
+const SHADER_PATH = "./shaders";
 
 export class ShaderManager {
     constructor(gl) {

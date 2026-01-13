@@ -1,7 +1,8 @@
 import { errorLog, debugLog } from '../logger/logger.js';
 
-const isLocal = window.location.hostname === "localhost";
-const FILE_PATH = isLocal ? "./scripts/shapes" : `${window.location.origin}/scripts/shapes`;
+//const isLocal = window.location.hostname === "localhost";
+//const FILE_PATH = isLocal ? "./scripts/shapes" : `${window.location.origin}/scripts/shapes`;
+const FILE_PATH = "./scripts/shapes";
 
 export class Glyph {
     constructor({
