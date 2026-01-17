@@ -22,7 +22,6 @@ export class Renderer {
     
         // load render targets groups
         this.rtGroups = groupBy(this.objectManager.getAllObjects().filter(obj => obj.outputTarget), o => o.outputTarget);
-        //console.log("RT Groups:", this.rtGroups);
 
         this.resizeCanvasToDisplaySize();
         this.cameraManager.getActiveCamera().updateProjection();
@@ -32,13 +31,7 @@ export class Renderer {
         });
 
         this.shadowShader = this.shaderManager.getShader(ShaderType.SHADOW);
-        //console.log(this.shadowShader);
-
-
-        //console.log("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
-        //console.log("this.fontManager", this.fontManager);
         this.defaultFont = this.fontManager.getFont("default").texture;
-        //console.log(this.defaultFont);
     }
 
     resizeCanvasToDisplaySize() {
@@ -52,11 +45,6 @@ export class Renderer {
             this.canvas.width = displayWidth;
             this.canvas.height = displayHeight;
             this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-
-            // for (const rt of this.textureManager.getRenderTargets()) {
-            //     rt.resize(displayWidth, displayHeight);
-            // }
-
             debugLog(`Window resized to w:${displayWidth} h:${displayHeight}`);
             this.render();
         }
@@ -86,7 +74,6 @@ export class Renderer {
 
             for (const object of objects) {
                 this.shaderManager.setUniformMatrix(this.shadowShader, "u_modelWorldMatrix", object.getModelMatrix());
-                //object.draw(this.shadowShader);
                 object.drawShadow();
             }
 
@@ -96,7 +83,6 @@ export class Renderer {
 
     renderToTexture() {
         const rt = this.textureManager.getRenderTarget("square");
-        //const objects = this.objectManager.getAllObjects();
         const objects = this.rtGroups["square"];
 
         rt.bind();
@@ -113,7 +99,6 @@ export class Renderer {
                 this.gl.useProgram(shader);
 
                 const mvp = mat4.create();
-                //const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
                 const projection = mat4.ortho(
                     mat4.create(),
                     -0.6, rt.width - 0.6,   // x
@@ -131,118 +116,6 @@ export class Renderer {
         rt.unbind();
     }
 
-    // renderComputerScreen() {
-    //     const rt = this.textureManager.getRenderTarget("computerScreen");
-    //     const objects = this.rtGroups["computerScreen"];
-    //     console.log(objects);
-    //     // console.log("----------------");
-    //     // console.log(rt.width)
-    //     // console.log(rt.height)
-
-    //     if (!rt || !objects) return;
-
-    //     rt.bind();
-    //     this.gl.viewport(0, 0, rt.width, rt.height);
-
-    //     this.gl.activeTexture(this.gl.TEXTURE0);
-    //     this.gl.bindTexture(this.gl.TEXTURE_2D, null);
-
-    //     // Clear to green or black or whatever
-    //     this.gl.clearColor(0.0, 1.0, 0.0, 1.0);
-    //     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-
-    //     for (const obj of objects) {
-    //         const shader = obj.shaderProgram;
-    //         this.gl.useProgram(shader);
-
-    //         const mvp = mat4.create();
-    //         //const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
-    //          const projection = mat4.ortho(
-    //                 mat4.create(),
-    //                 -0.6, rt.width - 0.6,   // x
-    //                 -0.6, rt.height - 0.6,  // y
-    //                 -1, 1                   // z
-    //             );
-    //         mat4.multiply(mvp, projection, obj.getModelMatrix());
-
-    //         this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
-
-    //         const useTexLoc = this.gl.getUniformLocation(shader, "u_useTexture");
-    //         this.gl.uniform1i(useTexLoc, 0);
-    //         this.gl.bindVertexArray(obj.vao);
-    //         obj.draw();
-    //     }
-
-    //     rt.unbind();
-    // }
-
-// renderComputerScreen() {
-//     const rt = this.textureManager.getRenderTarget("computerScreen");
-//     const objects = this.rtGroups["computerScreen"];
-//     if (!rt || !objects || !objects.length) return;
-
-//     rt.bind();
-//     this.gl.viewport(0, 0, rt.width, rt.height);
-
-//     this.gl.disable(this.gl.DEPTH_TEST);
-//     this.gl.disable(this.gl.CULL_FACE); //-- temporary 
-
-//     this.gl.clearColor(0.0, 1.0, 0.0, 1.0);
-//     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-
-//     const obj = objects[0];
-//     const shader = obj.shaderProgram;
-//     this.gl.useProgram(shader);
-
-//     const projection = mat4.ortho(
-//         mat4.create(),
-//         0, rt.width,
-//         0, rt.height,
-//         -1, 1
-//     );
-
-//     const mvp = mat4.create();
-//     mat4.multiply(mvp, projection, obj.getModelMatrix());
-//     this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
-
-//     obj.draw(shader);
-
-//     rt.unbind();
-// }
-
-   
-
-
-
-
-
-// renderComputerScreen() {
-//     const rt = this.textureManager.getRenderTarget("computerScreen");
-//     const objects = this.rtGroups["computerScreen"];
-//     if (!rt || !objects || !objects.length) return;
-
-//     const gl = this.gl;
-//     rt.bind();
-//     gl.viewport(0, 0, rt.width, rt.height);
-
-//     gl.disable(gl.DEPTH_TEST);
-//     gl.disable(gl.CULL_FACE);
-
-//     gl.clearColor(0.0, 1.0, 0.0, 1.0);
-//     gl.clear(gl.COLOR_BUFFER_BIT);
-
-//     const obj = objects[0];
-//     const shader = obj.shaderProgram;
-//     gl.useProgram(shader);
-
-//     const mvp = mat4.create(); // identity
-//     this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
-
-//     obj.draw(shader);
-
-//     rt.unbind();
-// }
-
     renderComputerScreen() {
         
         const rt = this.textureManager.getRenderTarget("computerScreen");
@@ -256,11 +129,9 @@ export class Renderer {
         gl.disable(gl.DEPTH_TEST);
         gl.disable(gl.CULL_FACE);
 
-        // CRITICAL: break feedback loop on unit 0
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, null);
 
-        //gl.clearColor(0.0, 1.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         const obj = objects[0];
@@ -275,14 +146,11 @@ export class Renderer {
             projection
         );
 
-        //console.log(this.defaultFont);
         const fontTex = this.defaultFont; 
 
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-        //console.log("defaultFont:", this.defaultFont);
-        //const fontText = this.defaultFont.texture;
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, fontTex);
         gl.uniform1i(gl.getUniformLocation(shader, "u_texture"), 0);
@@ -293,109 +161,6 @@ export class Renderer {
         rt.unbind();
     }
 
-
-    // renderComputerScreen() {
-    //     const rt = this.textureManager.getRenderTarget("computerScreen");
-    //     const objects = this.rtGroups["computerScreen"];
-    //     if (!rt || !objects || !objects.length) return;
-
-    //     const gl = this.gl;
-    //     rt.bind();
-    //     gl.viewport(0, 0, rt.width, rt.height);
-
-    //     gl.disable(gl.DEPTH_TEST);
-    //     gl.disable(gl.CULL_FACE);
-
-    //     gl.clearColor(0.0, 1.0, 0.0, 1.0);
-    //     gl.clear(gl.COLOR_BUFFER_BIT);
-
-    //     const obj = objects[0];
-    //     const shader = obj.shaderProgram;
-
-
-
-    //     gl.useProgram(shader);
-        
-        
-        
-    //     //const identity = mat4.create(); 
-        
-    //     //mat4.rotateZ(identity, identity, -Math.PI / 2);
-        
-
-    //     const projection = mat4.ortho( mat4.create(), 0, rt.width, 0, rt.height, -1, 1 );
-
-    //     const loc = gl.getUniformLocation(shader, "u_mvpMatrix"); 
-        
-        
-    //     gl.uniformMatrix4fv(loc, false, projection);
-
-
-        
-    //     obj.draw(shader);
-
-    //     rt.unbind();
-    // }
-
-
-
-
-
-
-
-
-
-//     renderComputerScreen() {
-//     const rt = this.textureManager.getRenderTarget("computerScreen");
-//     const objects = this.rtGroups["computerScreen"];
-//     //console.log("computerScreen objects:", objects);
-
-//     if (!rt || !objects) return;
-
-//     rt.bind();
-//     this.gl.viewport(0, 0, rt.width, rt.height);
-
-//     this.gl.disable(this.gl.DEPTH_TEST);
-//     this.gl.disable(this.gl.CULL_FACE);
-
-//     this.gl.clearColor(0.0, 1.0, 0.0, 1.0);
-//     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-
-//     const obj = objects[0]; // terminalUI
-//     const shader = obj.shaderProgram;
-//     this.gl.useProgram(shader);
-
-//     // Super simple projection: NDC space
-//     const mvp = mat4.create();
-//     mat4.identity(mvp);
-//     //console.log("MODEL MATRIX:")
-//     //console.log(obj.modelMatrix);
-//     //const projection = mat4.ortho( mat4.create(), 0, rt.width, 0, rt.height, -1, 1 ); 
-//     //mat4.multiply(mvp, projection, obj.getModelMatrix());
-
-//     //         //const projection = mat4.ortho(mat4.create(), 0, rt.width, 0, rt.height, -1, 1);
-//     //          const projection = mat4.ortho(
-//     //                 mat4.create(),
-//     //                 -0.6, rt.width - 0.6,   // x
-//     //                 -0.6, rt.height - 0.6,  // y
-//     //                 -1, 1                   // z
-//     //             );
-//     //         mat4.multiply(mvp, projection, obj.getModelMatrix());
-
-//     this.shaderManager.setUniformMatrix(shader, "u_mvpMatrix", mvp);
-
-//     const useTexLoc = this.gl.getUniformLocation(shader, "u_useTexture");
-//     if (useTexLoc) this.gl.uniform1i(useTexLoc, 0);
-
-//     this.gl.bindVertexArray(obj.vao);
-//     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
-
-
-
-//     rt.unbind();
-// }
-
-
     renderScene(camera, projection) {
         const viewMatrix = camera.getViewMatrix();
         const objects = this.objectManager.getAllObjects();
@@ -403,7 +168,6 @@ export class Renderer {
 
         this.lightManager.getAllLights().forEach(light => {
             light.applyLighting();
-            //currentShader = light.getShader();
         });
 
         if (currentShader) camera.setUniforms(this.gl, currentShader);
@@ -413,7 +177,6 @@ export class Renderer {
             mat4.multiply(mvp, projection, viewMatrix);
             mat4.multiply(mvp, mvp, obj.getModelMatrix());
 
-            //const shader = obj.getShader();
             const shader = obj.shaderProgram;
 
             if (shader !== currentShader) {
@@ -455,13 +218,9 @@ export class Renderer {
                 }
             }
             
-            //this.gl.uniform4fv(this.gl.getUniformLocation(shader, "u_color"), [0.5, 0.0, 0.0, 1.0]);
             this.shaderManager.setUniformMatrix(shader, 'u_mvpMatrix', mvp);
             this.shaderManager.setUniformMatrix(shader, 'u_modelWorldMatrix', obj.getModelMatrix());
         
-     
-
-
             const hasTexture = Boolean(obj.texture && obj.texcoordBuffer);
             const useTexLoc = this.gl.getUniformLocation(obj.shaderProgram, "u_useTexture");
             if (useTexLoc) this.gl.uniform1i(useTexLoc, hasTexture ? 1 : 0);
@@ -492,7 +251,6 @@ export class Renderer {
 
         objects.filter(obj => obj instanceof ObjectUI).forEach(obj => {
             const model = obj.getModelMatrix();
-            //const shader = obj.getShader();
             const shader = obj.shaderProgram;
             if (shader !== currentShader) {
                 this.gl.useProgram(shader);
@@ -513,16 +271,9 @@ export class Renderer {
         const perspective = camera.getProjectionMatrix(CameraType.PERSPECTIVE);
         const uiProjection = camera.getProjectionMatrix(CameraType.ORTHOGRAPHIC);
 
-        // const dirLight = this.lightManager.getLight(LightType.DIRECTIONAL);
-        // if (dirLight && this.shadowShader) {
-        //     //updateDirectionalLightMatrices(dirLight);
-        //     this.renderShadowMap(dirLight);
-        // }
-
         for (const light of this.lightManager.getAllLights()) {
             if (this.shadowShader) {
                 if (light instanceof DirectionalLight) {
-                    //light.updateMatrices();
                     this.renderShadowMap(light);
                 }
                 else if (light instanceof SpotLight) {
@@ -532,10 +283,7 @@ export class Renderer {
             }
         }
 
-
-        //this.renderToTexture();
-        this.renderComputerScreen();    
-
+        this.renderComputerScreen();
 
         // Screen pass
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -546,6 +294,5 @@ export class Renderer {
      
         this.renderScene(camera, perspective);
         this.renderUI(uiProjection);
-
     }
 };

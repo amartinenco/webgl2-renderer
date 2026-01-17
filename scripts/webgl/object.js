@@ -249,31 +249,23 @@ export class MeshObject extends Renderable {
 
         for (const sm of this.submeshVAOs) {
 
-
             const isScreenLoc = this.gl.getUniformLocation(activeShader, "u_isScreen");
             if (isScreenLoc) {
-                //console.log(sm)
                 this.gl.uniform1i(isScreenLoc, sm.isScreen ? 1 : 0);
             }
 
             gl.bindVertexArray(sm.vao);
 
-            // If the material has a texture, bind it
             if (sm.material && sm.material.hasTexture && sm.material.diffuseTexture) {
-                //console.log("Texture bound:", sm.material.diffuseTexture);
-
-                // Tell shader to use texture
                 const useTexLoc = gl.getUniformLocation(activeShader, "u_useTexture");
                 if (useTexLoc) gl.uniform1i(useTexLoc, 1);
 
-                // Bind texture
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, sm.material.diffuseTexture);
 
                 const texLoc = gl.getUniformLocation(activeShader, "u_texture");
                 if (texLoc) gl.uniform1i(texLoc, 0);
             } else {
-                // No texture → use color
                 const useTexLoc = gl.getUniformLocation(activeShader, "u_useTexture");
                 if (useTexLoc) gl.uniform1i(useTexLoc, 0);
 
@@ -304,30 +296,13 @@ export class Object3D extends MeshObject {
             this.rotationY = y * Math.PI / 180;
             this.rotationZ = z * Math.PI / 180;
 
-            // mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotationY);
-            // mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotationX);
             this.initialRotation = { x: this.rotationX, y: this.rotationY, z: this.rotationZ };
         }
 
         this.scaleBy = options.scale ?? [1, 1, 1];
     }
 
-    
-
-
     update(deltaTime) {
-        // this.angle += this.rotationSpeed * deltaTime;
-        // mat4.identity(this.modelMatrix);
-        // mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
-        // this.rotate(this.angle, [0, 1, 0]);
-        // mat4.scale(this.modelMatrix, this.modelMatrix, this.scaleBy);
-        
-        // this.angle += this.rotationSpeed * deltaTime;
-        // mat4.identity(this.modelMatrix);
-        // mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
-        // this.rotate(this.angle, [0, 1, 0]);
-        // mat4.scale(this.modelMatrix, this.modelMatrix, this.scaleBy);
-        
         //this.angle += this.rotationSpeed * deltaTime;
         mat4.identity(this.modelMatrix);
 
@@ -446,9 +421,6 @@ export class ObjectRTT extends MeshObject {
     }
 
     update(dt) {
-        //mat4.identity(this.modelMatrix);
-        //this.modelMatrix = mat4.create(); 
-        //this.worldMatrix = mat4.create();
         mat4.identity(this.modelMatrix);
 
         if (this.onUpdate) {

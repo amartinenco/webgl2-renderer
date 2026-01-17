@@ -103,25 +103,8 @@ export class LightingLoader {
             .setName("spot")
             .setType(LightType.SPOT)
             .setShaderProgram(shaderProgram)
-            //.setPosition([110, -75, -15])
-            //.setPosition([310, 0, 0])
-            //.setPosition([310, 0, 0])
-            
             .setPosition([-100, 15, 150])
-            //.setPosition([-120, 15, 75]) // good position
-            
-            
-            //.setDirection([0.832, 0, -0.555]) // to computer
-            //.setDirection([0.832,-0.539, -0.809])
-
-            //.setPosition([0, 200, 0])
-            //.setDirection([0.154, -0.976, 0.154])
-            //.setPosition([30, 200, 30]) 
-            //.setPosition([30, 75, 30])
-            //.setDirection([0, -1, 0])
-            
             .setDirection([13.836, -8.539, -1.109]) // to ground
-            //.setDirection([0, -1, 0])
             .setColor([1, 1, 1])
             .setSpecularColor([1, 1, 1])
             .setSpecularIntensity(50.0)
@@ -141,7 +124,6 @@ export class LightingLoader {
             .setType(LightType.SCREEN)
             .setShaderProgram(shaderProgram)
             .setPosition([30, 25, 55]) // screen center in world space
-            //.setPosition([0, 0, 0])
             .setDirection([0, 0, 1]) // screen normal
             .setColor([0.0, 1.0, 0.6]) // reddish glow 1.0, 0.2, 0.2 //0.0, 1.0, 0.6 real crt
             .setLightIntensity(2.0) // can be dynamic later
@@ -150,19 +132,4 @@ export class LightingLoader {
         this.lightingManager.addLight(screenLightDefinition);
         
     }
-
-    /*
-            const directionalLightDefinition = new LightObjectDefinition.Builder()
-            .setName("directional")
-            .setType(LightType.DIRECTIONAL)
-            .setShaderProgram(shaderProgram)
-            //.setDirection([0.5, 0.7, 1])
-            .setDirection([0, -1, -1])
-            .setColor([1, 1, 1])
-            .setSpecularColor([1, 1, 1])
-            .setSpecularIntensity(50.0)
-            .setRotation({ x: 0, y: 0 })
-            .setLightIntensity(2)
-            .setInnerLimit(5)
-            .setOuterLimit(30) //30 */
 }
