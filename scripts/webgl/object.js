@@ -249,31 +249,23 @@ export class MeshObject extends Renderable {
 
         for (const sm of this.submeshVAOs) {
 
-
             const isScreenLoc = this.gl.getUniformLocation(activeShader, "u_isScreen");
             if (isScreenLoc) {
-                //console.log(sm)
                 this.gl.uniform1i(isScreenLoc, sm.isScreen ? 1 : 0);
             }
 
             gl.bindVertexArray(sm.vao);
 
-            // If the material has a texture, bind it
             if (sm.material && sm.material.hasTexture && sm.material.diffuseTexture) {
-                //console.log("Texture bound:", sm.material.diffuseTexture);
-
-                // Tell shader to use texture
                 const useTexLoc = gl.getUniformLocation(activeShader, "u_useTexture");
                 if (useTexLoc) gl.uniform1i(useTexLoc, 1);
 
-                // Bind texture
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, sm.material.diffuseTexture);
 
                 const texLoc = gl.getUniformLocation(activeShader, "u_texture");
                 if (texLoc) gl.uniform1i(texLoc, 0);
             } else {
-                // No texture → use color
                 const useTexLoc = gl.getUniformLocation(activeShader, "u_useTexture");
                 if (useTexLoc) gl.uniform1i(useTexLoc, 0);
 
@@ -311,7 +303,7 @@ export class Object3D extends MeshObject {
     }
 
     update(deltaTime) {
-        this.angle += this.rotationSpeed * deltaTime;
+        //this.angle += this.rotationSpeed * deltaTime;
         mat4.identity(this.modelMatrix);
 
         // // 1. Move object to world position
