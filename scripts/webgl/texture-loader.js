@@ -24,14 +24,10 @@ export class TextureLoader {
 
             const width = rt.width ?? this.canvas.width;
             const height = rt.height ?? this.canvas.height;
-            //console.log(this.canvas.width)
-            //console.log(this.canvas.height)
             const renderTarget = new RenderTarget(this.gl, this.textureFactory, rt.name, width, height, rt.depthOnly === true);
             this.textureManager.addRenderTarget(rt.name, renderTarget);
             debugLog(`Render target "${rt.name}" loaded`);
         }
-        //this.renderTarget = new RenderTarget(this.gl, this.textureFactory, name, this.canvas.width, this.canvas.height);
-        //this.textureManager.addRenderTarget(this.renderTarget);   
     }
 
     async loadTextures() {
@@ -40,11 +36,6 @@ export class TextureLoader {
             { name: "3df", src: "resources/textures/f-texture.png" },
             { name: "sticky", src: "resources/textures/StickyTexture.001.png" }
         ];
-
-        // const promises = [
-        //     this.textureFactory.loadImage("3df", "resources/textures/f-texture.png")
-        // ];
-        // await Promise.all(promises);
 
         await Promise.all(
             texture.map(t => 

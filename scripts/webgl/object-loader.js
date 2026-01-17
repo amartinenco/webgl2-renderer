@@ -88,8 +88,6 @@ export class ObjectLoader {
             .setVertices(squareVertices)
             .setNormals(squareNormals)
             .setRotation({ x: 0, y: 45 })
-            //.setIsRenderToTarget(true)
-            //.setOutputTarget("screen")
             .setUVCoords(new Float32Array([
                 0.0, 0.0,  // vertex 0
                 1.0, 0.0,  // vertex 1
@@ -98,7 +96,6 @@ export class ObjectLoader {
             .setTexture(squareRT.texture)
             .setOutputTarget("screen")
             .build();
-        //square.setTexture(textureManager.getRenderTarget("square").texture);
 
         const ground = new GameObjectDefinition.Builder()
             .setName("ground")
@@ -162,23 +159,11 @@ export class ObjectLoader {
             .setName("triangle2d")
             .setType(ObjectType.TWO_D)
             .setShaderProgram(shaderThreeD)
-            //.setPosition([110, -75, -15])
-            //.setPosition([30, 10, 220])
-            //.setPosition([30, 10, 110]) old screen
-            //.setPosition([-120, 30, 80])
             .setPosition([-110, 15, 150])
             .setVertices(triangleVertices)
-            .setOutputTarget("screen")  // test target
+            .setOutputTarget("screen")
             .build();
 
-        // const test = new GameObjectDefinition.Builder()
-        //     .setName("triangleTest")
-        //     .setType(ObjectType.TWO_D)
-        //     .setShaderProgram(shaderThreeD)
-        //     .setVertices(triangleVertices)
-        //     .setOutputTarget("square")
-        //     .setPosition([0, 0, 0])
-        //     .build();
         const triangleUVs = [
             0.0, 0.0,   // vertex 0
             0.0, 0.0,   // vertex 1
@@ -191,12 +176,10 @@ export class ObjectLoader {
             .setVertices(testTriangleInTextureVertices)
             .setUVCoords(triangleUVs)
             .setOutputTarget("square")
-            //.setTexture(squareRT.texture) 
             .setPosition([0, 0, 0])
             .build();
 
         const f3dTexture = this.textureManager.get("3df");
-        //console.log(f3dTexture);
         const f3d = new GameObjectDefinition.Builder()
             .setName("3df")
             .setType(ObjectType.THREE_D)
@@ -214,12 +197,8 @@ export class ObjectLoader {
         this.objectManager.loadObject(triangle);
         //this.objectManager.loadObject(f3d);
         
-        
-        
-        
         //this.objectManager.loadObject(triangle2d);
-        
-        
+    
         //this.objectManager.loadObject(square);
         //this.objectManager.loadObject(triangleInSquare);
         
@@ -229,12 +208,8 @@ export class ObjectLoader {
         // this.objectManager.loadObject(wall_two);
         // this.objectManager.loadObject(wall_side);
 
-
-
         //this.objectManager.loadObject(wall_three);
 
-
-  
         // Test obj and mtl loader
         // const testMaterials = await LoaderMtl.load(`${this.filePath}/monkey.mtl`);
         // const testObj = await LoaderObj.load(`${this.filePath}/monkey.obj`);
@@ -250,21 +225,9 @@ export class ObjectLoader {
         //     .setOutputTarget("screen")
         //     .build(); 
         
-
-
-        
-
-
-
-
-
-
         const testMaterials = await LoaderMtl.load(`${this.filePath}/computer5.mtl`);
         const testObj = await LoaderObj.load(`${this.filePath}/computer5.obj`);
         const testMesh = MeshBuilder.fromObj(testObj, testMaterials.materials);
-
-        
-        
         const screenRT = this.textureManager.getRenderTarget("computerScreen");
 
         for (const sm of testMesh.submeshes) {
@@ -296,163 +259,28 @@ export class ObjectLoader {
         // Computer
         this.objectManager.loadObject(objTest);
 
-
-
-
-        //const test2TriangleInTextureVertices = new Float32Array([ -0.5, -0.5, 0, 0.5, -0.5, 0, 0.0, 0.5, 0 ]);
-
-        /*
-        (-1,+1)        (0,+1)        (+1,+1)
-            +-------------+-------------+
-            |             |             |
-            |             |             |
-            |             |             |
-            +-------------+-------------+
-            |             |             |
-            |     (0,0)   |             |
-            |             |             |
-            +-------------+-------------+
-            (-1,-1)        (0,-1)        (+1,-1)
-
-        */
-
-        //const x = -0.5; const y = 0.9; const size = 0.02; 
         const x = -0.9; const y = 0.9; const size = 0.2;
-
-        // .setVertices(new Float32Array([
-        //     ...v0,
-        //     ...v1,
-        //     ...v2
-        // ]));
-        // console.log("V");
-        // console.log(v0, v1, v2);
 
         const triangleTerminalUI = new GameObjectDefinition.Builder()
             .setName("terminalUI")
             .setType(ObjectType.RTT)
             .setShaderProgram(shaderRTT)
-            //.setTexture(null)
-            //.setVertices(new Float32Array([ 0, 0, 0, 255, 0, 0, 0, 150, 0 ]))
-            //.setVertices(new Float32Array([ 400, 515, 0, 600, 515, 0, 500, 520, 0 ]))
-            //.setVertices(new Float32Array([ 0, 0, 0, screenRT.width, 0, 0, 0, screenRT.height, 0 ]))
-            //.setVertices(new Float32Array([ 0, 0, 0, 0, screenRT.height, 0, screenRT.width, 0, 0 ]))
-            //.setVertices(new Float32Array([ 0, 0, 0, screenRT.width, 0, 0, screenRT.width, screenRT.height, 0, 0, 0, 0, screenRT.width, screenRT.height, 0, 0, screenRT.height, 0 ]))
-            //.setUVCoords([ 0,0, 1,0, 1,1, 0,0, 1,1, 0,1 ])
-            // .setVertices(new Float32Array([
-            //     0, 0, 0,
-            //     200, 0, 0,
-            //     0, 200, 0
-            // ]))
-            // .setVertices(new Float32Array([
-            //     -0.1, -0.4, 0,  // A
-            //     0, 0, 0,  // B
-            //     -0.1, 0, 0 // C
-            // ]))
-            // .setVertices(new Float32Array([
-            //     -0.4, 0, 0, // left ()
-            //     -0.1, 0, 0, // right 
-            //     -0.25, 0.2, 0 // top 
-            // ]))
-            
-            // .setVertices(new Float32Array([
-            //   0.3, -0.5, 0, // top 
-            //   0, 0.25, 0, // right 
-            //   0.2, 0.2, 0 // left
-            // ]))
-            // .setVertices(new Float32Array([
-            //   0.3, -0.5, 0,
-            // ]))
-            
-            // FLIPPED
-            //.setVertices(new Float32Array([ x, y, 0, x + size, y, 0, x, y + size, 0 ]))
             .setVertices(new Float32Array([
                 -x,     -y,     0,
                 -(x+size), -y,  0,
                 -x,     -(y+size), 0
             ]))
-
-
-            // .setVertices(new Float32Array([
-            //     ...v0,
-            //     ...v1,
-            //     ...v2
-            // ]))
-
-
-            
-            
-            // .setVertices(this.mapToPhysical(new Float32Array([
-            //     0.2, 0, 0, // left ()
-            //     0, 0, 0, // right 
-            //     0, 0.5, 0 // top 
-            // ])))
-            
-
-            // .setVertices(new Float32Array([
-            //      -1, 0, 0, // A = bottom-left 
-            //      -0.1, -0.1, 0, // B = center-top 
-            //      -0.3, 0, 0 // C = bottom-right
-            // ]))
-            
-            
-            
-            // .setVertices(new Float32Array([
-            //     -0.5, 0.0, 0.0, // left 
-            //     0.5, 0.0, 0.0, // right 
-            //     0.0, 0.5, 0.0 // top
-            // ]))
-            
-            
-            // .setVertices(new Float32Array([ 
-            //     0.1, 0.057, 0, 
-            //     0.1, -0.1, 0, 
-            //     -0.1, 0.1, 0, 
-            // ]))
-            // .setVertices(new Float32Array([
-            //     // Right side
-            //     0.5, 0.0, 0.0,
-
-            //     // Top side
-            //     0.0, 0.5, 0.0,
-
-            //     // Left side
-            //     -0.5, 0.0, 0.0
-            // ]))
-
-
-
-            //.setUVCoords([0,0, 1,0, 0,1])
-            //.setUVCoords([0,0, 1,0, 0,1])
-            //.setUVCoords(triangleUVs)
             .setOutputTarget("computerScreen")
-            //.setPosition([50, 50, 0])
-            //s.setScale([1, 1, 1])
             .build();
-
-        //this.objectManager.loadObject(triangleTerminalUI);
         
         const font = this.fontManager.getFont("default");
         const renderer = new TextRenderer();
 
-        //const mesh = renderer.buildTextMesh(font, "Hello", this.toClip(30, screenRT.width), this.toClip(30, screenRT.height));
         const startX = 50; 
-        //console.log("----------screen.height", screenRT.height);
         const startY = 65;
-        //const startY = 50;
 
-
-
-
-
-
-
-
-        // TERMINAL HERE
-        
+        // TERMINAL
         const text = this.controller ? this.controller.terminal.getCurrentLine() : "test";
-        //console.log("------------------------------", this.controller)
-
-        //const mesh = renderer.buildTextMesh(font, "helloworld", startX, startY, 1);
         const mesh = renderer.buildTextMesh(font, text, startX, startY, 1);
 
         const textObj = new GameObjectDefinition.Builder()
@@ -465,17 +293,14 @@ export class ObjectLoader {
             .setOutputTarget("computerScreen")
             .build();
 
-
         let loadedTextObj = this.objectManager.loadObject(textObj);
         loadedTextObj.controller = this.controller;
         loadedTextObj.textRenderer = renderer;
         loadedTextObj.font = font;
 
         loadedTextObj.onUpdate = function(dt) {
-            //console.log(this.controller);
             if (!this.controller) return;
             
-            //const newText = this.controller.terminal.getCurrentLine();
             const newText = this.controller.terminal.getVisibleText();
             const lines = newText.split("\n");
 
@@ -495,12 +320,9 @@ export class ObjectLoader {
             }
         };
 
-
-
         const lampMaterials = await LoaderMtl.load(`${this.filePath}/lamp.mtl`);
         const lampObj = await LoaderObj.load(`${this.filePath}/lamp.obj`);
         const lampMesh = MeshBuilder.fromObj(lampObj, lampMaterials.materials);
-
 
         const objLamp = new GameObjectDefinition.Builder()
             .setName("lampModel")
@@ -515,13 +337,9 @@ export class ObjectLoader {
 
         this.objectManager.loadObject(objLamp);
 
-
-
-
         const tableMaterials = await LoaderMtl.load(`${this.filePath}/table.mtl`);
         const tableObj = await LoaderObj.load(`${this.filePath}/table.obj`);
         const tableMesh = MeshBuilder.fromObj(tableObj, tableMaterials.materials);
-
 
         const objTable = new GameObjectDefinition.Builder()
             .setName("tableModel")

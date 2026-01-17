@@ -111,7 +111,7 @@ export class GameController {
             case "sudo":
                 return ["Guest user. Not part of a sudo group"];
             case "help":
-                return ["Commands you can run:", "ls - list files", "cat <filename> - to view the file content"];
+                return ["Commands you can run:", "ls - list files", "cat <filename> - to view the file content", "-> F2 - (WASD + Mouse 1) - NoClip Debug"];
             case "cat":
                 if (!args[0]) return ["Usage: cat <filename>"];
                 if (args[0].includes("education.txt")) {

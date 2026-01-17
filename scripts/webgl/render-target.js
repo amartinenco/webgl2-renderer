@@ -1,45 +1,6 @@
 import { errorLog } from "../logger/logger.js";
 
 export class RenderTarget {
-    // constructor(gl, textureFactory, name, width, height, depthOnly = false) {
-    //     this.gl = gl;
-    //     this.width = width;
-    //     this.height = height;
-
-    //     // create off-screen canvas you can draw into
-    //     this.framebuffer = gl.createFramebuffer();
-    //     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-
-    //     this.renderTargetName = name + '_rt';
-    //     this.depthTextureName = name + '_dt';
-
-    //     // color texture
-    //     this.texture = textureFactory.createRenderTargetTexture(this.renderTargetName, width, height);
-    //     gl.framebufferTexture2D(
-    //         gl.FRAMEBUFFER,
-    //         gl.COLOR_ATTACHMENT0,
-    //         gl.TEXTURE_2D,
-    //         this.texture,
-    //         0
-    //     );
-
-    //     // depth texture
-    //     this.depthTexture = textureFactory.createDepthTexture(this.depthTextureName, width, height);
-    //     gl.framebufferTexture2D(
-    //         gl.FRAMEBUFFER,
-    //         gl.DEPTH_ATTACHMENT,
-    //         gl.TEXTURE_2D,
-    //         this.depthTexture,
-    //         0
-    //     );
-
-    //     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    //     if (status !== gl.FRAMEBUFFER_COMPLETE) {
-    //         errorLog(`Framebuffer is incomplete: ${status}`);
-    //     }
-
-    //     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    // }
 
     constructor(gl, textureFactory, name, width, height, depthOnly = false) {
         this.gl = gl;
@@ -80,7 +41,7 @@ export class RenderTarget {
             }
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            return; // IMPORTANT: stop here
+            return;
         }
 
         // ---------------------------------------------------------
@@ -161,25 +122,6 @@ export class RenderTarget {
             errorLog(`Framebuffer incomplete after resize: ${status}`);
         }
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-
-        // // Resize color texture
-        // gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-        // // Resize depth texture
-        // gl.bindTexture(gl.TEXTURE_2D, this.depthTexture);
-        // gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
-
-        // gl.bindTexture(gl.TEXTURE_2D, null);
-
-        // // Optionally check framebuffer completeness after resize
-        // gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-        // const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-        // if (status !== gl.FRAMEBUFFER_COMPLETE) {
-        //     errorLog(`Framebuffer incomplete after resize: ${status}`);
-        // }
-        // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
 
