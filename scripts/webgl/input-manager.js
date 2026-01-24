@@ -35,8 +35,10 @@ export class InputManager {
         window.addEventListener("keydown", (event) => this.keys.add(event.code));
         window.addEventListener("keyup", (event) => this.keys.delete(event.code));
         window.addEventListener("mousemove", (event) => {
-            this.mouse.x += event.movementX * Math.min(this.sensitivity, 8) * 0.01;
-            this.mouse.y += event.movementY * Math.min(this.sensitivity, 8) * 0.01;
+            if (this.mouse.pressed) {
+                this.mouse.x += event.movementX * Math.min(this.sensitivity, 8) * 0.01;
+                this.mouse.y += event.movementY * Math.min(this.sensitivity, 8) * 0.01;
+            }
         });
         window.addEventListener("mousedown", () => this.mouse.pressed = true);
         window.addEventListener("mouseup", () => this.mouse.pressed = false);
