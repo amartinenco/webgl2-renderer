@@ -71,6 +71,28 @@ export class GameEngine {
         this.soundManager = new SoundManager();
         this.SoundLoader = new SoundLoader(this.soundManager);
         await this.SoundLoader.loadSounds();
+        
+        const camera = this.cameraManager.getActiveCamera();
+
+        const pos = camera.position;
+        const tgt = camera.target;
+        const dir = [
+            tgt[0] - pos[0],
+            tgt[1] - pos[1],
+            tgt[2] - pos[2]
+        ];
+        const len = Math.hypot(dir[0], dir[1], dir[2]);
+        dir[0] /= len;
+        dir[1] /= len;
+        dir[2] /= len;
+        const yaw = Math.atan2(dir[2], dir[0]);
+        const pitch = Math.asin(dir[1]);
+
+        this.inputManager.yaw = yaw;
+        this.inputManager.pitch = pitch;
+        this.inputManager.baseYaw = yaw;
+        this.inputManager.basePitch = pitch;
+
         debugLog("GameEngine initialized");
     }
 
@@ -80,11 +102,6 @@ export class GameEngine {
         if (this.inputManager.isKeyJustPressed("F2")) {
             this.inputEnabled = !this.inputEnabled;
             console.log("Mode:", this.inputEnabled ? "GAME" : "TERMINAL");
-        }
-
-        if (this.inputEnabled) { 
-            this.inputManager.update(deltaTime, this.inputEnabled); 
-            return; 
         }
 
         const actions = {
@@ -113,9 +130,9 @@ export class GameEngine {
                 debugLog("Moving down!") 
             }
         };
-    
+
         Object.keys(actions).forEach((code) => {
-            if (this.inputManager.isKeyPressed(code)) {
+            if (this.inputManager.isKeyPressed(code) && !this.inputEnabled) {
                 actions[code]();
             }
         });
@@ -124,7 +141,7 @@ export class GameEngine {
             this.cameraManager.activeCamera.move(0, 0, 0);
         }
 
-        this.inputManager.update(deltaTime);
+        this.inputManager.update(deltaTime, !this.inputEnabled);
         this.cameraManager.activeCamera.rotate(this.inputManager.yaw, this.inputManager.pitch);
     }
 
