@@ -329,15 +329,12 @@ export class SpotLight extends LightBase {
             up = vec3.fromValues(0, 0, 1);
         }
 
-        // Compute right = normalize(cross(up, dir))
         const right = vec3.create();
         vec3.cross(right, up, dir);
         vec3.normalize(right, right);
 
-        // Recompute up = cross(dir, right)
         vec3.cross(up, dir, right);
 
-        // Build view matrix manually
         const target = vec3.create();
         vec3.add(target, lightPos, dir);
 

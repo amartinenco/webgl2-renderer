@@ -43,9 +43,6 @@ export class ObjectManager {
     }
 
     getRenderTargetObjects() {
-        //console.log("getRenderToTargetObject: ");
-        //console.log(this.getAllObjects().find(obj => obj.isRenderToTarget === true));
-        //console.log(this.getAllObjects()[3]);
         return this.getAllObjects().filter(obj => obj.isRenderTarget);    
     }
 
@@ -53,10 +50,6 @@ export class ObjectManager {
         if (this.loadedObjects[id]) {
             const obj = this.loadedObjects[id];
             obj.destroy();
-            // if (obj.vertexBuffer) {
-            //     this.gl.deleteBuffer(obj.vertexBuffer);
-            // }
-
             delete this.loadedObjects[id];
         } else {
             warnLog(`Object with id ${id} not found`);
