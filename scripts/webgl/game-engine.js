@@ -76,23 +76,23 @@ export class GameEngine {
 
         const pos = camera.position;
         const tgt = camera.target;
-        const dir = [ 
-            tgt[0] - pos[0], 
-            tgt[1] - pos[1], 
-            tgt[2] - pos[2] 
-        ]; 
-        const len = Math.hypot(dir[0], dir[1], dir[2]); 
-        dir[0] /= len; 
-        dir[1] /= len; 
+        const dir = [
+            tgt[0] - pos[0],
+            tgt[1] - pos[1],
+            tgt[2] - pos[2]
+        ];
+        const len = Math.hypot(dir[0], dir[1], dir[2]);
+        dir[0] /= len;
+        dir[1] /= len;
         dir[2] /= len;
-        const yaw = Math.atan2(dir[2], dir[0]); 
+        const yaw = Math.atan2(dir[2], dir[0]);
         const pitch = Math.asin(dir[1]);
 
         this.inputManager.yaw = yaw;
         this.inputManager.pitch = pitch;
         this.inputManager.baseYaw = yaw;
         this.inputManager.basePitch = pitch;
-        
+
         debugLog("GameEngine initialized");
     }
 
@@ -104,11 +104,6 @@ export class GameEngine {
             console.log("Mode:", this.inputEnabled ? "GAME" : "TERMINAL");
         }
 
-        //if (this.inputEnabled) { 
-            //this.inputManager.update(deltaTime, this.inputEnabled); 
-            //return; 
-        //}
-        
         const actions = {
             "KeyW": () => { 
                 this.cameraManager.activeCamera.move(0, 0, this.inputManager.cameraSpeed * deltaTime);
@@ -135,7 +130,7 @@ export class GameEngine {
                 debugLog("Moving down!") 
             }
         };
-        console.log(this.inputEnabled)
+
         Object.keys(actions).forEach((code) => {
             if (this.inputManager.isKeyPressed(code) && !this.inputEnabled) {
                 actions[code]();
